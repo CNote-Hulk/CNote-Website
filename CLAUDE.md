@@ -23,8 +23,10 @@ When you finish, always update curent status so we can resume were we remained a
 At the end of every task, append an entry to the Journal in the Mind Tree vault (GitHub repo CNote-Hulk/Mind-Tree-Vault, path `03 Jurnal/YYYY-MM-DD.md`, today date) via the GitHub API - no strict format required, plain history log of what happened. This repo does not keep its own JURNAL.md; the Mind Tree vault is the single journal across all projects.
 This repo (the site/backend) gets committed AND pushed automatically after any modification — no
 need to ask first (2026-08-20: push included explicitly now, not just commit — see credentials
-note right below). The Android app repo (`E:\Console-Notebook`) used to be the opposite (ask
-first) but now matches this — commit+push automatically there too.
+note right below). The Android app repo (`E:\Projects\CNote-Application` — corrected 2026-09-08,
+was wrongly written as `E:\Console-Notebook` here for a while, a path that never existed on any
+machine this was checked from) used to be the opposite (ask first) but now matches this —
+commit+push automatically there too.
 Committing isn't pushing — `git push` here (or to Mind-Tree for the journal entry above) needs
 GitHub credentials. When working from the Termux/proot-distro sandbox on the tablet (not
 Windows/WSL), check `~/.git-credentials` first — a Personal Access Token is usually already
@@ -37,7 +39,7 @@ including this one). Format matters: `https://<username>:<TOKEN>@github.com` —
 `https://<TOKEN>@github.com` (no username before the token) looks valid but
 `git-credential-store` silently fails to match it.
 After any modification that adds, removes, or changes a user-facing string on the site, update the translations in `frontend/js/modules/i18n.js`'s `MESSAGES` object for every language block present there (currently `en`, `es`, `fr`, `it`, `de`, `ro`) in the same pass. `en` is the canonical source; mirror the key into the other blocks with a real translation, not a copy of the English value. Never leave the language blocks out of key-parity with each other.
-The native Android client for this same website lives in a separate repo at `E:\Console-Notebook` (Kotlin + Jetpack Compose). It hits this backend's REST API directly plus Supabase PostgREST for chat/forum/marketplace — it has its own CLAUDE.md/INDEX.md and in fact points back here for API/backend reference. When a task involves "the app" (as opposed to the website), it means that repo, not anything inside `frontend/`.
+The native Android client for this same website lives in a separate repo at `E:\Projects\CNote-Application` (Kotlin + Jetpack Compose). It hits this backend's REST API directly plus Supabase PostgREST for chat/forum/marketplace — it has its own CLAUDE.md/INDEX.md and in fact points back here for API/backend reference. When a task involves "the app" (as opposed to the website), it means that repo, not anything inside `frontend/`. This machine has a JDK + Android NDK installed, so the app can actually be built/run from here too, not just edited.
 
 ## Commands
 
