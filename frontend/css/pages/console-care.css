@@ -121,6 +121,21 @@
     line-height: 1.4;
 }
 
+/* Card grid (console-care/console-modding directory) only — fixed 2-line
+   size with an ellipsis for a note that doesn't fit, so cards stay a
+   uniform height regardless of note length. The full text is still shown
+   unclamped on the model detail page's large plate (.model-plate--large,
+   which only holds the console name there anyway, no note). */
+.model-plate:not(.model-plate--large) .model-plate__meta {
+    max-height: 2.8em;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    text-overflow: ellipsis;
+}
+
 .model-plate__console {
     font-weight: 700;
 }
