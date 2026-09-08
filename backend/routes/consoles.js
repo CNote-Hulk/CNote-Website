@@ -97,7 +97,13 @@ router.put('/:id', authRequired, adminOnly, async (req, res) => {
 		manufacturer: String(body.manufacturer).slice(0, 200),
 		generation: Number(body.generation) || 0,
 		release: Number(body.release) || 0,
-		models: Array.isArray(body.models) ? body.models.map(m => String(m).slice(0, 100)).slice(0, 50) : [],
+		models: Array.isArray(body.models) ? body.models
+			.map(m => ({
+				name: String((m && m.name) || '').slice(0, 100),
+				year: Number(m && m.year) || 0,
+			}))
+			.filter(m => m.name)
+			.slice(0, 50) : [],
 		image: String(body.image || '').slice(0, 500),
 		advantages: Array.isArray(body.advantages) ? body.advantages.map(a => String(a).slice(0, 300)).slice(0, 20) : [],
 		disadvantages: Array.isArray(body.disadvantages) ? body.disadvantages.map(a => String(a).slice(0, 300)).slice(0, 20) : [],
