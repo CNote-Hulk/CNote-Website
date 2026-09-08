@@ -937,3 +937,69 @@
     color: var(--text-gray);
     margin: 4px 0 0;
 }
+
+/* ── Date-code pills on console-model.html's own hero, right under the
+   title (2026-09-08) — physical manufacture date-code stamps that
+   meaningfully split one model code (e.g. PS3 CECH-2500A: only 0C/0D-dated
+   units run Custom Firmware). Same pill visual language as console-
+   detail.css's .console-models/.console-model-item on the Evolution page,
+   but its own class names since this page doesn't link that stylesheet. ── */
+.model-date-codes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    margin: 10px 0 14px;
+}
+
+.model-date-code-item {
+    font-size: 0.8rem;
+    color: var(--text-gray);
+    background: rgba(var(--accent-rgb), 0.07);
+    border: 1px solid rgba(var(--accent-rgb), 0.18);
+    border-radius: 20px;
+    padding: 0.28rem 0.7rem;
+    white-space: nowrap;
+}
+
+.model-date-code-item em {
+    color: var(--accent-color);
+    font-style: normal;
+    font-weight: 600;
+    margin-left: 0.3rem;
+}
+
+/* Add/remove rows in the "Edit model" form's date-codes editor — same
+   pattern as console-detail.css's .console-edit__model-row/__add-btn. */
+.model-edit__date-code-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.model-edit__date-code-row input {
+    flex: 1;
+}
+
+.model-edit__array-remove {
+    flex-shrink: 0;
+    font-family: var(--font-sans);
+    font-size: 0.78rem;
+    color: var(--error);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px 6px;
+}
+
+.model-edit__add-btn {
+    margin-top: 4px;
+    font-family: var(--font-sans);
+    font-size: 0.82rem;
+    color: var(--accent-color);
+    background: none;
+    border: 1px dashed rgba(var(--accent-rgb), 0.4);
+    border-radius: var(--radius-md);
+    padding: 6px 12px;
+    cursor: pointer;
+}

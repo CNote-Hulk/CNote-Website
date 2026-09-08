@@ -1,5 +1,5 @@
 import { MOD_OPTIONS, flashTypesForModel, loadModels, invalidateModelsCache } from '../data/console-models.js?v=20260908';
-import { I18nModule } from '../modules/i18n.js?v=20260908';
+import { I18nModule } from '../modules/i18n.js?v=20260909';
 import { AuthModule } from '../modules/auth.js';
 import { API_BASE_URL } from '../config.js';
 
@@ -62,11 +62,53 @@ function isAdmin() {
     return AuthModule.getCurrentUser()?.role === 'admin';
 }
 
+// Physical manufacture date-code stamps that meaningfully split this one
+// model code (e.g. PS3 CECH-2500A: only 0C/0D-dated units run Custom
+// Firmware, 1A/1B don't) — rendered as pills right under the title, same
+// visual language as the Evolution page's .console-models pills, but its own
+// class names since console-model.html doesn't link console-detail.css.
+function renderDateCodes(model) {
+    const wrap = document.getElementById('model-date-codes');
+    if (!wrap) return;
+    const codes = Array.isArray(model?.date_codes) ? model.date_codes : [];
+    if (!codes.length) {
+        wrap.style.display = 'none';
+        wrap.innerHTML = '';
+        return;
+    }
+    wrap.innerHTML = codes
+        .map(dc => `<span class="model-date-code-item">${escapeHtml(dc.code)}${dc.note ? `<em>${escapeHtml(dc.note)}</em>` : ''}</span>`)
+        .join('');
+    wrap.style.display = '';
+}
+
 let currentModel = null;
 
 // ── Admin edit: the model's own mfr/console/code/note (Phase 3 of the
 // site-wide admin-editing task, 2026-09-06) — separate from the disassembly/
 // modding tutorial content below, which already had its own admin editors. ──
+
+// One add/remove row for a single date-code entry in the edit form, mirroring
+// console-detail.js's consoleEditModelRow() (same shape of problem — a small
+// array of {code, note} pairs the admin can grow/shrink).
+function dateCodeEditRow(dc) {
+    const row = document.createElement('div');
+    row.className = 'model-edit__date-code-row';
+    row.innerHTML = `
+        <input type="text" class="model-edit__date-code-code" placeholder="${I18nModule.t('model_date_code_placeholder_code')}" value="${escapeHtml(dc?.code || '')}">
+        <input type="text" class="model-edit__date-code-note" placeholder="${I18nModule.t('model_date_code_placeholder_note')}" value="${escapeHtml(dc?.note || '')}">
+        <button type="button" class="model-edit__array-remove">${I18nModule.t('console_edit_remove_item')}</button>
+    `;
+    row.querySelector('.model-edit__array-remove').addEventListener('click', () => row.remove());
+    return row;
+}
+
+function readDateCodeRows() {
+    return Array.from(document.querySelectorAll('#model-edit-date-codes .model-edit__date-code-row')).map(row => ({
+        code: row.querySelector('.model-edit__date-code-code').value.trim(),
+        note: row.querySelector('.model-edit__date-code-note').value.trim(),
+    })).filter(dc => dc.code);
+}
 
 function openModelEditor() {
     if (!currentModel) return;
@@ -92,6 +134,10 @@ function openModelEditor() {
             <label class="model-directory-add__label" for="model-edit-note">${I18nModule.t('model_add_note_label')}</label>
             <textarea id="model-edit-note" class="model-directory-add__textarea" rows="3">${escapeHtml(m.note || '')}</textarea>
 
+            <label class="model-directory-add__label">${I18nModule.t('model_date_codes_label')}</label>
+            <div id="model-edit-date-codes"></div>
+            <button type="button" id="model-edit-add-date-code" class="model-edit__add-btn">${I18nModule.t('console_edit_add_item')}</button>
+
             <div class="model-directory-add__actions">
                 <button type="button" id="model-edit-save" class="hero-button">${I18nModule.t('tutorial_save')}</button>
                 <button type="button" id="model-edit-cancel" class="hero-button hero-button--syllabus">${I18nModule.t('tutorial_cancel')}</button>
@@ -101,6 +147,10 @@ function openModelEditor() {
     `;
     document.body.appendChild(overlay);
     document.body.style.overflow = 'hidden';
+
+    const dateCodesWrap = overlay.querySelector('#model-edit-date-codes');
+    (Array.isArray(m.date_codes) ? m.date_codes : []).forEach(dc => dateCodesWrap.appendChild(dateCodeEditRow(dc)));
+    overlay.querySelector('#model-edit-add-date-code').addEventListener('click', () => dateCodesWrap.appendChild(dateCodeEditRow()));
 
     function closeEditor() {
         overlay.remove();
@@ -116,6 +166,7 @@ function openModelEditor() {
         const consoleName = document.getElementById('model-edit-console').value.trim();
         const code = document.getElementById('model-edit-code').value.trim();
         const note = document.getElementById('model-edit-note').value.trim();
+        const date_codes = readDateCodeRows();
 
         if (!mfr || !consoleName || !code) {
             statusEl.textContent = I18nModule.t('tutorial_save_error');
@@ -123,7 +174,7 @@ function openModelEditor() {
         }
 
         statusEl.textContent = I18nModule.t('tutorial_saving');
-        const result = await api('PUT', `/console-models/${m.id}`, { mfr, console: consoleName, code, note });
+        const result = await api('PUT', `/console-models/${m.id}`, { mfr, console: consoleName, code, note, date_codes });
         if (!result.success) {
             statusEl.textContent = result.error || I18nModule.t('tutorial_save_error');
             return;
@@ -147,6 +198,7 @@ function openModelEditor() {
         document.getElementById('model-plate-console').textContent = currentModel.console;
         document.getElementById('model-mfr').textContent = currentModel.mfr;
         document.getElementById('model-console-name').textContent = currentModel.console;
+        renderDateCodes(currentModel);
         document.getElementById('model-note').textContent = currentModel.note || '';
     });
 }
@@ -701,6 +753,7 @@ async function render() {
     document.getElementById('model-plate-console').textContent = currentModel.console;
     document.getElementById('model-mfr').textContent = currentModel.mfr;
     document.getElementById('model-console-name').textContent = currentModel.console;
+    renderDateCodes(currentModel);
     document.getElementById('model-note').textContent = currentModel.note || '';
     initModelAdminEditButton();
 

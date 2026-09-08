@@ -5,7 +5,7 @@
 // Used by both console-care.js and console-modding.js so the two guide pages
 // share one directory implementation instead of duplicating it.
 
-import { I18nModule } from './i18n.js?v=20260908';
+import { I18nModule } from './i18n.js?v=20260909';
 import { AuthModule } from './auth.js';
 import { API_BASE_URL } from '../config.js';
 import { loadModels, invalidateModelsCache } from '../data/console-models.js?v=20260906';
