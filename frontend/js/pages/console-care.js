@@ -2,6 +2,6 @@
 // via the shared component in ../modules/model-directory.js (also used by
 // console-modding.js).
 
-import { initModelDirectory } from '../modules/model-directory.js?v=20260906';
+import { initModelDirectory } from '../modules/model-directory.js?v=20260908';
 
 initModelDirectory();

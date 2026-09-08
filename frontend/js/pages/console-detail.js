@@ -4,6 +4,7 @@
  */
 
 import { getConsoleById, getConsoleIdFromUrl, resolveImagePath, invalidateCache } from '../data/data-loader.js';
+import { MODEL_DIRECTORY_GROUPS } from '../data/console-models.js?v=20260908';
 import { AchievementsModule } from '../modules/achievements.js';
 import { AuthModule } from '../modules/auth.js';
 import { I18nModule } from '../modules/i18n.js';
@@ -434,7 +435,18 @@ function renderHistory(consola) {
         historyHtml = '<div class="history-content"></div>';
     }
 
-    container.innerHTML = titleHtml + historyHtml;
+    // "Fun facts" — deep-links into the Modding Guide's hardware-model directory
+    // (console-modding.html), pre-filtered to just this console's own model codes via the
+    // ?groups= param model-directory.js reads (see console-models.js's MODEL_DIRECTORY_GROUPS
+    // for the id → group-name mapping). Hidden entirely for a console with no entry there —
+    // everything outside Xbox/PlayStation/Nintendo, the only 3 manufacturers with any
+    // hardware-model directory content at all today.
+    const groups = MODEL_DIRECTORY_GROUPS[consola.id];
+    const funFactsHtml = groups
+        ? `<a class="hero-button hero-button--syllabus history-fun-facts-btn" href="../console-modding.html?groups=${encodeURIComponent(groups.join(','))}#identify">${I18nModule.t('console_fun_facts_btn')}</a>`
+        : '';
+
+    container.innerHTML = titleHtml + historyHtml + funFactsHtml;
 }
 
 /**

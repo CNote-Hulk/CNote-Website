@@ -57,6 +57,50 @@ export function flashTypesForModel(consoleName, code) {
     return fallback;
 }
 
+// Maps an Evolution console page's id (consoles_translations.id — e.g. "playstation-3") to the
+// exact set of console_models.console group names that belong to it (e.g. "PS3"/"PS3 Slim"/
+// "PS3 Super Slim") — powers the "Fun facts" button on console-detail.js's history section,
+// which deep-links into console-modding.html pre-filtered to just this console's hardware
+// models. The two naming schemes were curated independently (this file's own MODELS migration
+// vs. each console's own `models: [{name, year}]` field) and don't always match textually
+// (e.g. Evolution's "PS3 Fat" vs. the directory's plain "PS3"), so this is an explicit table,
+// not a derived transform — verified 2026-09-08 against every console_models.console value
+// that actually exists (see GET /api/console-models). A console with no entry here (everything
+// outside Xbox/PlayStation/Nintendo — the only 3 manufacturers with any hardware-model
+// directory content at all) simply doesn't get the button; initConsoleFunFactsButton() below
+// checks for that.
+export const MODEL_DIRECTORY_GROUPS = {
+    // PlayStation
+    'playstation-1': ['PS1', 'PSone'],
+    'playstation-2': ['PS2', 'PS2 Slim'],
+    'playstation-3': ['PS3', 'PS3 Slim', 'PS3 Super Slim'],
+    'playstation-4': ['PS4', 'PS4 Slim', 'PS4 Pro'],
+    'playstation-5': ['PS5', 'PS5 Slim', 'PS5 Pro'],
+    'psp': ['PSP'],
+    'ps-vita': ['PS Vita', 'PS Vita Slim'],
+    // Xbox
+    'xbox': ['Xbox (original)'],
+    'xbox-360': ['Xbox 360', 'Xbox 360 S', 'Xbox 360 E'],
+    'xbox-one': ['Xbox One', 'Xbox One S', 'Xbox One X'],
+    'xbox-series-x': ['Xbox Series X'],
+    'xbox-series-s': ['Xbox Series S'],
+    // Nintendo
+    'famicom': ['Famicom'],
+    'nes': ['NES'],
+    'snes': ['Super Famicom', 'SNES'],
+    'nintendo-64': ['Nintendo 64'],
+    'nintendo-gamecube': ['GameCube'],
+    'nintendo-wii': ['Wii', 'Wii Mini'],
+    'nintendo-wii-u': ['Wii U'],
+    'nintendo-switch': ['Switch', 'Switch Lite', 'Switch OLED'],
+    'nintendo-switch-2': ['Switch 2'],
+    'game-boy': ['Game Boy', 'Game Boy Pocket', 'Game Boy Light'],
+    'game-boy-color': ['Game Boy Color'],
+    'game-boy-advance': ['Game Boy Advance', 'Game Boy Advance SP', 'Game Boy Micro'],
+    'nintendo-ds': ['Nintendo DS', 'Nintendo DS Lite', 'Nintendo DSi', 'Nintendo DSi XL'],
+    'nintendo-3ds': ['Nintendo 3DS', 'Nintendo 3DS XL', 'Nintendo 2DS', 'New Nintendo 3DS', 'New Nintendo 3DS XL', 'New Nintendo 2DS XL'],
+};
+
 // Same bare-relative-path fetch convention as the sibling data-loader.js in
 // this same directory (no API_BASE_URL import — that module doesn't use it
 // either, since neither has ever needed the frontend-hosted-separately

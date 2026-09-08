@@ -423,6 +423,16 @@
     color: var(--text-light);
 }
 
+/* "Fun facts" — deep-links into the Modding Guide's model directory, filtered to this
+   console's own hardware models (console-detail.js's renderHistory(), 2026-09-08). Reuses the
+   site-wide .hero-button/.hero-button--syllabus classes for the button chrome itself, just
+   needs its own spacing since it sits right after the history prose, not inside a form. */
+.history-fun-facts-btn {
+    display: inline-flex;
+    margin-top: 1.5rem;
+    text-decoration: none;
+}
+
 /* Back Button - Modern App-Style (Desktop + Mobile) */
 .back-link {
     display: inline-flex;

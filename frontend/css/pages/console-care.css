@@ -792,6 +792,27 @@
     transform: translateY(-1px);
 }
 
+/* "Showing models for this console" banner — shown when the directory arrives pre-filtered
+   via ?groups= from an Evolution page's "Fun facts" button (model-directory.js's
+   renderPinnedBanner(), 2026-09-08). Replaces the manufacturer tabs row, which
+   renderPinnedBanner() hides since they're meaningless once pinned to one console. */
+.model-directory-pinned-banner {
+    margin: 4px 0 18px;
+    font-family: var(--font-sans);
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.model-directory-pinned-banner a {
+    color: var(--accent-color);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.model-directory-pinned-banner a:hover {
+    text-decoration: underline;
+}
+
 .model-directory-add-overlay {
     position: fixed;
     inset: 0;

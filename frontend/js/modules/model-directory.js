@@ -50,11 +50,36 @@ export async function initModelDirectory({
     let activeManufacturer = 'all';
     let models = await loadModels();
 
+    // "Fun facts" deep link from an Evolution console page (console-detail.js) — ?groups=
+    // pins the directory to one console's exact hardware-model groups (e.g.
+    // "PS3,PS3 Slim,PS3 Super Slim"), bypassing the manufacturer tabs. Search still narrows
+    // within that pinned set. A "Show all models →" link (rendered once, above the grid)
+    // clears it by dropping the query param.
+    const pinnedGroups = (new URLSearchParams(location.search).get('groups') || '')
+        .split(',').map(g => g.trim()).filter(Boolean);
+
+    function renderPinnedBanner() {
+        if (!pinnedGroups.length) return;
+        const tabsWrap = document.querySelector(tabsSelector)?.parentElement;
+        if (tabsWrap) tabsWrap.style.display = 'none';
+        if (document.getElementById('model-directory-pinned-banner')) return;
+        const banner = document.createElement('p');
+        banner.id = 'model-directory-pinned-banner';
+        banner.className = 'model-directory-pinned-banner';
+        const clearUrl = location.pathname + location.hash;
+        banner.innerHTML = `${I18nModule.t('care_pinned_showing')} <a href="${clearUrl}">${I18nModule.t('care_pinned_show_all')}</a>`;
+        (countEl?.closest('.care-directory__count') || grid)?.before(banner);
+    }
+
     function render() {
         const query = (searchInput?.value || '').trim().toLowerCase();
 
         const filtered = models.filter(m => {
-            if (activeManufacturer !== 'all' && m.mfr !== activeManufacturer) return false;
+            if (pinnedGroups.length) {
+                if (!pinnedGroups.includes(m.console)) return false;
+            } else if (activeManufacturer !== 'all' && m.mfr !== activeManufacturer) {
+                return false;
+            }
             if (!query) return true;
             return (
                 m.code.toLowerCase().includes(query) ||
@@ -197,6 +222,7 @@ export async function initModelDirectory({
     });
 
     render();
+    renderPinnedBanner();
     initAddModelButton();
     window.addEventListener('cn:language-changed', render);
 
