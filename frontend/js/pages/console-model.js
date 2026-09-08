@@ -1,4 +1,4 @@
-import { MOD_OPTIONS, loadModels, invalidateModelsCache } from '../data/console-models.js?v=20260906';
+import { MOD_OPTIONS, flashTypesForModel, loadModels, invalidateModelsCache } from '../data/console-models.js?v=20260908';
 import { I18nModule } from '../modules/i18n.js';
 import { AuthModule } from '../modules/auth.js';
 import { API_BASE_URL } from '../config.js';
@@ -637,9 +637,15 @@ function createModTutorialSection() {
         el('mod-edit-translation-btn').addEventListener('click', () => openEditor(false));
     }
 
-    function applyCombos(rows, consoleName) {
+    function applyCombos(rows, consoleName, code) {
         combos = Array.isArray(rows) ? rows : [];
-        staticOptions = MOD_OPTIONS[consoleName] || null;
+        // flashTypesForModel() narrows the per-console-line menu down to the one flash type
+        // this specific board actually has (PS3 fat/super-slim only — everything else still
+        // gets the unnarrowed line-wide menu). firmwareVersions is left as the generic
+        // per-console-line list; narrowing that further would need real per-firmware/flash-type
+        // compatibility research this fix wasn't asked to do.
+        const base = MOD_OPTIONS[consoleName];
+        staticOptions = base ? { flashTypes: flashTypesForModel(consoleName, code), firmwareVersions: base.firmwareVersions } : null;
         selectedFlash = null;
         selectedVersion = null;
     }
@@ -716,7 +722,7 @@ async function render() {
     } catch {
         modTutorials = [];
     }
-    modding.applyCombos(modTutorials, currentModel.console);
+    modding.applyCombos(modTutorials, currentModel.console, currentModel.code);
     modding.renderView();
     modding.renderAdminControls();
 }
