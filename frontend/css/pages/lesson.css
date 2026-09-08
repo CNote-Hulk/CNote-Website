@@ -1562,7 +1562,7 @@
 /* ── Admin edit modal (2026-09-06) ───────────────────────────────────────
    Full-content editor for a lesson's title/content_html/quiz questions,
    opened from a small admin-only trigger in the hero. Same overlay/modal
-   shape as console-detail.css's .console-edit-*/articles.css's
+   shape as console-detail.css's .console-edit-* classes / articles.css's
    .article-modal*, given its own class prefix here since lesson.css is
    linked directly (opt-in per page), not bundled into main.css. ── */
 
