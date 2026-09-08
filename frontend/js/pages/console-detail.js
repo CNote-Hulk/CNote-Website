@@ -546,7 +546,9 @@ function buildStructuredData(consola, consoleId) {
         '@id': `${url}#product`,
         name: consola.name,
         description: `${consola.name} by ${consola.manufacturer} (${consola.release}) — full specs, hardware, and history on Console Notebook.`,
-        image: `https://consolenotebook.com/${consola.image}`,
+        // Same absolute-URL gotcha as resolveImagePath() above — an admin-uploaded image is
+        // already a full R2 URL, prefixing it with the site origin would double it up.
+        image: /^https?:\/\//i.test(consola.image || '') ? consola.image : `https://consolenotebook.com/${consola.image}`,
         brand: { '@type': 'Brand', name: consola.manufacturer },
         releaseDate: String(consola.release),
         url,

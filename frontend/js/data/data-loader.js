@@ -142,15 +142,25 @@ export function getConsoleIdFromUrl() {
 }
 
 /**
- * Resolve the image path relative to the current page depth
+ * Resolve the image path relative to the current page depth. Bundled console images are stored
+ * as repo-relative paths ("assets/images/consoles/..."), which is what all the relative-prefix
+ * logic below is for — but the admin edit modal's image upload (console-detail.js's
+ * openConsoleEditor(), 2026-09-06) writes a full absolute R2 URL into the same `image` field
+ * instead (same shape as the presign flow used everywhere else on the site). Passed through
+ * that relative-prefixing logic, an absolute URL came out as garbage like
+ * "../../../https://pub-xxx.r2.dev/..." — found 2026-09-08 while porting this editor to the
+ * Android app, not from a report (no console's image had actually been replaced through the
+ * form yet to surface it visibly). Absolute http(s) URLs now pass through unchanged.
  */
 export function resolveImagePath(imagePath) {
+    const raw = String(imagePath || '');
+    if (/^https?:\/\//i.test(raw)) return raw;
     const path = window.location.pathname;
     if (path.includes('/pages/consoles/') || path.includes('\\pages\\consoles\\')) {
-        return '../../../' + imagePath;
+        return '../../../' + raw;
     }
     if (path.includes('/pages/') || path.includes('\\pages\\')) {
-        return '../../' + imagePath;
+        return '../../' + raw;
     }
-    return '/' + String(imagePath || '').replace(/^\/+/, '');
+    return '/' + raw.replace(/^\/+/, '');
 }
