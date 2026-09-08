@@ -4,7 +4,7 @@
  */
 
 import { DOMUtils } from '../utils/dom.js';
-import { I18nModule } from './i18n.js';
+import { I18nModule } from './i18n.js?v=20260908';
 
 export const NavigationModule = {
     init() {

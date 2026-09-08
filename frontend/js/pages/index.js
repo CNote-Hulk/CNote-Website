@@ -3,7 +3,7 @@
  * Renders a small "Top Contributors" leaderboard preview (top 5 by XP).
  */
 import { API_BASE_URL } from '../config.js';
-import { I18nModule } from '../modules/i18n.js';
+import { I18nModule } from '../modules/i18n.js?v=20260908';
 
 function escapeHtml(str) {
     const div = document.createElement('div');

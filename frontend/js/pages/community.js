@@ -4,7 +4,7 @@
  * Vanilla ES module — no frameworks.
  */
 import { AuthModule } from '../modules/auth.js';
-import { I18nModule } from '../modules/i18n.js';
+import { I18nModule } from '../modules/i18n.js?v=20260908';
 import { API_BASE_URL } from '../config.js';
 import { confirmModal } from '../utils/confirm-modal.js';
 import { shareOrCopy } from '../utils/share.js';
