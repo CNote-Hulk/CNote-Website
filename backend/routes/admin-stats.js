@@ -59,10 +59,67 @@ router.get('/stats', async (req, res) => {
     }
 });
 
+// ── GET /api/admin/users ─────────────────────────────────────────────────────
+// Full user directory for the "Users" admin dashboard (Andrei: "a dashboard where
+// you see all users and make them admin or user, and ban/mute — move it all
+// here") — unlike /moderated-users (sanctioned users only) this lists everyone,
+// with search + pagination, and includes role so the dashboard can toggle it.
+router.get('/users', async (req, res) => {
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit, 10) || 25));
+    const offset = (page - 1) * limit;
+    const search = req.query.search ? String(req.query.search).trim().slice(0, 100) : '';
+    try {
+        const where = search ? `WHERE username ILIKE $1 OR email ILIKE $1` : '';
+        const params = search ? [`%${search}%`] : [];
+        const [users, total] = await Promise.all([
+            pool.query(
+                `SELECT id, username, email, avatar, role, is_banned, banned_reason, banned_at, banned_until, muted_until, created_at
+                 FROM users ${where}
+                 ORDER BY created_at DESC
+                 LIMIT ${limit} OFFSET ${offset}`,
+                params
+            ),
+            pool.query(`SELECT COUNT(*)::int AS count FROM users ${where}`, params),
+        ]);
+        res.json({ success: true, users: users.rows, total: total.rows[0].count, page, limit });
+    } catch (err) {
+        console.error('[admin-stats] GET /users error:', err.message || err);
+        res.status(500).json({ success: false, error: 'Internal error.' });
+    }
+});
+
+// ── POST /api/admin/users/:id/role ──────────────────────────────────────────
+// Promote/demote a user between 'admin' and 'user'. An admin can't remove their
+// own admin role here (would lock them out of this exact dashboard) — someone
+// else with admin access has to do it.
+router.post('/users/:id/role', async (req, res) => {
+    const userId = parseInt(req.params.id, 10);
+    if (!userId) return res.status(400).json({ success: false, error: 'Invalid user ID.' });
+    const role = req.body?.role;
+    if (role !== 'admin' && role !== 'user') {
+        return res.status(400).json({ success: false, error: "role must be 'admin' or 'user'." });
+    }
+    if (userId === req.user.id && role !== 'admin') {
+        return res.status(400).json({ success: false, error: "You can't remove your own admin role." });
+    }
+    try {
+        const r = await pool.query('UPDATE users SET role = $1, updated_at = NOW() WHERE id = $2 RETURNING id', [role, userId]);
+        if (!r.rows.length) return res.status(404).json({ success: false, error: 'User not found.' });
+        res.json({ success: true, role });
+    } catch (err) {
+        console.error('[admin-stats] POST role error:', err.message || err);
+        res.status(500).json({ success: false, error: 'Internal error.' });
+    }
+});
+
 // ── GET /api/admin/moderated-users ──────────────────────────────────────────
 // Andrei: "a list where you can see everyone you've banned or muted, so you can
 // lift it if it was a mistake" — everyone currently under an active sanction,
-// independent of which report (if any) led to it.
+// independent of which report (if any) led to it. Superseded in the UI by the
+// unified Users dashboard (which shows/acts on ban+mute state for everyone, not
+// just those currently sanctioned) but left as its own endpoint — cheaper than
+// paging through the full user list just to find who's sanctioned right now.
 router.get('/moderated-users', async (req, res) => {
     try {
         const result = await pool.query(`

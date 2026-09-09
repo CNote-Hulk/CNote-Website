@@ -5,7 +5,7 @@
  */
 import { AuthModule } from '../modules/auth.js';
 import { API_BASE_URL } from '../config.js';
-import { I18nModule } from '../modules/i18n.js?v=20260909e';
+import { I18nModule } from '../modules/i18n.js?v=20260909f';
 import { createDatePicker } from '../utils/date-picker.js';
 
 // Redirect if already logged in

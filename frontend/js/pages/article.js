@@ -3,7 +3,7 @@
  * Admin sees Edit/Delete buttons (reusing the same modal markup as articles.js).
  */
 import { AuthModule } from '../modules/auth.js';
-import { I18nModule } from '../modules/i18n.js?v=20260909e';
+import { I18nModule } from '../modules/i18n.js?v=20260909f';
 import { API_BASE_URL } from '../config.js';
 import { confirmModal } from '../utils/confirm-modal.js';
 

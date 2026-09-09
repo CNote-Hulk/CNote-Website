@@ -7,7 +7,7 @@ import { getConsoleById, getConsoleIdFromUrl, resolveImagePath, invalidateCache 
 import { MODEL_DIRECTORY_GROUPS } from '../data/console-models.js?v=20260909d';
 import { AchievementsModule } from '../modules/achievements.js';
 import { AuthModule } from '../modules/auth.js';
-import { I18nModule } from '../modules/i18n.js?v=20260909e';
+import { I18nModule } from '../modules/i18n.js?v=20260909f';
 import { API_BASE_URL } from '../config.js';
 
 /** Remove leftover Chrome UI elements from page template */

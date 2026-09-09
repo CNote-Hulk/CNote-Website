@@ -20,7 +20,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../../css/main.css?v=20260909c">
     <link rel="stylesheet" href="../../css/components/date-picker.css?v=2">
-    <link rel="stylesheet" href="../../css/components/report-modal.css?v=3">
+    <link rel="stylesheet" href="../../css/components/report-modal.css?v=4">
     <link rel="stylesheet" href="../../css/components/levels.css?v=2">
 </head>
 <body class="has-mbn">
@@ -97,6 +97,10 @@
                     <button class="profile-tab sidebar-link" data-tab="reports" type="button">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
                         <span data-i18n="settings_tab_reports">Rapoartele mele</span>
+                    </button>
+                    <button class="profile-tab sidebar-link admin-only-tab" data-tab="admin-users" type="button" hidden>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        <span data-i18n="admin_users_tab">Admin Users</span>
                     </button>
                     <button class="profile-tab sidebar-link admin-only-tab" data-tab="admin-reports" type="button" hidden>
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
@@ -526,6 +530,26 @@
                     </div>
                 </div>
 
+                <!-- Admin Users Panel — visible only to admins. Full user directory: search,
+                     promote/demote admin role, ban/mute/unban/unmute directly. Supersedes the
+                     old "🔒 Banned & Muted" sub-view that used to live inside Admin Reports
+                     (Andrei: "move it all here") — that toggle + its container were removed. -->
+                <div class="profile-panel" id="panel-admin-users" data-panel="admin-users">
+                    <div class="settings-row settings-row--meta-only">
+                        <div class="settings-row__meta">
+                            <div class="settings-row__title" data-i18n="admin_users_title">👥 Admin — Users</div>
+                            <div class="settings-row__desc" data-i18n="admin_users_desc">All registered users. Search, promote or demote admins, and ban or mute directly.</div>
+                        </div>
+                    </div>
+                    <div class="auth-field admin-users-search">
+                        <input type="text" id="admin-users-search-input" data-i18n="admin_users_search_placeholder" data-i18n-attr="placeholder" placeholder="Search by username or email…">
+                    </div>
+                    <div id="admin-users-container">
+                        <p class="my-reports-empty" data-i18n="admin_users_loading">Se încarcă…</p>
+                    </div>
+                    <button type="button" class="admin-filter-btn" id="admin-users-load-more-btn" data-i18n="admin_users_load_more" hidden>Load more</button>
+                </div>
+
                 <!-- Admin Reports Panel — visible only to admins -->
                 <div class="profile-panel" id="panel-admin-reports" data-panel="admin-reports">
                     <div class="settings-row settings-row--meta-only">
@@ -540,15 +564,10 @@
                         <button class="admin-filter-btn" data-filter="reviewed">Reviewed</button>
                         <button class="admin-filter-btn" data-filter="resolved">Resolved</button>
                         <button class="admin-filter-btn" data-filter="dismissed">Dismissed</button>
-                        <button class="admin-filter-btn admin-filter-btn--moderation" id="admin-view-moderated-btn" type="button">🔒 Banned &amp; Muted</button>
                     </div>
                     <div id="admin-reports-container">
                         <p class="my-reports-empty">Se încarcă…</p>
                     </div>
-                    <!-- Toggled in by #admin-view-moderated-btn — everyone currently banned or
-                         muted, independent of which report (if any) led to it, with an
-                         Unban/Unmute action to lift a mistake. -->
-                    <div id="admin-moderated-container" hidden></div>
                 </div>
 
                 <!-- Admin Analytics Panel — visible only to admins -->
@@ -608,7 +627,7 @@
     <script src="../../js/data/city-name-overrides.js"></script>
     <script src="../../js/modules/gamification-data.js?v=2"></script>
     <script type="module" src="../../js/main.js?v=20260909"></script>
-    <script type="module" src="../../js/pages/profile.js?v=2"></script>
+    <script type="module" src="../../js/pages/profile.js?v=3"></script>
     <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
     <script src="../../js/fallback/search-profile.js"></script>
 
@@ -626,6 +645,10 @@
             <button type="button" class="mbn-dd-item" data-mbn-tab="reports">
                 <span class="mbn-dd-icon">🚩</span>
                 <span data-i18n="settings_tab_reports">My Reports</span>
+            </button>
+            <button type="button" class="mbn-dd-item admin-only-tab" data-mbn-tab="admin-users" hidden>
+                <span class="mbn-dd-icon">👥</span>
+                <span data-i18n="admin_users_tab">Admin Users</span>
             </button>
             <button type="button" class="mbn-dd-item admin-only-tab" data-mbn-tab="admin-reports" hidden>
                 <span class="mbn-dd-icon">🛡</span>

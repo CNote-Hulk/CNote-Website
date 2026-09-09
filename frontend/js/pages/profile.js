@@ -8,7 +8,7 @@ import { AchievementsModule } from '../../js/modules/achievements.js';
 import { SearchModule } from '../../js/modules/search.js';
 import { API_BASE_URL } from '../../js/config.js';
 import { confirmModal, promptModal } from '../../js/utils/confirm-modal.js';
-import { I18nModule } from '../../js/modules/i18n.js?v=20260909e';
+import { I18nModule } from '../../js/modules/i18n.js?v=20260909f';
 import { createDatePicker } from '../../js/utils/date-picker.js';
 import { openAvatarCropper } from '../../js/modules/avatar-cropper.js';
 
@@ -67,6 +67,7 @@ function initSettings() {
     // ═══ TAB SYSTEM ═══
     let achievementsLoaded = false;
     let reportsLoaded = false;
+    let adminUsersLoaded = false;
     let adminReportsLoaded = false;
     let adminAnalyticsLoaded = false;
     const activateTab = (tabKey, syncHash = false) => {
@@ -88,6 +89,11 @@ function initSettings() {
         if (tabKey === 'reports' && !reportsLoaded) {
             reportsLoaded = true;
             loadMyReports().catch(err => console.error('[reports]', err));
+        }
+
+        if (tabKey === 'admin-users' && !adminUsersLoaded) {
+            adminUsersLoaded = true;
+            loadAdminUsers().catch(err => console.error('[admin-users]', err));
         }
 
         if (tabKey === 'admin-reports' && !adminReportsLoaded) {
@@ -1818,101 +1824,7 @@ async function loadAdminReports() {
     }
 
     document.querySelectorAll('.admin-filter-btn[data-filter]').forEach(btn => {
-        btn.addEventListener('click', () => {
-            showModerated(false);
-            applyFilter(btn.dataset.filter);
-        });
-    });
-
-    // ── "🔒 Banned & Muted" toggle — Andrei: "add a list where you can see everyone
-    // you've banned or muted, so you can lift it if it was a mistake". Swaps the reports
-    // list out for a flat list of currently-sanctioned users, independent of which
-    // report (if any) led to the sanction — lazy-loaded on first toggle.
-    const moderatedContainer = document.getElementById('admin-moderated-container');
-    const moderatedBtn = document.getElementById('admin-view-moderated-btn');
-    let moderatedLoaded = false;
-
-    function showModerated(show) {
-        if (moderatedContainer) moderatedContainer.hidden = !show;
-        if (container) container.hidden = show;
-        document.querySelector('.admin-reports-filters')?.querySelectorAll('.admin-filter-btn[data-filter]')
-            .forEach(b => b.classList.toggle('active', !show && b.dataset.filter === activeFilter));
-        moderatedBtn?.classList.toggle('active', show);
-    }
-
-    async function loadModeratedUsers() {
-        if (!moderatedContainer) return;
-        moderatedContainer.innerHTML = `<p class="my-reports-empty">Loading…</p>`;
-        try {
-            const resp = await fetch(`${API_BASE_URL}/admin/moderated-users`, { headers, credentials: 'include' });
-            const data = await resp.json().catch(() => ({}));
-            if (!resp.ok || !data.success) throw new Error(data.error || 'Error');
-            renderModeratedUsers(data.users || []);
-        } catch (err) {
-            console.error('[loadModeratedUsers]', err);
-            moderatedContainer.innerHTML = `<p class="my-reports-empty">Failed to load.</p>`;
-        }
-    }
-
-    function renderModeratedUsers(users) {
-        if (!users.length) {
-            moderatedContainer.innerHTML = `<p class="my-reports-empty">No one is currently banned or muted.</p>`;
-            return;
-        }
-        const rows = users.map(u => {
-            const banned = u.is_banned;
-            const muted = !banned && u.muted_until;
-            const untilLabel = banned
-                ? (u.banned_until ? `until ${new Date(u.banned_until).toLocaleString('ro-RO')}` : 'permanently')
-                : (muted ? `until ${new Date(u.muted_until).toLocaleString('ro-RO')}` : '');
-            const reasonLine = u.banned_reason ? `<div class="ar-description">"${escapeHtml(u.banned_reason)}"</div>` : '';
-            return `<div class="ar-card" data-user-id="${u.id}">
-                <div class="ar-card__header">
-                    <div class="ar-card__type">${banned ? '🚫 Banned' : '🔇 Muted'} ${escapeHtml(untilLabel)}</div>
-                </div>
-                <div class="ar-card__content">
-                    <div class="ar-card__label">@${escapeHtml(u.username)}</div>
-                    ${reasonLine}
-                </div>
-                <div class="ar-card__actions">
-                    <button class="ar-btn ar-btn--reopen" data-user-id="${u.id}" data-lift="${banned ? 'unban' : 'unmute'}">
-                        ↩ ${banned ? 'Unban' : 'Unmute'}
-                    </button>
-                </div>
-            </div>`;
-        }).join('');
-        moderatedContainer.innerHTML = `<div class="ar-card-list">${rows}</div>`;
-
-        moderatedContainer.querySelectorAll('.ar-btn[data-lift]').forEach(btn => {
-            btn.addEventListener('click', async () => {
-                const card = btn.closest('.ar-card');
-                card.classList.add('ar-card--loading');
-                try {
-                    const res = await fetch(`${API_BASE_URL}/admin/users/${btn.dataset.userId}/${btn.dataset.lift}`, {
-                        method: 'POST',
-                        headers: { ...headers, 'Content-Type': 'application/json' },
-                        credentials: 'include',
-                    });
-                    const data = await res.json();
-                    if (data.success) {
-                        card.remove();
-                    } else {
-                        card.classList.remove('ar-card--loading');
-                        alert('Error: ' + (data.error || 'Unknown error'));
-                    }
-                } catch {
-                    card.classList.remove('ar-card--loading');
-                }
-            });
-        });
-    }
-
-    moderatedBtn?.addEventListener('click', () => {
-        showModerated(true);
-        if (!moderatedLoaded) {
-            moderatedLoaded = true;
-            loadModeratedUsers();
-        }
+        btn.addEventListener('click', () => applyFilter(btn.dataset.filter));
     });
 
     container.innerHTML = `<p class="my-reports-empty">Loading…</p>`;
@@ -1926,6 +1838,266 @@ async function loadAdminReports() {
         console.error('[loadAdminReports]', err);
         container.innerHTML = `<p class="my-reports-empty">Failed to load reports.</p>`;
     }
+}
+
+/**
+ * loadAdminUsers
+ * Full user directory for the "Admin Users" dashboard tab — GET /api/admin/users
+ * (paginated + searchable), with inline role toggle (admin/user) and ban/mute/
+ * unban/unmute. Andrei: "a dashboard where you see all users and make them admin
+ * or user, and the ban/mute etc, move it all here" — supersedes the old
+ * "🔒 Banned & Muted" sub-view that used to live inside Admin Reports (that toggle
+ * button + its list are gone; this tab shows/acts on ban+mute state for everyone,
+ * not just those currently sanctioned).
+ */
+async function loadAdminUsers() {
+    const container = document.getElementById('admin-users-container');
+    const searchInput = document.getElementById('admin-users-search-input');
+    const loadMoreBtn = document.getElementById('admin-users-load-more-btn');
+    if (!container) return;
+
+    const token = localStorage.getItem('cn_token') || '';
+    const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+    const currentUserId = user?.id;
+    const LIMIT = 25;
+
+    let rows = [];
+    let page = 1;
+    let total = 0;
+    let search = '';
+    let searchDebounce = null;
+
+    function untilLabel(u) {
+        if (u.is_banned) return u.banned_until ? `until ${new Date(u.banned_until).toLocaleString('ro-RO')}` : 'permanently';
+        if (u.muted_until && new Date(u.muted_until) > new Date()) return `until ${new Date(u.muted_until).toLocaleString('ro-RO')}`;
+        return '';
+    }
+
+    function setLoadMoreVisibility() {
+        if (loadMoreBtn) loadMoreBtn.hidden = rows.length >= total;
+    }
+
+    function renderRows() {
+        if (!rows.length) {
+            container.innerHTML = `<p class="my-reports-empty">${t('admin_users_empty')}</p>`;
+            setLoadMoreVisibility();
+            return;
+        }
+        const cards = rows.map(u => {
+            const isAdmin = u.role === 'admin';
+            const isSelf = currentUserId != null && String(u.id) === String(currentUserId);
+            const isMuted = !!(u.muted_until && new Date(u.muted_until) > new Date());
+            const badges = [
+                isAdmin ? `<span class="au-badge au-badge--admin">${t('admin_users_role_admin_badge')}</span>` : '',
+                isSelf ? `<span class="au-badge au-badge--you">${t('admin_users_you_badge')}</span>` : '',
+                u.is_banned ? `<span class="au-badge au-badge--banned">${t('admin_users_banned_badge')} · ${escapeHtml(untilLabel(u))}</span>` : '',
+                (!u.is_banned && isMuted) ? `<span class="au-badge au-badge--muted">${t('admin_users_muted_badge')} · ${escapeHtml(untilLabel(u))}</span>` : '',
+            ].filter(Boolean).join(' ');
+            const created = u.created_at
+                ? new Date(u.created_at).toLocaleDateString('ro-RO', { day: '2-digit', month: '2-digit', year: 'numeric' })
+                : '';
+            const reasonLine = (u.is_banned && u.banned_reason) ? `<div class="ar-description">"${escapeHtml(u.banned_reason)}"</div>` : '';
+
+            const roleBtn = isSelf
+                ? `<button class="ar-btn ar-btn--role" disabled>${t('admin_users_remove_admin_btn')}</button>`
+                : `<button class="ar-btn ar-btn--role" data-user-id="${u.id}" data-role-action="${isAdmin ? 'user' : 'admin'}">${isAdmin ? t('admin_users_remove_admin_btn') : t('admin_users_make_admin_btn')}</button>`;
+
+            const banActions = u.is_banned
+                ? `<button class="ar-btn ar-btn--reopen" data-user-id="${u.id}" data-lift="unban">↩ ${t('admin_users_unban_btn')}</button>`
+                : `<button class="ar-btn ar-btn--ban" data-user-id="${u.id}" data-ban-toggle="1">🚫 ${t('admin_ban_author_btn')}</button>`;
+
+            const muteActions = isMuted
+                ? `<button class="ar-btn ar-btn--reopen" data-user-id="${u.id}" data-lift="unmute">↩ ${t('admin_users_unmute_btn')}</button>`
+                : (u.is_banned ? '' : `<button class="ar-btn ar-btn--mute" data-user-id="${u.id}" data-mute-action="1">🔇 ${t('admin_mute_author_btn')}</button>`);
+
+            const modActions = !u.is_banned
+                ? `<div class="ar-card__mod-actions" hidden data-mod-for="${u.id}">
+                    <button class="ar-btn ar-btn--ban" data-user-id="${u.id}" data-ban-action="permanent">🚫 ${t('admin_ban_permanent_btn')}</button>
+                    <button class="ar-btn ar-btn--ban" data-user-id="${u.id}" data-ban-action="temp">⏳ ${t('admin_ban_temp_btn')}</button>
+                </div>`
+                : '';
+
+            return `<div class="ar-card" data-user-row="${u.id}">
+                <div class="ar-card__header">
+                    <div class="ar-card__type">${created}</div>
+                    <div>${badges}</div>
+                </div>
+                <div class="ar-card__content">
+                    <div class="ar-card__label">@${escapeHtml(u.username)}</div>
+                    <div class="ar-card__meta"><span>${escapeHtml(u.email || '')}</span></div>
+                    ${reasonLine}
+                </div>
+                <div class="ar-card__actions">${roleBtn}${banActions}${muteActions}</div>
+                ${modActions}
+            </div>`;
+        }).join('');
+        container.innerHTML = `<div class="ar-card-list">${cards}</div>`;
+        wireRowActions();
+        setLoadMoreVisibility();
+    }
+
+    function wireRowActions() {
+        container.querySelectorAll('.ar-btn[data-role-action]').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const newRole = btn.dataset.roleAction;
+                const confirmMsg = newRole === 'admin' ? t('admin_users_make_admin_confirm') : t('admin_users_remove_admin_confirm');
+                const okLabel = newRole === 'admin' ? t('admin_users_make_admin_btn') : t('admin_users_remove_admin_btn');
+                const ok = await confirmModal(confirmMsg, { ok: okLabel });
+                if (!ok) return;
+                await setRole(btn.dataset.userId, newRole, btn.closest('.ar-card'));
+            });
+        });
+        container.querySelectorAll('.ar-btn[data-ban-toggle]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const panel = container.querySelector(`.ar-card__mod-actions[data-mod-for="${btn.dataset.userId}"]`);
+                if (panel) panel.hidden = !panel.hidden;
+            });
+        });
+        container.querySelectorAll('.ar-btn[data-ban-action]').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const card = btn.closest('.ar-card');
+                if (btn.dataset.banAction === 'permanent') {
+                    const ok = await confirmModal(t('admin_ban_confirm'), { ok: t('admin_ban_confirm_ok') });
+                    if (!ok) return;
+                    await banUser(btn.dataset.userId, null, card);
+                } else {
+                    const days = parseInt(await promptModal(t('admin_ban_temp_prompt'), { defaultValue: 7 }), 10);
+                    if (!days || days <= 0) return;
+                    const ok = await confirmModal(t('admin_ban_confirm'), { ok: t('admin_ban_confirm_ok') });
+                    if (!ok) return;
+                    await banUser(btn.dataset.userId, days * 24, card);
+                }
+            });
+        });
+        container.querySelectorAll('.ar-btn[data-mute-action]').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const hours = parseInt(await promptModal(t('admin_mute_prompt'), { defaultValue: 72 }), 10);
+                if (!hours || hours <= 0) return;
+                await muteUser(btn.dataset.userId, hours, btn.closest('.ar-card'));
+            });
+        });
+        container.querySelectorAll('.ar-btn[data-lift]').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                await liftSanction(btn.dataset.userId, btn.dataset.lift, btn.closest('.ar-card'));
+            });
+        });
+    }
+
+    function patchRow(userId, patch) {
+        const idx = rows.findIndex(u => String(u.id) === String(userId));
+        if (idx !== -1) rows[idx] = { ...rows[idx], ...patch };
+        renderRows();
+    }
+
+    async function setRole(userId, role, card) {
+        card?.classList.add('ar-card--loading');
+        try {
+            const res = await fetch(`${API_BASE_URL}/admin/users/${userId}/role`, {
+                method: 'POST', headers: { ...headers, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ role }), credentials: 'include',
+            });
+            const data = await res.json();
+            if (data.success) {
+                patchRow(userId, { role });
+            } else {
+                alert(data.error || t('admin_users_role_error'));
+                card?.classList.remove('ar-card--loading');
+            }
+        } catch {
+            alert(t('admin_users_role_error'));
+            card?.classList.remove('ar-card--loading');
+        }
+    }
+
+    async function banUser(userId, hours, card) {
+        card?.classList.add('ar-card--loading');
+        try {
+            const res = await fetch(`${API_BASE_URL}/admin/users/${userId}/ban`, {
+                method: 'POST', headers: { ...headers, 'Content-Type': 'application/json' },
+                body: JSON.stringify(hours ? { hours } : {}), credentials: 'include',
+            });
+            const data = await res.json();
+            if (data.success) {
+                const bannedUntil = hours ? new Date(Date.now() + hours * 3600 * 1000).toISOString() : null;
+                patchRow(userId, { is_banned: true, banned_until: bannedUntil, muted_until: null });
+            } else {
+                alert(data.error || 'Error');
+                card?.classList.remove('ar-card--loading');
+            }
+        } catch {
+            card?.classList.remove('ar-card--loading');
+        }
+    }
+
+    async function muteUser(userId, hours, card) {
+        card?.classList.add('ar-card--loading');
+        try {
+            const res = await fetch(`${API_BASE_URL}/admin/users/${userId}/mute`, {
+                method: 'POST', headers: { ...headers, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ hours }), credentials: 'include',
+            });
+            const data = await res.json();
+            if (data.success) {
+                patchRow(userId, { muted_until: new Date(Date.now() + hours * 3600 * 1000).toISOString() });
+            } else {
+                alert(data.error || 'Error');
+                card?.classList.remove('ar-card--loading');
+            }
+        } catch {
+            card?.classList.remove('ar-card--loading');
+        }
+    }
+
+    async function liftSanction(userId, kind, card) {
+        card?.classList.add('ar-card--loading');
+        try {
+            const res = await fetch(`${API_BASE_URL}/admin/users/${userId}/${kind}`, {
+                method: 'POST', headers: { ...headers, 'Content-Type': 'application/json' },
+                credentials: 'include',
+            });
+            const data = await res.json();
+            if (data.success) {
+                const patch = kind === 'unban'
+                    ? { is_banned: false, banned_reason: null, banned_until: null }
+                    : { muted_until: null };
+                patchRow(userId, patch);
+            } else {
+                alert(data.error || 'Error');
+                card?.classList.remove('ar-card--loading');
+            }
+        } catch {
+            card?.classList.remove('ar-card--loading');
+        }
+    }
+
+    async function fetchPage(reset) {
+        if (reset) { page = 1; rows = []; }
+        container.innerHTML = `<p class="my-reports-empty">${t('admin_users_loading')}</p>`;
+        try {
+            const params = new URLSearchParams({ page: String(page), limit: String(LIMIT) });
+            if (search) params.set('search', search);
+            const resp = await fetch(`${API_BASE_URL}/admin/users?${params}`, { headers, credentials: 'include' });
+            const data = await resp.json().catch(() => ({}));
+            if (!resp.ok || !data.success) throw new Error(data.error || 'Error');
+            rows = reset ? (data.users || []) : rows.concat(data.users || []);
+            total = data.total || 0;
+            renderRows();
+        } catch (err) {
+            console.error('[loadAdminUsers]', err);
+            container.innerHTML = `<p class="my-reports-empty">Failed to load.</p>`;
+        }
+    }
+
+    loadMoreBtn?.addEventListener('click', () => { page += 1; fetchPage(false); });
+    searchInput?.addEventListener('input', () => {
+        clearTimeout(searchDebounce);
+        searchDebounce = setTimeout(() => {
+            search = searchInput.value.trim();
+            fetchPage(true);
+        }, 350);
+    });
+
+    await fetchPage(true);
 }
 
 async function loadAdminAnalytics() {
