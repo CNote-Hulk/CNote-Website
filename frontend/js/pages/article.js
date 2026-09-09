@@ -75,6 +75,12 @@ function renderArticle() {
     document.querySelector('meta[property="og:title"]')?.setAttribute('content', `${article.title} — Console Notebook`);
     document.querySelector('meta[property="og:description"]')?.setAttribute('content', article.excerpt || article.title);
     if (article.cover_image_url) document.querySelector('meta[property="og:image"]')?.setAttribute('content', article.cover_image_url);
+    // Canonical/og:url were missing entirely (static fallback pointed at the bare template
+    // URL with no ?slug=, same class of gap as console-model.html/course.html/lesson.html —
+    // fixed here alongside the audit that found it).
+    const articleUrl = `${location.origin}${location.pathname}?slug=${encodeURIComponent(slug)}`;
+    document.querySelector('link[rel="canonical"]')?.setAttribute('href', articleUrl);
+    document.querySelector('meta[property="og:url"]')?.setAttribute('content', articleUrl);
 
     const cover = document.getElementById('article-cover');
     if (article.cover_image_url) {

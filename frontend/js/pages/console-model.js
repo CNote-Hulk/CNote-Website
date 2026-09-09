@@ -806,6 +806,13 @@ async function render() {
     const desc = `${currentModel.console} model ${currentModel.code}. ${currentModel.note || ''}`;
     const descTag = document.querySelector('meta[name="description"]');
     if (descTag) descTag.setAttribute('content', desc);
+    // Canonical/og tags were entirely static (pointing at the bare template URL, no ?code=)
+    // — found + fixed in the same pass as article.html/course.html/lesson.html.
+    const modelUrl = `${location.origin}${location.pathname}?code=${encodeURIComponent(currentModel.code)}`;
+    document.querySelector('link[rel="canonical"]')?.setAttribute('href', modelUrl);
+    document.querySelector('meta[property="og:url"]')?.setAttribute('content', modelUrl);
+    document.querySelector('meta[property="og:title"]')?.setAttribute('content', document.title);
+    document.querySelector('meta[property="og:description"]')?.setAttribute('content', desc);
 
     document.getElementById('model-plate-label').textContent = I18nModule.t('care_plate_label');
     document.getElementById('model-plate-code').textContent = currentModel.code;

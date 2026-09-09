@@ -150,6 +150,17 @@ function renderHeader(course, progress) {
     document.querySelector('.crs-title').textContent = course.title;
     document.querySelector('.crs-description').textContent = course.description || '';
     document.querySelector('.crs-badge').textContent = course.difficulty || '';
+
+    // Canonical/og tags were entirely static (bare template URL, no ?slug=, and meta
+    // description was never updated per-course at all) — found + fixed alongside the same
+    // gap on article.html/console-model.html/lesson.html.
+    const desc = course.description || course.title;
+    document.querySelector('meta[name="description"]')?.setAttribute('content', desc);
+    document.querySelector('meta[property="og:title"]')?.setAttribute('content', document.title);
+    document.querySelector('meta[property="og:description"]')?.setAttribute('content', desc);
+    const courseUrl = `${location.origin}${location.pathname}?slug=${encodeURIComponent(slug)}`;
+    document.querySelector('link[rel="canonical"]')?.setAttribute('href', courseUrl);
+    document.querySelector('meta[property="og:url"]')?.setAttribute('content', courseUrl);
 }
 
 function renderHeroStats(course, progress) {

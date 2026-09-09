@@ -84,7 +84,19 @@ function renderTopbar(lesson, course) {
 
 function renderLesson(lesson, course, lsnIdx) {
     document.title = `${lesson.title} — Console Notebook`;
-    
+
+    // Canonical/og tags were entirely static (bare template URL, no ?id=) — found + fixed
+    // alongside the same gap on article.html/console-model.html/course.html. content_html
+    // has no dedicated excerpt field, so strip tags for a plain-text description fallback.
+    const plainText = (lesson.content_html || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+    const desc = plainText ? plainText.slice(0, 200) : lesson.title;
+    document.querySelector('meta[name="description"]')?.setAttribute('content', desc);
+    document.querySelector('meta[property="og:title"]')?.setAttribute('content', document.title);
+    document.querySelector('meta[property="og:description"]')?.setAttribute('content', desc);
+    const lessonUrl = `${location.origin}${location.pathname}?id=${encodeURIComponent(lessonId)}${courseSlug ? `&slug=${encodeURIComponent(courseSlug)}` : ''}`;
+    document.querySelector('link[rel="canonical"]')?.setAttribute('href', lessonUrl);
+    document.querySelector('meta[property="og:url"]')?.setAttribute('content', lessonUrl);
+
     // Build title with module and lesson number
     let titleText = lesson.title;
     if (course && lsnIdx !== undefined && lsnIdx >= 0) {

@@ -331,6 +331,28 @@ const t = key => I18nModule.t(key);
                 // Update page title
                 document.title = `${profile.username} — Console Notebook`;
 
+                // Canonical/og tags were entirely static (bare template URL, no ?username=,
+                // and no per-profile title/image at all) — the page already has a "share
+                // profile" button (shareOrCopy in utils/share.js) that was sharing a link
+                // with zero preview, found + fixed alongside the same gap on article.html/
+                // console-model.html/course.html/lesson.html.
+                const bioDesc = (profile.bio || '').trim() || `${profile.username}'s profile on Console Notebook.`;
+                document.querySelector('meta[name="description"]')?.setAttribute('content', bioDesc);
+                document.querySelector('meta[property="og:title"]')?.setAttribute('content', document.title);
+                document.querySelector('meta[property="og:description"]')?.setAttribute('content', bioDesc);
+                const profileAvatar = resolveAvatar(profile);
+                if (profileAvatar && profileAvatar.length > 10) {
+                    document.querySelector('meta[property="og:image"]')?.setAttribute('content', profileAvatar);
+                }
+                // Clean path form (/user/:username), not the raw template file — that's the
+                // actual public URL server.js serves this page under (see server.js's special
+                // /user/:username route), and robots.txt only disallows the raw template path
+                // (/html/pages/user-profile.html), not this one, so this canonical is what
+                // search engines should actually index the profile under.
+                const profileUrl = `${location.origin}/user/${encodeURIComponent(username)}`;
+                document.querySelector('link[rel="canonical"]')?.setAttribute('href', profileUrl);
+                document.querySelector('meta[property="og:url"]')?.setAttribute('content', profileUrl);
+
                 // Show header
                 const headerEl = document.getElementById('user-profile-header');
                 headerEl.hidden = false;
