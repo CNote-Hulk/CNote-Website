@@ -591,6 +591,21 @@
     color: var(--text-light);
 }
 
+/* Shown instead of .tutorial-select when there's only one real value to
+   show (e.g. a PS3 board only ever has one flash type) — same box shape,
+   no dropdown arrow/cursor, since there's nothing to pick. */
+.tutorial-static-value {
+    display: inline-block;
+    padding: 0.7rem 1rem;
+    background: rgba(var(--dark-rgb), 0.3);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    color: var(--text-light);
+    font-size: 0.92rem;
+    font-family: inherit;
+    font-weight: 400;
+}
+
 .warning-block {
     background: rgba(var(--accent-rgb), 0.06);
     border: 1px solid rgba(var(--accent-rgb), 0.18);

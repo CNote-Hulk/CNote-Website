@@ -435,13 +435,27 @@ function createModTutorialSection() {
 
     function renderSelectors() {
         const flashSelect = el('mod-flash-select');
+        const flashStatic = el('mod-flash-static');
         const versionSelect = el('mod-version-select');
 
         const flashes = flashTypes();
         if (!flashes.includes(selectedFlash)) selectedFlash = flashes[0];
-        flashSelect.innerHTML = flashes
-            .map(f => `<option value="${escapeHtml(f)}"${f === selectedFlash ? ' selected' : ''}>${escapeHtml(f)}</option>`)
-            .join('');
+        // A real board only ever has ONE flash type (flashTypesForModel()
+        // already narrows this per model code) — a <select> with a single,
+        // unchangeable option reads as broken UI ("what am I picking?"), so
+        // it only renders as a dropdown once there's genuinely more than one
+        // choice; a single flash type shows as plain static text instead.
+        if (flashes.length <= 1) {
+            flashSelect.hidden = true;
+            flashStatic.hidden = false;
+            flashStatic.textContent = flashes[0] || '';
+        } else {
+            flashSelect.hidden = false;
+            flashStatic.hidden = true;
+            flashSelect.innerHTML = flashes
+                .map(f => `<option value="${escapeHtml(f)}"${f === selectedFlash ? ' selected' : ''}>${escapeHtml(f)}</option>`)
+                .join('');
+        }
 
         const versions = versionsForFlash(selectedFlash);
         if (!versions.includes(selectedVersion)) selectedVersion = versions[0];
