@@ -125,9 +125,15 @@
    size with an ellipsis for a note that doesn't fit, so cards stay a
    uniform height regardless of note length. The full text is still shown
    unclamped on the model detail page's large plate (.model-plate--large,
-   which only holds the console name there anyway, no note). */
+   which only holds the console name there anyway, no note).
+   No explicit max-height here (2026-09-09 fix) — an exact `2.8em` (== 2 ×
+   this element's own 1.4 line-height) left zero slack for the ellipsis
+   glyph/sub-pixel rounding, so `overflow: hidden` was hard-clipping the
+   text right at the box edge before the line-clamp ellipsis logic could
+   render "…" — cards showed an abrupt cutoff instead. -webkit-line-clamp
+   already sizes the box to exactly 2 lines on its own; the redundant
+   max-height was the bug, not a safety net. */
 .model-plate:not(.model-plate--large) .model-plate__meta {
-    max-height: 2.8em;
     overflow: hidden;
     display: -webkit-box;
     -webkit-line-clamp: 2;

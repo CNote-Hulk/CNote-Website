@@ -651,7 +651,11 @@
 }
 
 [data-theme="dark"] .profile-page {
-    background: radial-gradient(ellipse at 20% 0%, #1c1916 0%, #050403 60%);
+    /* transparent (2026-09-09) — this exact glow is now the shared, fixed
+       [data-theme="dark"] body::before rule in reset.css, so every dark
+       page gets it, not just this one; painting it again here would just
+       double it up. */
+    background: transparent;
 }
 
 [data-theme="light"] .profile-page {
@@ -2973,7 +2977,10 @@ a.chat-message__username:hover {
     --p-faint: #1c1814;
     --p-card: #1c1916;
     --p-sidebar: #0f0d0b;
-    background: radial-gradient(ellipse at 20% 0%, #1c1916 0%, #050403 60%);
+    /* transparent (2026-09-09) — see the other [data-theme="dark"]
+       .profile-page rule above; this exact glow now lives in reset.css's
+       body::before, fixed and site-wide. */
+    background: transparent;
 }
 
 [data-theme="light"] .profile-page {
