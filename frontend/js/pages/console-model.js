@@ -1,4 +1,4 @@
-import { MOD_OPTIONS, flashTypesForModel, loadModels, invalidateModelsCache } from '../data/console-models.js?v=20260909c';
+import { MOD_OPTIONS, flashTypesForModel, loadModels, invalidateModelsCache } from '../data/console-models.js?v=20260909d';
 import { I18nModule } from '../modules/i18n.js?v=20260909e';
 import { AuthModule } from '../modules/auth.js';
 import { API_BASE_URL } from '../config.js';
@@ -413,6 +413,33 @@ const MOD_FLASH_FIELD_LABEL_OVERRIDES = {
     'Xbox 360 S': 'mod_board_revision_label',
     'Xbox 360': 'mod_method_label',
     'Xbox (original)': 'mod_method_label',
+    'PS1': 'mod_method_label',
+    'PSone': 'mod_method_label',
+    'PS Vita': 'mod_method_label',
+    'PS Vita Slim': 'mod_method_label',
+    'PS4': 'mod_method_label',
+    'PS4 Slim': 'mod_method_label',
+    'PS4 Pro': 'mod_method_label',
+    'PS5': 'mod_method_label',
+    'PS5 Slim': 'mod_method_label',
+    'PS5 Pro': 'mod_method_label',
+    'Switch': 'mod_method_label',
+    'Switch Lite': 'mod_method_label',
+    'Switch OLED': 'mod_method_label',
+    'GameCube': 'mod_method_label',
+    'Wii U': 'mod_method_label',
+    'Wii': 'mod_method_label',
+    'Wii Mini': 'mod_method_label',
+    'Nintendo DS': 'mod_method_label',
+    'Nintendo DS Lite': 'mod_method_label',
+    'Nintendo DSi': 'mod_method_label',
+    'Nintendo DSi XL': 'mod_method_label',
+    'Nintendo 3DS': 'mod_method_label',
+    'Nintendo 3DS XL': 'mod_method_label',
+    'Nintendo 2DS': 'mod_method_label',
+    'New Nintendo 3DS': 'mod_method_label',
+    'New Nintendo 3DS XL': 'mod_method_label',
+    'New Nintendo 2DS XL': 'mod_method_label',
 };
 
 function createModTutorialSection() {

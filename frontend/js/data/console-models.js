@@ -80,6 +80,80 @@ export const MOD_OPTIONS = {
     // every revision including v1.6. Source: ConsoleMods Wiki TSOP Flashing
     // page + community consensus (quade.co TSOP guide), fetched 2026-09-09.
     'Xbox (original)': { flashTypes: ['Softmod', 'Modchip', 'TSOP Flash'], firmwareVersions: ['Any'] },
+    // PS1: swap trick (no chip, just timing a disc swap past the boot-time
+    // media check) works on every board, though later boards added a SECOND
+    // check requiring a double-swap — that nuance belongs in the guide text
+    // itself, not this menu. Modchip always works too. Source: ConsoleMods
+    // Wiki PS1:Modchips + community consensus, fetched 2026-09-09.
+    'PS1': { flashTypes: ['Modchip', 'Swap Trick'], firmwareVersions: ['Any'] },
+    'PSone': { flashTypes: ['Modchip', 'Swap Trick'], firmwareVersions: ['Any'] },
+    // PS Vita: always software, no modchip scene ever existed for it — the
+    // exploit chain depends entirely on what firmware the unit is ON, so
+    // 'Software' is the only flash-type (renders as static text) and the
+    // firmware versions ARE the real menu. Source: vita.hacks.guide FAQ +
+    // TheOfficialFloW/h-encore, fetched 2026-09-09.
+    'PS Vita': { flashTypes: ['Software'], firmwareVersions: ['3.60', '3.65', '3.67', '3.68', '3.69', '3.70', '3.71', '3.72', '3.73', '3.74'] },
+    'PS Vita Slim': { flashTypes: ['Software'], firmwareVersions: ['3.60', '3.65', '3.67', '3.68', '3.69', '3.70', '3.71', '3.72', '3.73', '3.74'] },
+    // PS4/PS5: same story as Vita — no modchip scene, purely firmware-version
+    // gated, and it's a MOVING TARGET (new kernel exploits keep raising the
+    // ceiling) — these lists are only as current as the fetch date below and
+    // WILL go stale; re-verify before trusting an old entry here as gospel.
+    // Source: consolemods.org PS4:Standard_Jailbreak + community trackers
+    // (senumy.com, ps4home.com), fetched 2026-09-09 — real firmware ceiling
+    // at that date was 12.52 via HenLoader LP1/Lapse+Poops.
+    'PS4': { flashTypes: ['Software'], firmwareVersions: ['5.05', '9.00', '11.00', '12.50-12.52'] },
+    'PS4 Slim': { flashTypes: ['Software'], firmwareVersions: ['5.05', '9.00', '11.00', '12.50-12.52'] },
+    'PS4 Pro': { flashTypes: ['Software'], firmwareVersions: ['5.05', '9.00', '11.00', '12.50-12.52'] },
+    // PS5: fetched 2026-09-09 — same moving-target caveat as PS4. etaHEN full
+    // CFW is most stable ≤4.51, partial support up to 5.50; BD-JB (usermode
+    // only, not a full jailbreak) reaches up to 7.61. Source: wololo.net,
+    // notebookcheck.net.
+    'PS5': { flashTypes: ['Software'], firmwareVersions: ['1.00-4.51', '5.10-5.50', 'Up to 7.61 (BD-JB, usermode only)'] },
+    'PS5 Slim': { flashTypes: ['Software'], firmwareVersions: ['1.00-4.51', '5.10-5.50', 'Up to 7.61 (BD-JB, usermode only)'] },
+    'PS5 Pro': { flashTypes: ['Software'], firmwareVersions: ['1.00-4.51', '5.10-5.50', 'Up to 7.61 (BD-JB, usermode only)'] },
+    // Switch: RCM (Fusée Gelée, pure software — a jig + payload, no soldering)
+    // only works on an unpatched Erista unit; every patched Erista, every
+    // Mariko (HAC-001(-01)), Lite and OLED needs a modchip instead. See this
+    // model's own date_codes for the Erista patch threshold (~Aug 2018).
+    'Switch': { flashTypes: ['RCM (Software)', 'Modchip'], firmwareVersions: ['Any'] },
+    'Switch Lite': { flashTypes: ['Modchip'], firmwareVersions: ['Any'] },
+    'Switch OLED': { flashTypes: ['Modchip'], firmwareVersions: ['Any'] },
+    // GameCube: Modchip (Qoob Pro/XenoGC/GC Loader, soldered) vs a genuinely
+    // chip-free path — booting Swiss from an SD-media launcher disc via a
+    // modded memory card exploit, no soldering or hardware add-on at all.
+    // Source: ConsoleMods Wiki GameCube Mods Wiki, fetched 2026-09-09.
+    'GameCube': { flashTypes: ['Modchip', 'Software'], firmwareVersions: ['Any'] },
+    // Wii U: always software — Aroma/Tiramisu (modern) or the older Haxchi,
+    // no modchip scene exists for it at all, and the exploit chain was never
+    // patched by Nintendo so there's no firmware-version gating either.
+    // Source: ConsoleMods Wiki WiiU:Modding, wiiubrew.org, fetched 2026-09-09.
+    'Wii U': { flashTypes: ['Software'], firmwareVersions: ['Any'] },
+    // Wii: always software (no modchip scene needed), but RVL-001 alone
+    // genuinely can't be narrowed from the code — same "one code, two real
+    // answers" situation as Xbox 360 S, see this model's own date_codes for
+    // the boot1-patch threshold. RVL-101/RVL-201 postdate that patch by
+    // years, so they narrow to the IOS-level method only (below).
+    'Wii': { flashTypes: ['BootMii as boot2 (hardware-level)', 'HackMii Installer (IOS-level)'], firmwareVersions: ['Any'] },
+    'Wii Mini': { flashTypes: ['HackMii Installer (IOS-level)'], firmwareVersions: ['Any'] },
+    // DS/DS Lite predate any signature-check era — a flashcart (R4, DSTT,
+    // etc.) just works, no exploit chain needed at all.
+    'Nintendo DS': { flashTypes: ['Flashcart'], firmwareVersions: ['Any'] },
+    'Nintendo DS Lite': { flashTypes: ['Flashcart'], firmwareVersions: ['Any'] },
+    // DSi/DSi XL added signature checks — a flashcart still runs DS-mode
+    // games untouched, but DSi-mode homebrew (SD card access, DSi camera,
+    // etc.) needs its own software exploit chain (unlaunch).
+    'Nintendo DSi': { flashTypes: ['Flashcart (DS-mode only)', 'Software (DSi-mode, unlaunch)'], firmwareVersions: ['Any'] },
+    'Nintendo DSi XL': { flashTypes: ['Flashcart (DS-mode only)', 'Software (DSi-mode, unlaunch)'], firmwareVersions: ['Any'] },
+    // 3DS family (all 6 variants): ntrboot is a flashcart-based DS-mode
+    // bootROM exploit — permanent, works on literally any firmware, on every
+    // model including New3DS. Software (browser/save-exploit chains like
+    // Seedminer) needs no flashcart purchase but IS firmware-version gated.
+    'Nintendo 3DS': { flashTypes: ['ntrboot (Flashcart)', 'Software'], firmwareVersions: ['Any'] },
+    'Nintendo 3DS XL': { flashTypes: ['ntrboot (Flashcart)', 'Software'], firmwareVersions: ['Any'] },
+    'Nintendo 2DS': { flashTypes: ['ntrboot (Flashcart)', 'Software'], firmwareVersions: ['Any'] },
+    'New Nintendo 3DS': { flashTypes: ['ntrboot (Flashcart)', 'Software'], firmwareVersions: ['Any'] },
+    'New Nintendo 3DS XL': { flashTypes: ['ntrboot (Flashcart)', 'Software'], firmwareVersions: ['Any'] },
+    'New Nintendo 2DS XL': { flashTypes: ['ntrboot (Flashcart)', 'Software'], firmwareVersions: ['Any'] },
 };
 
 // A PS3 board only ever has ONE flash chip — the 'PS3'/'PS3 Super Slim' entries above list
@@ -131,6 +205,17 @@ export function flashTypesForModel(consoleName, code) {
     }
     if (consoleName === 'Xbox (original)') {
         return XBOX_NO_TSOP_CODES.includes(code) ? ['Softmod', 'Modchip'] : fallback;
+    }
+    // 'HAC-001' alone (Erista) can be either patched or unpatched depending
+    // on manufacture date (see its date_codes) — genuinely a 2-option picker.
+    // 'HAC-001(-01)' is the official Mariko code, always patched.
+    if (consoleName === 'Switch' && code === 'HAC-001(-01)') {
+        return ['Modchip'];
+    }
+    // RVL-101 (2011 "Family Edition") postdates the boot1 patch by years —
+    // BootMii-as-boot2 was never possible on it, unlike RVL-001.
+    if (consoleName === 'Wii' && code === 'RVL-101') {
+        return ['HackMii Installer (IOS-level)'];
     }
     return fallback;
 }
