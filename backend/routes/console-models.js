@@ -60,7 +60,7 @@ function sanitizeDateCodes(input) {
     if (!Array.isArray(input)) return [];
     return input
         .map(dc => ({
-            code: String((dc && dc.code) || '').trim().slice(0, 20),
+            code: String((dc && dc.code) || '').trim().slice(0, 40),
             note: String((dc && dc.note) || '').trim().slice(0, 200),
         }))
         .filter(dc => dc.code)

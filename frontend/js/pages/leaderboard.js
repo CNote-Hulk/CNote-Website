@@ -2,7 +2,7 @@
  * Leaderboard page — fetches and renders the public XP ranking.
  */
 import { AuthModule } from '../modules/auth.js';
-import { I18nModule } from '../modules/i18n.js?v=20260909b';
+import { I18nModule } from '../modules/i18n.js?v=20260909c';
 
 const PAGE_SIZE = 50;
 

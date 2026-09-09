@@ -5,10 +5,10 @@
 // Used by both console-care.js and console-modding.js so the two guide pages
 // share one directory implementation instead of duplicating it.
 
-import { I18nModule } from './i18n.js?v=20260909b';
+import { I18nModule } from './i18n.js?v=20260909c';
 import { AuthModule } from './auth.js';
 import { API_BASE_URL } from '../config.js';
-import { loadModels, invalidateModelsCache } from '../data/console-models.js?v=20260906';
+import { loadModels, invalidateModelsCache } from '../data/console-models.js?v=20260909';
 
 function escapeHtml(str) {
     const div = document.createElement('div');

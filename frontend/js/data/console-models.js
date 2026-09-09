@@ -25,6 +25,20 @@ export const MOD_OPTIONS = {
     'PS3': { flashTypes: ['NAND', 'NOR'], firmwareVersions: ['3.55', '3.56–4.80', '4.81–4.89', '4.90', '4.91', '4.92', '4.93'] },
     'PS3 Slim': { flashTypes: ['NOR'], firmwareVersions: ['3.55', '3.56–4.80', '4.81–4.89', '4.90', '4.91', '4.92', '4.93'] },
     'PS3 Super Slim': { flashTypes: ['NOR'], firmwareVersions: ['3.55', '3.56–4.80', '4.81–4.89', '4.90', '4.91', '4.92', '4.93'] },
+    // Xbox 360 S's "1439" is one model code covering TWO real motherboards
+    // (Trinity/Corona — see the date-code split on that model's own page),
+    // unlike PS3 where flashTypesForModel() can always narrow to one real
+    // value from the code alone. There's no way to tell which one a given
+    // unit has without checking ITS OWN manufacture date, so this genuinely
+    // stays a 2-option picker rather than collapsing to static text — the
+    // renderSelectors() single-option-becomes-text logic only fires when
+    // there's truly one answer, and here there isn't. Dashboard/kernel
+    // version bracket is a real, verifiable Xbox 360 milestone (2.0.14699
+    // is the last dashboard RGH1 could use), not narrowed further since no
+    // personally-tested Xbox write-up exists yet to know if it even matters
+    // for S consoles specifically (which never support RGH1 in the first
+    // place — only RGH1.2/2/3/S-RGH, all installed the same way).
+    'Xbox 360 S': { flashTypes: ['Trinity', 'Corona'], firmwareVersions: ['2.0.14699 or lower', 'Above 2.0.14699'] },
 };
 
 // A PS3 board only ever has ONE flash chip — the 'PS3'/'PS3 Super Slim' entries above list

@@ -1,5 +1,5 @@
-import { MOD_OPTIONS, flashTypesForModel, loadModels, invalidateModelsCache } from '../data/console-models.js?v=20260908';
-import { I18nModule } from '../modules/i18n.js?v=20260909b';
+import { MOD_OPTIONS, flashTypesForModel, loadModels, invalidateModelsCache } from '../data/console-models.js?v=20260909';
+import { I18nModule } from '../modules/i18n.js?v=20260909c';
 import { AuthModule } from '../modules/auth.js';
 import { API_BASE_URL } from '../config.js';
 
@@ -403,11 +403,22 @@ function createTutorialSection({ idPrefix, titleField, introField, stepsField })
 // ── Modding guide section — MULTIPLE rows per model, one per
 // (flash_type, firmware_version) combination, selected via two dropdowns. ──
 
+// The selector's first field is called "flash type" everywhere in code (it
+// started as a PS3-only NAND/NOR/eMMC chip picker), but the same mechanism
+// now also covers Xbox 360 S's Trinity/Corona motherboard split — a real
+// axis a visitor picks along, just not a "flash type" in any literal sense.
+// Per-console-line label overrides so the UI says something that's actually
+// true instead of always reading "Flash type".
+const MOD_FLASH_FIELD_LABEL_OVERRIDES = {
+    'Xbox 360 S': 'mod_board_revision_label',
+};
+
 function createModTutorialSection() {
     let combos = [];
     let staticOptions = null; // { flashTypes, firmwareVersions } from MOD_OPTIONS, or null
     let selectedFlash = null;
     let selectedVersion = null;
+    let currentConsoleName = null;
 
     function el(id) {
         return document.getElementById(id);
@@ -437,6 +448,10 @@ function createModTutorialSection() {
         const flashSelect = el('mod-flash-select');
         const flashStatic = el('mod-flash-static');
         const versionSelect = el('mod-version-select');
+        const flashLabel = el('mod-flash-field-label');
+
+        const overrideKey = MOD_FLASH_FIELD_LABEL_OVERRIDES[currentConsoleName];
+        if (flashLabel) flashLabel.textContent = I18nModule.t(overrideKey || 'mod_flash_type_label');
 
         const flashes = flashTypes();
         if (!flashes.includes(selectedFlash)) selectedFlash = flashes[0];
@@ -705,6 +720,7 @@ function createModTutorialSection() {
 
     function applyCombos(rows, consoleName, code) {
         combos = Array.isArray(rows) ? rows : [];
+        currentConsoleName = consoleName;
         // flashTypesForModel() narrows the per-console-line menu down to the one flash type
         // this specific board actually has (PS3 fat/super-slim only — everything else still
         // gets the unnarrowed line-wide menu). firmwareVersions is left as the generic
