@@ -670,35 +670,9 @@ httpServer.listen(PORT, () => {
   console.log(`Server + Socket.io running on port ${PORT}`);
 });
 
-// Periodic cleanup of abandoned marketplace/eBay OAuth CSRF states (routes/marketplace.js,
-// routes/ebay.js) — entries are only deleted on a successful callback, so a user who starts
-// but never finishes the OAuth flow would otherwise leak that entry in memory forever.
-const OAUTH_STATE_TTL_MS = 10 * 60 * 1000;
-setInterval(() => {
-  if (!global.oauthStates) return;
-  const now = Date.now();
-  for (const key of Object.keys(global.oauthStates)) {
-    if (now - global.oauthStates[key].createdAt > OAUTH_STATE_TTL_MS) {
-      delete global.oauthStates[key];
-    }
-  }
-}, OAUTH_STATE_TTL_MS);
-
-// Periodic marketplace resync — keeps connected OLX/eBay listings fresh without
-// requiring the user to manually re-trigger a sync. Runs a few minutes after boot
-// (avoids competing with startup traffic), then on a fixed interval.
-const MARKETPLACE_SYNC_INTERVAL_MS = 6 * 60 * 60 * 1000; // 6 hours
-setTimeout(() => {
-  const MarketplaceSyncService = require('./services/marketplace-sync');
-  const runSync = () => {
-    // eBay deactivated 2026-07-23 (UI-only at first, but this background job
-    // syncs any account connected before that regardless of the UI toggle —
-    // excluded here too so a deactivated integration stays fully inactive.
-    // OLX was never connectable, so this is effectively a no-op for it.
-    MarketplaceSyncService.syncAllUserListings(['olx']).catch(err => {
-      console.error('Scheduled marketplace sync error:', err);
-    });
-  };
-  runSync();
-  setInterval(runSync, MARKETPLACE_SYNC_INTERVAL_MS);
-}, 5 * 60 * 1000);
+// Marketplace sync (OLX/eBay) removed entirely 2026-09-09 — Andrei: "renuntam
+// la ea, nu isi are rostu" (dropping it, doesn't make sense). This periodic
+// resync job, backend/services/marketplace-sync.js, and backend/providers/
+// (MarketplaceProvider.js/EbayProvider.js/OlxProvider.js) are all gone —
+// routes/ebay.js now only keeps the mandatory account-deletion webhook (see
+// that file's own comment for why that one specifically survives).
