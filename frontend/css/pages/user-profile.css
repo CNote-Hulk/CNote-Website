@@ -31,8 +31,11 @@
     pointer-events: none;
 }
 
+/* 2026-09-09: hidden outright on dark theme (was just dimmed) so the
+   shared, fixed [data-theme="dark"] body::before glow (reset.css) shows
+   through instead — same treatment as home.css/auth-profile.css. */
 [data-theme="dark"] .user-profile-page::before {
-    filter: blur(4px) brightness(0.25) saturate(0.7);
+    display: none;
 }
 
 [data-theme="light"] .user-profile-page::before {

@@ -726,9 +726,17 @@ body.home-page::before {
     border-color: rgba(0, 0, 0, .15);
 }
 
-/* ── Wallpaper brightness per theme ── */
+/* ── Wallpaper brightness per theme ──
+   2026-09-09: on dark theme the wallpaper photo is hidden outright instead
+   of just dimmed — same treatment auth-profile.css already used for
+   .profile-page::before — so the shared, fixed [data-theme="dark"]
+   body::before glow (reset.css) shows through here too, instead of every
+   page having its own different dark-theme background. .dashboard-shell's
+   own opaque background (which fully covered whatever was behind it) is
+   transparent now for the same reason. Light theme keeps its wallpaper
+   unchanged. */
 [data-theme="dark"] body.home-page::before {
-    filter: brightness(0.25) saturate(0.7);
+    display: none;
 }
 
 [data-theme="light"] body.home-page::before {
@@ -736,7 +744,7 @@ body.home-page::before {
 }
 
 [data-theme="dark"] .dashboard-shell {
-    background: var(--bg);
+    background: transparent;
 }
 
 [data-theme="dark"] .dashboard-sidebar {

@@ -465,8 +465,13 @@ body.stats-bg::before {
     display: none;
 }
 
+/* transparent (2026-09-09, was opaque #0f0d0b) — lets the shared, fixed
+   [data-theme="dark"] body::before glow (reset.css) show through, same
+   treatment as home.css/user-profile.css/auth-profile.css. The wallpaper
+   ::before above is already display:none on dark theme, so this was the
+   only remaining opaque layer covering it here. */
 [data-theme="dark"] .stats-page {
-    background: #0f0d0b;
+    background: transparent;
 }
 
 [data-theme="dark"] .statsd-card {

@@ -32,19 +32,19 @@
 @import url('./utilities/helpers.css');
 
 /* === PAGE-SPECIFIC === */
-@import url('./pages/home.css');
+@import url('./pages/home.css?v=20260909');
 @import url('./pages/index.css');
 @import url('./pages/evolutie.css');
 @import url('./pages/comparatie.css');
 @import url('./pages/console-detail.css');
 @import url('./pages/contact.css');
 @import url('./pages/auth-profile.css?v=20260909');
-@import url('./pages/stats.css');
+@import url('./pages/stats.css?v=20260909');
 @import url('./pages/community-hub.css');
 @import url('./pages/community-landing.css');
 @import url('./pages/help.css');
 @import url('./pages/help-sub.css');
-@import url('./pages/user-profile.css');
+@import url('./pages/user-profile.css?v=20260909');
 @import url('./pages/page-hero.css');
 @import url('./pages/terms.css');
 @import url('./pages/notfound.css');
