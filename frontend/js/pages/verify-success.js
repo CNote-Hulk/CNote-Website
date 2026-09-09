@@ -3,7 +3,7 @@
  * Verifies email token from URL, shows result, handles resend.
  */
 import { API_BASE_URL } from '../config.js';
-import { I18nModule } from '../modules/i18n.js?v=20260909d';
+import { I18nModule } from '../modules/i18n.js?v=20260909e';
 
 // Force default language to English on this page so the verification flow always appears in English.
 I18nModule.setLang('en');

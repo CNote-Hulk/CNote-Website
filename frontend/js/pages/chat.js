@@ -5,7 +5,7 @@
  */
 import { AuthModule } from '../modules/auth.js';
 import { API_BASE_URL } from '../config.js';
-import { I18nModule } from '../modules/i18n.js?v=20260909d';
+import { I18nModule } from '../modules/i18n.js?v=20260909e';
 import { alertModal } from '../utils/confirm-modal.js';
 
 const POLL_INTERVAL = 5000;

@@ -66,6 +66,20 @@ export const MOD_OPTIONS = {
     // for S consoles specifically (which never support RGH1 in the first
     // place — only RGH1.2/2/3/S-RGH, all installed the same way).
     'Xbox 360 S': { flashTypes: ['Trinity', 'Corona'], firmwareVersions: ['2.0.14699 or lower', 'Above 2.0.14699'] },
+    // Real per-board recommended-method chart from ConsoleMods Wiki
+    // (consolemods.org/wiki/Xbox_360:RGH, fetched 2026-09-09 — blocked by a
+    // Cloudflare challenge on the first attempt, passed on retry). The
+    // firmwareVersions buckets reuse the same 2.0.14699 threshold as
+    // 'Xbox 360 S' above since it's the same real dashboard/kernel milestone
+    // (RGH1/JTAG's ceiling) — narrowed per board in flashTypesForModel().
+    'Xbox 360': { flashTypes: ['JTAG', 'EXT_CLK', 'RGH1.2', 'RGH3'], firmwareVersions: ['2.0.14699 or lower', 'Above 2.0.14699'] },
+    // Original Xbox: TSOP Flash works in-circuit on every board EXCEPT v1.6
+    // (different flash chip, can't be reflashed the same way — needs a full
+    // modchip or the more advanced "hotswap" softmod instead). Softmod (a
+    // save-game exploit, e.g. 007: Agent Under Fire) and Modchip both work on
+    // every revision including v1.6. Source: ConsoleMods Wiki TSOP Flashing
+    // page + community consensus (quade.co TSOP guide), fetched 2026-09-09.
+    'Xbox (original)': { flashTypes: ['Softmod', 'Modchip', 'TSOP Flash'], firmwareVersions: ['Any'] },
 };
 
 // A PS3 board only ever has ONE flash chip — the 'PS3'/'PS3 Super Slim' entries above list
@@ -81,6 +95,21 @@ export const MOD_OPTIONS = {
 const PS3_FAT_NAND_CODES = ['CECHA', 'CECHB', 'CECHC', 'CECHE', 'CECHG'];
 const PS3_SUPER_SLIM_EMMC_CODES = ['CECH-4000A', 'CECH-4001A'];
 
+// Xbox 360 "fat" boards, per the ConsoleMods Wiki recommended-method chart:
+// Xenon/Zephyr/Elpis share a Waternoose CPU that's unstable under RGH1.2's
+// PLL-bypass glitching, so EXT_CLK is their only modern method (JTAG still
+// works on old dashboards, same as every other fat board here). Tonasket is
+// the one board that's NEVER JTAG-exploitable, patched from the factory
+// regardless of dashboard — everything else (Falcon/Opus/Jasper) gets
+// JTAG-or-RGH1.2-or-RGH3, though Jasper's JTAG viability specifically can't
+// be trusted from dashboard version alone (see its date_codes/note — some
+// units shipped with an already-patched CB even under 2.0.14699).
+const XBOX360_EXT_CLK_ONLY_BOARDS = ['Xenon', 'Zephyr', 'Elpis'];
+const XBOX360_NEVER_JTAG_BOARDS = ['Tonasket'];
+// v1.6 is the one original-Xbox board without an in-circuit-flashable TSOP
+// (different flash chip) — modchip and softmod both still work on it.
+const XBOX_NO_TSOP_CODES = ['v1.6'];
+
 /**
  * Narrows MOD_OPTIONS[consoleName].flashTypes down to the one real type a specific PS3 board
  * code actually has, where that's known. Any other console (or an unrecognized PS3 code, e.g.
@@ -94,6 +123,14 @@ export function flashTypesForModel(consoleName, code) {
     }
     if (consoleName === 'PS3 Super Slim') {
         return PS3_SUPER_SLIM_EMMC_CODES.includes(code) ? ['eMMC'] : fallback;
+    }
+    if (consoleName === 'Xbox 360') {
+        if (XBOX360_NEVER_JTAG_BOARDS.includes(code)) return ['RGH1.2', 'RGH3'];
+        if (XBOX360_EXT_CLK_ONLY_BOARDS.includes(code)) return ['JTAG', 'EXT_CLK'];
+        return ['JTAG', 'RGH1.2', 'RGH3']; // Falcon, Opus, Jasper
+    }
+    if (consoleName === 'Xbox (original)') {
+        return XBOX_NO_TSOP_CODES.includes(code) ? ['Softmod', 'Modchip'] : fallback;
     }
     return fallback;
 }

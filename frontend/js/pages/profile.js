@@ -8,7 +8,7 @@ import { AchievementsModule } from '../../js/modules/achievements.js';
 import { SearchModule } from '../../js/modules/search.js';
 import { API_BASE_URL } from '../../js/config.js';
 import { confirmModal, promptModal } from '../../js/utils/confirm-modal.js';
-import { I18nModule } from '../../js/modules/i18n.js?v=20260909d';
+import { I18nModule } from '../../js/modules/i18n.js?v=20260909e';
 import { createDatePicker } from '../../js/utils/date-picker.js';
 import { openAvatarCropper } from '../../js/modules/avatar-cropper.js';
 

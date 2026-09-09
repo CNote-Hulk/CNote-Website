@@ -6,7 +6,7 @@
 import { AuthModule } from '/js/modules/auth.js';
 import { API_BASE_URL } from '/js/config.js';
 import { AchievementsModule } from '/js/modules/achievements.js';
-import { I18nModule } from '/js/modules/i18n.js?v=20260909d';
+import { I18nModule } from '/js/modules/i18n.js?v=20260909e';
 import { shareOrCopy } from '/js/utils/share.js';
 import { confirmModal, promptModal } from '/js/utils/confirm-modal.js';
 import { NO_IMAGE_PLACEHOLDER } from '/js/utils/no-image-placeholder.js';
