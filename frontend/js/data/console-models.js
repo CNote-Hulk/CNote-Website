@@ -21,10 +21,37 @@
 // directly (not third-party research). A model whose `console` isn't listed
 // here falls back to the old behaviour: the selector stays hidden until at
 // least one real (flash_type, firmware_version) write-up exists for it.
+// Every retail (CEX) PS3 system-software version ever released, per PS3
+// Developer Wiki — replaces the earlier rough brackets ('3.55', '3.56–4.80',
+// etc.) with the real, complete list (2026-09-09): a visitor picking a
+// firmware version for the modding-guide selector knows their console's
+// EXACT current version from the XMB, never "a bracket", so the granular
+// list is strictly more useful, not just more complete. "-1"/"-2"/"-patch"
+// suffixes are kept exactly as the source lists them (a patch release can
+// behave differently for an exploit than the version it patched).
+const PS3_ALL_FIRMWARE_VERSIONS = [
+    '1.00', '1.02', '1.10', '1.11', '1.30', '1.31', '1.32', '1.50', '1.51', '1.54', '1.55',
+    '1.60', '1.70', '1.80', '1.81', '1.82', '1.90', '1.91', '1.92', '1.93', '1.94', '1.97',
+    '2.00', '2.01', '2.10', '2.16', '2.17', '2.20', '2.30', '2.35', '2.36', '2.40', '2.41',
+    '2.42', '2.43', '2.45', '2.50', '2.52', '2.53', '2.60', '2.70', '2.75', '2.76', '2.80',
+    '3.00', '3.01', '3.10', '3.15', '3.16', '3.20', '3.21', '3.30', '3.40',
+    '3.41-1', '3.41-patch', '3.41-2', '3.42', '3.42-patch', '3.50', '3.55', '3.55-patch',
+    '3.56-1', '3.56-2', '3.60', '3.61', '3.65', '3.66', '3.70', '3.71', '3.72', '3.72-patch',
+    '3.73', '3.73-patch', '3.74',
+    '4.00', '4.01', '4.10', '4.11', '4.15', '4.20', '4.21', '4.21-patch', '4.22', '4.25',
+    '4.25-patch', '4.30', '4.30-patch', '4.31', '4.31-patch', '4.40', '4.40-patch', '4.41',
+    '4.41-patch', '4.45', '4.45-patch', '4.46', '4.50', '4.50-patch', '4.53', '4.53-patch',
+    '4.55', '4.55-patch', '4.60', '4.60-patch', '4.65', '4.65-patch', '4.66', '4.66-patch',
+    '4.70', '4.70-patch', '4.70 SPECIAL', '4.75', '4.75-patch', '4.76', '4.76-patch', '4.78',
+    '4.78-patch', '4.80', '4.80-patch', '4.81', '4.81-patch', '4.82', '4.82-patch', '4.83',
+    '4.83-patch', '4.84', '4.84-patch', '4.85', '4.85-patch', '4.86', '4.86-patch', '4.87',
+    '4.88', '4.89', '4.90', '4.91', '4.92', '4.93',
+];
+
 export const MOD_OPTIONS = {
-    'PS3': { flashTypes: ['NAND', 'NOR'], firmwareVersions: ['3.55', '3.56–4.80', '4.81–4.89', '4.90', '4.91', '4.92', '4.93'] },
-    'PS3 Slim': { flashTypes: ['NOR'], firmwareVersions: ['3.55', '3.56–4.80', '4.81–4.89', '4.90', '4.91', '4.92', '4.93'] },
-    'PS3 Super Slim': { flashTypes: ['NOR'], firmwareVersions: ['3.55', '3.56–4.80', '4.81–4.89', '4.90', '4.91', '4.92', '4.93'] },
+    'PS3': { flashTypes: ['NAND', 'NOR'], firmwareVersions: PS3_ALL_FIRMWARE_VERSIONS },
+    'PS3 Slim': { flashTypes: ['NOR'], firmwareVersions: PS3_ALL_FIRMWARE_VERSIONS },
+    'PS3 Super Slim': { flashTypes: ['NOR'], firmwareVersions: PS3_ALL_FIRMWARE_VERSIONS },
     // Xbox 360 S's "1439" is one model code covering TWO real motherboards
     // (Trinity/Corona — see the date-code split on that model's own page),
     // unlike PS3 where flashTypesForModel() can always narrow to one real

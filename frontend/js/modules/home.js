@@ -1,4 +1,4 @@
-import { I18nModule } from './i18n.js?v=20260909c';
+import { I18nModule } from './i18n.js?v=20260909d';
 import { AuthModule } from './auth.js';
 import { AchievementsModule } from './achievements.js';
 import { API_BASE_URL } from '../config.js';
