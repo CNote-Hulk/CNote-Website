@@ -68,7 +68,6 @@ const leaderboardRoutes = require('./routes/leaderboard');
 
 const coursesRoutes = require('./routes/courses');
 const reportsRoutes = require('./routes/reports');
-const ebayRoutes = require('./routes/ebay');
 const uploadsRoutes = require('./routes/uploads');
 const workshopRoutes = require('./routes/workshop');
 const consoleTutorialsRoutes = require('./routes/console-tutorials');
@@ -486,7 +485,6 @@ app.use('/api/achievements', achievementsRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
 app.use('/api', coursesRoutes);
 app.use('/api', reportsRoutes);
-app.use('/api/ebay', ebayRoutes);
 app.use('/api/uploads', uploadsRoutes);
 app.use('/api/workshop', workshopRoutes);
 app.use('/api/console-tutorials', consoleTutorialsRoutes);
@@ -673,6 +671,10 @@ httpServer.listen(PORT, () => {
 // Marketplace sync (OLX/eBay) removed entirely 2026-09-09 — Andrei: "renuntam
 // la ea, nu isi are rostu" (dropping it, doesn't make sense). This periodic
 // resync job, backend/services/marketplace-sync.js, and backend/providers/
-// (MarketplaceProvider.js/EbayProvider.js/OlxProvider.js) are all gone —
-// routes/ebay.js now only keeps the mandatory account-deletion webhook (see
-// that file's own comment for why that one specifically survives).
+// (MarketplaceProvider.js/EbayProvider.js/OlxProvider.js) are all gone.
+// routes/ebay.js (the mandatory eBay account-deletion compliance webhook)
+// survived that pass, but was removed too 2026-09-22 — Andrei chose to
+// accept the risk of eBay revoking the developer app's API access rather
+// than keep answering a webhook for an integration that's otherwise fully
+// gone. If the eBay developer app registration itself still exists on
+// eBay's side, this is a known, deliberate gap, not an oversight.
