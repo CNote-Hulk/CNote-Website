@@ -40,6 +40,19 @@ document.addEventListener('click', (e) => {
     }
 });
 
+// Tutorial step photos are re-rendered on every language/combo switch (see
+// renderTutorialMarkup below), so their zoom trigger is delegated on
+// document too, same reasoning as #model-notfound-link above.
+document.addEventListener('click', (e) => {
+    const img = e.target.closest?.('.tutorial-step__image[data-zoomable]');
+    if (img) openTutorialImageViewer(img.src, img.alt);
+});
+document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    const img = e.target.closest?.('.tutorial-step__image[data-zoomable]');
+    if (img) { e.preventDefault(); openTutorialImageViewer(img.src, img.alt); }
+});
+
 async function api(method, path, body) {
     const token = localStorage.getItem('cn_token');
     const opts = { method, credentials: 'include', headers: {} };
@@ -217,6 +230,79 @@ function initModelAdminEditButton() {
     anchor.after(btn);
 }
 
+/** Full-screen pinch-zoom/pan viewer for a tutorial step photo — trimmed copy of
+ * community.js's openImageViewer() (DM image viewer) with the reply/forward
+ * chrome stripped out, since a step photo has neither. Plain fixed-position
+ * overlay, not a dialog — see that function's own comment for why. */
+function openTutorialImageViewer(url, alt) {
+    document.querySelector('.tutorial-img-viewer')?.remove();
+    const viewer = document.createElement('div');
+    viewer.className = 'tutorial-img-viewer';
+    viewer.innerHTML = `
+        <button type="button" class="tutorial-img-viewer__close" aria-label="${escapeHtml(I18nModule.t('dm_close_viewer'))}">✕</button>
+        <div class="tutorial-img-viewer__stage" id="tiv-stage">
+            <img class="tutorial-img-viewer__img" id="tiv-img" src="${escapeHtml(url)}" alt="${escapeHtml(alt || '')}" draggable="false">
+        </div>`;
+    document.body.appendChild(viewer);
+
+    const close = () => { document.removeEventListener('keydown', onKey); viewer.remove(); };
+    function onKey(e) { if (e.key === 'Escape') close(); }
+    document.addEventListener('keydown', onKey);
+    viewer.querySelector('.tutorial-img-viewer__close').addEventListener('click', close);
+    viewer.addEventListener('click', e => { if (e.target === viewer) close(); });
+
+    const img = viewer.querySelector('#tiv-img');
+    const stage = viewer.querySelector('#tiv-stage');
+    let scale = 1, tx = 0, ty = 0, dragging = false, lastX = 0, lastY = 0, dismissDrag = 0;
+
+    function applyTransform() { img.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`; }
+    function clampPan() {
+        const maxX = Math.max(0, (img.clientWidth * scale - stage.clientWidth) / 2);
+        const maxY = Math.max(0, (img.clientHeight * scale - stage.clientHeight) / 2);
+        tx = Math.min(maxX, Math.max(-maxX, tx));
+        ty = Math.min(maxY, Math.max(-maxY, ty));
+    }
+
+    stage.addEventListener('wheel', e => {
+        e.preventDefault();
+        scale = Math.min(4, Math.max(1, scale - e.deltaY * 0.0015));
+        if (scale === 1) { tx = 0; ty = 0; }
+        clampPan();
+        applyTransform();
+    }, { passive: false });
+
+    stage.addEventListener('dblclick', () => {
+        scale = scale > 1 ? 1 : 2;
+        tx = 0; ty = 0;
+        applyTransform();
+    });
+
+    stage.addEventListener('pointerdown', e => {
+        dragging = true; dismissDrag = 0;
+        lastX = e.clientX; lastY = e.clientY;
+        stage.setPointerCapture(e.pointerId);
+    });
+    stage.addEventListener('pointermove', e => {
+        if (!dragging) return;
+        const dx = e.clientX - lastX, dy = e.clientY - lastY;
+        lastX = e.clientX; lastY = e.clientY;
+        if (scale > 1) {
+            tx += dx; ty += dy;
+            clampPan();
+            applyTransform();
+        } else if (dy > 0 || dismissDrag > 0) {
+            dismissDrag += dy;
+            viewer.style.opacity = String(Math.max(0.4, 1 - dismissDrag / 300));
+            img.style.transform = `translateY(${dismissDrag}px)`;
+        }
+    });
+    stage.addEventListener('pointerup', () => {
+        dragging = false;
+        if (scale === 1 && dismissDrag > 120) { close(); return; }
+        if (scale === 1) { dismissDrag = 0; viewer.style.opacity = '1'; applyTransform(); }
+    });
+}
+
 // ── Shared read-view markup, used by both the disassembly tutorial and the
 // modding guide (either the single row, or whichever combo is selected). ──
 function renderTutorialMarkup(data, { titleField, introField, stepsField }) {
@@ -232,7 +318,7 @@ function renderTutorialMarkup(data, { titleField, introField, stepsField }) {
         if (s.image_url) {
             mediaCount++;
             const reversed = mediaCount % 2 === 0;
-            const img = `<img class="tutorial-step__image" src="${escapeHtml(s.image_url)}" alt="${escapeHtml(s.heading || '')}" loading="lazy">`;
+            const img = `<img class="tutorial-step__image" src="${escapeHtml(s.image_url)}" alt="${escapeHtml(s.heading || '')}" loading="lazy" tabindex="0" role="button" data-zoomable>`;
             media = `<div class="tutorial-step__row${reversed ? ' tutorial-step__row--reverse' : ''}">${desc}${img}</div>`;
         } else {
             media = desc;
