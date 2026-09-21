@@ -41,7 +41,6 @@ router.post('/account-deletion', async (req, res) => {
         const notification = req.body?.notification;
         const data = notification?.data || {};
         const userId = data.userId;
-        const username = data.username;
 
         if (userId) {
             try {
@@ -52,7 +51,12 @@ router.post('/account-deletion', async (req, res) => {
             } catch (dbErr) {
                 console.error('eBay deletion DB error:', dbErr.message);
             }
-            console.log('eBay account deletion processed:', userId, username || '');
+            // No success log here on purpose — eBay calls this endpoint constantly for every
+            // OTHER developer's eBay users (nothing to do with CNote's own users), and with
+            // marketplace-sync removed (2026-09-09) marketplace_accounts has no eBay rows left
+            // to ever actually match, so this fired on every single call with zero information
+            // value — it was flooding Railway's deploy log (Andrei noticed, 2026-09-22). Errors
+            // still log above.
         }
 
         return res.json({ acknowledged: true });
