@@ -220,16 +220,33 @@ function initModelAdminEditButton() {
 // ── Shared read-view markup, used by both the disassembly tutorial and the
 // modding guide (either the single row, or whichever combo is selected). ──
 function renderTutorialMarkup(data, { titleField, introField, stepsField }) {
-    const stepsHtml = (data[stepsField] || []).map((s, i) => `
+    // Steps with a photo alternate text-left/image-right, image-left/text-right,
+    // etc. (counted only across steps that actually have an image, so trailing
+    // text-only steps like "Clean the shells"/"Reassembly" don't throw the
+    // alternation off) — keeps a tall portrait phone photo from leaving a big
+    // empty gutter down one side of the column.
+    let mediaCount = 0;
+    const stepsHtml = (data[stepsField] || []).map((s, i) => {
+        const desc = s.description ? `<p class="tutorial-step__desc">${escapeHtml(s.description)}</p>` : '';
+        let media;
+        if (s.image_url) {
+            mediaCount++;
+            const reversed = mediaCount % 2 === 0;
+            const img = `<img class="tutorial-step__image" src="${escapeHtml(s.image_url)}" alt="${escapeHtml(s.heading || '')}" loading="lazy">`;
+            media = `<div class="tutorial-step__row${reversed ? ' tutorial-step__row--reverse' : ''}">${desc}${img}</div>`;
+        } else {
+            media = desc;
+        }
+        return `
         <div class="tutorial-step">
             <div class="tutorial-step__num">${i + 1}</div>
             <div class="tutorial-step__body">
                 ${s.heading ? `<h3 class="tutorial-step__heading">${escapeHtml(s.heading)}</h3>` : ''}
-                ${s.image_url ? `<img class="tutorial-step__image" src="${escapeHtml(s.image_url)}" alt="${escapeHtml(s.heading || '')}" loading="lazy">` : ''}
-                ${s.description ? `<p class="tutorial-step__desc">${escapeHtml(s.description)}</p>` : ''}
+                ${media}
             </div>
         </div>
-    `).join('');
+    `;
+    }).join('');
 
     return `
         ${data[titleField] ? `<h2 class="tutorial-title">${escapeHtml(data[titleField])}</h2>` : ''}

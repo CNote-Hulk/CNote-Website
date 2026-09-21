@@ -533,30 +533,50 @@
     margin: 0 0 8px;
 }
 
+/* Photo steps: text and image side by side, alternating sides per step
+   (`--reverse` on even-numbered photo steps, added in console-model.js) so a
+   tall portrait phone photo doesn't leave an empty gutter down one side. */
+.tutorial-step__row {
+    display: flex;
+    align-items: flex-start;
+    gap: 24px;
+}
+
+.tutorial-step__row--reverse {
+    flex-direction: row-reverse;
+}
+
 .tutorial-step__image {
     display: block;
-    width: 100%;
+    flex: 0 1 360px;
     max-width: 100%;
     max-height: 480px;
     object-fit: contain;
     background: var(--card-bg);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-sm);
-    margin-bottom: 10px;
-}
-
-@media (max-width: 600px) {
-    .tutorial-step__image {
-        max-height: 340px;
-    }
 }
 
 .tutorial-step__desc {
+    flex: 1 1 260px;
     font-family: var(--font-sans);
     font-size: 0.9rem;
     color: var(--text-gray);
     line-height: 1.7;
     margin: 0;
+}
+
+@media (max-width: 760px) {
+    .tutorial-step__row,
+    .tutorial-step__row--reverse {
+        flex-direction: column;
+    }
+
+    .tutorial-step__image {
+        flex-basis: auto;
+        width: 100%;
+        max-height: 340px;
+    }
 }
 
 .tutorial-selectors {
