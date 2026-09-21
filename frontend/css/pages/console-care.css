@@ -577,6 +577,14 @@
         width: 100%;
         max-height: 340px;
     }
+
+    /* flex-basis is a WIDTH hint for the desktop side-by-side row, but once
+       flex-direction switches to column above it becomes a HEIGHT hint instead
+       — left at 260px, that stretched the description block far taller than
+       its actual text, leaving a big empty gap before the image below it. */
+    .tutorial-step__desc {
+        flex-basis: auto;
+    }
 }
 
 .tutorial-selectors {
