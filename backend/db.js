@@ -701,8 +701,21 @@ async function initializeSchema() {
 initializeSchema()
 	.then(() => console.log('Connected to Supabase Postgres database'))
 	.catch(err => {
-		console.error('Database connection/schema error:', err);
-		process.exit(1);
+		// (2026-09-22, hotfix) Was process.exit(1) here. That's fine when the
+		// DB is genuinely misconfigured on a fresh boot, but today it turned
+		// a transient pooler outage into a hard crash-loop: every restart
+		// re-ran this same connection attempt, hit the same busy pooler,
+		// failed again in ~8s, and exited again -> Railway just kept
+		// restarting it every ~9s, so the app was NEVER up long enough to
+		// serve a request. initializeSchema() is idempotent (IF NOT EXISTS
+		// everywhere) and this DB has already been bootstrapped, so a
+		// failure here does not mean the app can't run -- it means this one
+		// startup query couldn't get a connection *yet*. Log and keep the
+		// process alive; the pool's own retry/backoff handles reconnecting
+		// once Supabase's pooler frees up, and unrelated requests (static
+		// assets, anything not hitting the DB) keep working in the
+		// meantime instead of the whole app being down.
+		console.error('Database connection/schema error (continuing without exit):', err);
 	});
 
 module.exports = pool;
