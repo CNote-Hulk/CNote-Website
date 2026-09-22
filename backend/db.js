@@ -8,7 +8,25 @@ require('dotenv').config();
 
 const pool = new Pool({
 	connectionString: process.env.DATABASE_URL,
-	ssl: { rejectUnauthorized: false }
+	ssl: { rejectUnauthorized: false },
+	// (2026-09-22) Was unset -> defaulted to max:10 with no checkout/idle
+	// timeouts. Under normal concurrent traffic (dashboard pages fire 4-5
+	// authed requests at once, each grabbing its own connection against
+	// Supabase's Session pooler, which holds a connection for the whole
+	// client session rather than releasing it per-query) the pool of 10
+	// saturated fast, and every subsequent request queued for the default
+	// no-limit checkout wait, eventually dying at Railway's edge timeout
+	// (~125s) instead of failing fast. Andrei saw this as "se incarca la
+	// infinit" on login. Raised the ceiling and added explicit timeouts so
+	// a starved request fails in ~8s (503) instead of hanging for 2 minutes.
+	// If this still saturates, the real fix is switching DATABASE_URL from
+	// the Session pooler (port 5432) to the Transaction pooler (port 6543)
+	// in Supabase's connection settings — Transaction mode releases the
+	// backend connection after each query instead of holding it for the
+	// session, which is a much better fit for a stateless web backend.
+	max: 20,
+	idleTimeoutMillis: 30000,
+	connectionTimeoutMillis: 8000
 });
 
 /**
