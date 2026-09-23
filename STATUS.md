@@ -1,8 +1,9 @@
 # CNote-Website — Status
 
 Current-state snapshot — separate from INDEX.md (which is the complete file map). Updated whenever
-the project's state changes meaningfully, not on every commit. Last updated 2026-09-23, grounded in
-`git log` (most recent commit `b509ede8`, 2026-09-22) and CLAUDE.md's own notes.
+the project's state changes meaningfully, not on every commit. Last updated 2026-09-23 (Care Guide
+SCPH-39003 pass), grounded in `git log` (most recent commit `b509ede8`, 2026-09-22) and CLAUDE.md's
+own notes.
 
 ## Gata (Done)
 
@@ -22,16 +23,19 @@ the project's state changes meaningfully, not on every commit. Last updated 2026
 - PS2 modding-guide content: 56 model codes covered across 3 flash-type families (FreeHdBoot /
   FreeDVDBoot / OpenTuna-Fortuna), cross-referenced against multiple sources after a correction pass.
 - "Care Guide" (real-photo disassembly tutorials, renamed from "Disassembly Tutorial" 2026-09-09):
-  2 of 227 models have real teardown photos — PS2 `SCPH-77004` (2026-09-21) and `SCPH-77003`
-  (2026-09-22) — including click-to-zoom, alternating photo/text layout, and mobile-gap fixes shipped
-  in the same run of commits.
+  3 of 227 models have real teardown photos — PS2 `SCPH-77004` (2026-09-21), `SCPH-77003`
+  (2026-09-22), and `SCPH-39003` (2026-09-23) — including click-to-zoom, alternating photo/text
+  layout, and mobile-gap fixes shipped in the same run of commits. `SCPH-39003` is the first "Fat"
+  PS2 guide — modular drive/motherboard/PSU construction, `GH-022` board with separate EE+GS chips
+  and a replaceable CR2032 clock battery, and the first guide to go past a clean motherboard into a
+  full optical-drive teardown down to the laser sled.
 - Backend hardening: Postgres pool size/timeout configuration and a boot-time hotfix so a schema-init
   DB error no longer kills the process (`0c989b15`, `65d86e6c`).
 - Pre-launch SEO/social audit: fixed social-share (`og:`) tags and canonical-URL gaps (`5a07f7c5`).
 
 ## În lucru (In progress)
 
-- Care Guide real-photo teardowns — only 2 of 227 models done; the rest still show the "not
+- Care Guide real-photo teardowns — only 3 of 227 models done; the rest still show the "not
   available yet" state. `Disassembly/<model>/` in the repo root holds Andrei's untracked source
   photos for the next ones (never `git add`ed, deliberately not gitignored either).
 - PS3 CFW Compatibility Chart (`ps3-cfw-compatibility.html`) — table structure is live but almost
