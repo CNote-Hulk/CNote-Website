@@ -106,7 +106,7 @@ const { adminOnly } = require('../middleware/adminOnly');
 function sanitizeSteps(input) {
     if (!Array.isArray(input)) return [];
     return input
-        .slice(0, 50)
+        .slice(0, 150)
         .map(s => ({
             heading: String(s?.heading || '').slice(0, 200),
             description: String(s?.description || '').slice(0, 5000),
