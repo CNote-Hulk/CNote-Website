@@ -28,9 +28,10 @@ own notes.
   layout, and mobile-gap fixes shipped in the same run of commits. `SCPH-39003` is the first "Fat"
   PS2 guide — modular drive/motherboard/PSU construction, `GH-022` board with separate EE+GS chips
   and a replaceable CR2032 clock battery, and the first guide to go past a clean motherboard into a
-  full optical-drive teardown down to the laser sled. 59 real photos (every one Andrei took, one per
-  step, after he corrected an initial draft that only used 22), 63 steps total with the 4 closing
-  text steps — required raising `console_tutorials`' step cap from 50 to 150
+  full optical-drive teardown down to the laser sled. 63 real photos (59 `.jpg` + 4 `.dng` — every file Andrei took, one per
+  step, after he corrected an initial draft that only used 22 and then a second that skipped the
+  `.dng` files), 67 steps total with the 4 closing text steps. `SCPH-77003` was also missing its 2
+  `.dng` photos and is now 22 steps — required raising `console_tutorials`' step cap from 50 to 150
   (`backend/routes/console-tutorials.js`, `a6f7501e`), since the old cap was silently truncating the
   guide with no error.
 - Backend hardening: Postgres pool size/timeout configuration and a boot-time hotfix so a schema-init
