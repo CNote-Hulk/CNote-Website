@@ -34,7 +34,6 @@ own notes.
   `.dng` photos and is now 22 steps — required raising `console_tutorials`' step cap from 50 to 150
   (`backend/routes/console-tutorials.js`, `a6f7501e`), since the old cap was silently truncating the
   guide with no error.
-- PS2 FMCB modding guides corrected against the real FMCB 1.966 package (2026-09-24): 28 FreeDVDBoot/FMCB combos rewritten (OPL is bundled/preconfigured, exFAT build, card dump, install types, recovery), 30 FHDB combos lightly fixed; the 7 OpenTuna combos untouched — see INDEX.md's console-tutorials.js entry.
 - Backend hardening: Postgres pool size/timeout configuration and a boot-time hotfix so a schema-init
   DB error no longer kills the process (`0c989b15`, `65d86e6c`).
 - Pre-launch SEO/social audit: fixed social-share (`og:`) tags and canonical-URL gaps (`5a07f7c5`).
