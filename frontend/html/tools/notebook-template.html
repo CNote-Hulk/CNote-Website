@@ -387,6 +387,13 @@ body {
     line-height: 1.6;
     margin: 0;
 }
+
+/* ===== Series layout: picture page on the LEFT, text page on the RIGHT =====
+   The pages keep their site classes (.nb-left = red margin line + shadow
+   toward the spine, .nb-right = shadow from the spine); only the content
+   is swapped, so the paddings below re-space it for its new side. */
+.nb-page--picture .nb-right__inner { padding: 22px 28px 20px 68px; } /* clears the red margin line */
+.nb-page--text .nb-left__inner     { padding: 22px 32px 20px 34px; }
 </style>
 </head>
 <body>
@@ -400,39 +407,27 @@ body {
 
         <div class="nb-book">
 
-            <!-- ── LEFT PAGE ─────────────────────────── -->
-            <div class="nb-left">
-                <div class="nb-left__inner">
+            <!-- ── LEFT PAGE — picture + fun fact (slide 1 of the carousel) ── -->
+            <div class="nb-left nb-page--picture">
+                <div class="nb-right__inner">
 
-                    <!-- EDIT: stamp (delete this line to hide it) -->
-                    <div class="nb-left__stamp" contenteditable="true" spellcheck="false">CN</div>
-
-                    <!-- EDIT: title (<br> = new line) -->
-                    <h2 class="nb-left__title" contenteditable="true" spellcheck="false">Who We Are</h2>
-
-                    <div class="nb-left__rule"></div>
-
-                    <!-- EDIT: body text -->
-                    <p class="nb-left__body" contenteditable="true" spellcheck="false">Cnote Bakery (Console Notebook) is like a hobby dedicated to the world of gaming consoles. It brings together history, technology, and community in one place. But it aims to go beyond documentation. Cnote Bakery seeks to revive a part of us — the authentic gaming spirit that many lost as the industry changed. Here you can discover consoles, learn how they work, and help preserve an important piece of gaming culture. You're just one button away from starting your own console journey, connecting with fellow enthusiasts, and diving into the rich world of gaming history and technology.</p>
-
-                    <!-- EDIT: stats (delete a whole <div class="nb-stat">…</div> to hide one) -->
-                    <div class="nb-left__stats">
-                        <div class="nb-stat">
-                            <b contenteditable="true" spellcheck="false">50+</b>
-                            <span contenteditable="true" spellcheck="false">Consoles</span>
-                        </div>
-                        <div class="nb-stat">
-                            <b contenteditable="true" spellcheck="false">9</b>
-                            <span contenteditable="true" spellcheck="false">Generations</span>
-                        </div>
-                        <div class="nb-stat">
-                            <b contenteditable="true" spellcheck="false">1972</b>
-                            <span contenteditable="true" spellcheck="false">Since</span>
-                        </div>
+                    <div class="nb-right__header">
+                        <!-- EDIT: small label (generation · year) -->
+                        <span class="nb-right__gen" contenteditable="true" spellcheck="false">GEN I · 1972</span>
+                        <!-- EDIT: console name -->
+                        <span class="nb-right__name" contenteditable="true" spellcheck="false">Magnavox Odyssey</span>
                     </div>
 
-                    <!-- EDIT: button (delete this line to hide it) -->
-                    <span class="nb-left__cta" contenteditable="true" spellcheck="false">Log in →</span>
+                    <!-- EDIT: picture (PNG/WebP with transparent background looks best) -->
+                    <img class="nb-right__img" id="picture"
+                         src="../../assets/images/consoles/magnavox-odyssey.webp"
+                         alt="Magnavox Odyssey" title="Click to choose another picture">
+
+                    <!-- EDIT: fun fact (delete the whole block to hide it) -->
+                    <div class="nb-right__fact">
+                        <span class="nb-right__fact-label" contenteditable="true" spellcheck="false">★ Fun Fact</span>
+                        <p class="nb-right__fact-text" contenteditable="true" spellcheck="false">Atari's founder saw Odyssey's Table Tennis in May 1972 and went on to create Pong. Magnavox sued, and won $1.5 million.</p>
+                    </div>
 
                 </div>
             </div>
@@ -451,27 +446,39 @@ body {
                 <div class="nb-ring"></div>
             </div>
 
-            <!-- ── RIGHT PAGE ────────────────────────── -->
-            <div class="nb-right">
-                <div class="nb-right__inner">
+            <!-- ── RIGHT PAGE — site text excerpt (slide 2 of the carousel) ── -->
+            <div class="nb-right nb-page--text">
+                <div class="nb-left__inner">
 
-                    <div class="nb-right__header">
-                        <!-- EDIT: small label -->
-                        <span class="nb-right__gen" contenteditable="true" spellcheck="false">GEN II · 1977</span>
-                        <!-- EDIT: title -->
-                        <span class="nb-right__name" contenteditable="true" spellcheck="false">Atari 2600</span>
+                    <!-- EDIT: stamp = post number in the series (delete this line to hide it) -->
+                    <div class="nb-left__stamp" contenteditable="true" spellcheck="false">01</div>
+
+                    <!-- EDIT: title = the section's name on the site -->
+                    <h2 class="nb-left__title" contenteditable="true" spellcheck="false">Console Development</h2>
+
+                    <div class="nb-left__rule"></div>
+
+                    <!-- EDIT: excerpt, copied word for word from the site, ending in "…" -->
+                    <p class="nb-left__body" contenteditable="true" spellcheck="false">The concept was born in August 1966, when Ralph H. Baer, an engineer at Sanders Associates, conceived the idea of an interactive device connected to a television. Together with colleagues Bill Harrison and Bill Rusch, Baer built seven successive prototypes between 1966 and 1969. The seventh, named “Brown Box,” included game mechanics and a light gun. After negotiations with several manufacturers who declined…</p>
+
+                    <!-- EDIT: stats (delete a whole <div class="nb-stat">…</div> to hide one) -->
+                    <div class="nb-left__stats">
+                        <div class="nb-stat">
+                            <b contenteditable="true" spellcheck="false">1972</b>
+                            <span contenteditable="true" spellcheck="false">Released</span>
+                        </div>
+                        <div class="nb-stat">
+                            <b contenteditable="true" spellcheck="false">$99.95</b>
+                            <span contenteditable="true" spellcheck="false">Launch price</span>
+                        </div>
+                        <div class="nb-stat">
+                            <b contenteditable="true" spellcheck="false">350K+</b>
+                            <span contenteditable="true" spellcheck="false">Units sold</span>
+                        </div>
                     </div>
 
-                    <!-- EDIT: picture (PNG with transparent background looks best) -->
-                    <img class="nb-right__img" id="picture"
-                         src="../../assets/images/consoles/atari-2600.webp"
-                         alt="Atari 2600" title="Click to choose another picture">
-
-                    <!-- EDIT: fun fact (delete the whole block to hide it) -->
-                    <div class="nb-right__fact">
-                        <span class="nb-right__fact-label" contenteditable="true" spellcheck="false">★ Fun Fact</span>
-                        <p class="nb-right__fact-text" contenteditable="true" spellcheck="false">Only 128 bytes of RAM — less than this sentence takes to store — yet it changed gaming forever.</p>
-                    </div>
+                    <!-- EDIT: button (delete this line to hide it) -->
+                    <span class="nb-left__cta" contenteditable="true" spellcheck="false">Read more · link in bio →</span>
 
                 </div>
             </div>
