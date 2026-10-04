@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<!-- =====================================================
+     NOTEBOOK TEMPLATE — Instagram posts
+     A copy of the notebook from html/pages/index.html (same markup,
+     same nb-* CSS from css/pages/index.css, dark-theme paper), with
+     everything else removed. Edit the text and the picture below,
+     open the page in a browser, screenshot the frame, then do the
+     pixel-art pass on the screenshot.
+
+     HOW TO EDIT
+       • Text: change it in the HTML below (every spot is marked
+         "EDIT"), OR click any text in the browser and type.
+       • Picture: change the <img src="..."> below, OR click the
+         picture in the browser and pick a file from your computer.
+       • Size of the notebook: --book-w / --book-h in :root.
+     Self-contained: no site JS/navbar. Unlinked, noindex.
+     ===================================================== -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Notebook Template</title>
+<link rel="icon" type="image/x-icon" href="../../assets/icons/favicon.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,700&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+    /* Notebook size — the site shows it at about 890×650 on a 1920px screen */
+    --book-w: 890px;
+    --book-h: 650px;
+    /* Dark space around the notebook inside the screenshot frame */
+    --frame-pad: 48px;
+
+    /* Site values (css/base/variables.css, dark theme) */
+    --primary-color: #0a0907;
+    --primary-rgb: 10, 9, 7;
+    --font-sans: 'DM Sans', system-ui, sans-serif;
+    --font-serif: 'Playfair Display', Georgia, serif;
+
+    /* Paper tone — dark theme, same as consolenotebook.com in dark mode */
+    --nb-paper-bg: #E1D3BC;
+    --nb-paper-line: rgba(120, 86, 45, 0.28);
+    color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+    background: #050403;
+    color: #e8ddcc;
+    font-family: var(--font-sans);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: safe center;
+    padding: 24px 16px;
+    gap: 14px;
+}
+
+/* ── Screenshot frame: same wallpaper + overlay as the landing page ── */
+.shot {
+    position: relative;
+    padding: var(--frame-pad);
+    background: url('../../assets/images/wallpapers/index.jpg') center / cover no-repeat;
+    background-color: var(--primary-color);
+    isolation: isolate;
+}
+.shot::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: rgba(var(--primary-rgb), 0.78);
+}
+
+.help {
+    margin: 0;
+    max-width: 900px;
+    font-size: 13px;
+    color: #9c8f7c;
+    text-align: center;
+    line-height: 1.5;
+}
+.help b { color: #e8ddcc; }
+
+/* Editing in the browser: no outlines/spellcheck marks in the screenshot */
+[contenteditable] { outline: none; cursor: text; }
+[contenteditable]:hover { box-shadow: 0 0 0 1px rgba(130, 90, 20, 0.25); }
+[contenteditable]:focus { box-shadow: none; }
+.nb-right__img { cursor: pointer; }
+
+/* ===== Copied from css/pages/index.css (nb-*) ===== */
+
+.nb-book-wrap {
+    position: relative;
+    width: var(--book-w);
+}
+
+.nb-cover-edge {
+    position: absolute;
+    left: 7px;
+    right: 7px;
+    height: 10px;
+    background: #2a1d13;
+    border-radius: 4px;
+    z-index: -1;
+}
+.nb-cover-edge--top    { top: -5px;    border-radius: 6px 6px 0 0; }
+.nb-cover-edge--bottom { bottom: -5px; border-radius: 0 0 6px 6px; }
+
+.nb-book {
+    display: flex;
+    border-radius: 10px;
+    overflow: hidden;
+    height: var(--book-h);
+    box-shadow:
+        0 48px 110px rgba(0, 0, 0, 0.70),
+        0 14px 36px  rgba(0, 0, 0, 0.45),
+        inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    background: #1a1008;
+    border: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.nb-left,
+.nb-right {
+    flex: 1;
+    min-width: 0;
+    position: relative;
+    background-color: var(--nb-paper-bg);
+    background-image: repeating-linear-gradient(
+        to bottom,
+        transparent 0px,
+        transparent 27px,
+        var(--nb-paper-line) 27px,
+        var(--nb-paper-line) 28px
+    );
+    background-size: 100% 28px;
+    overflow: hidden;
+}
+
+.nb-left::after {
+    content: '';
+    position: absolute;
+    right: 0; top: 0; bottom: 0;
+    width: 30px;
+    background: linear-gradient(to right, transparent, rgba(20, 10, 2, 0.13));
+    pointer-events: none;
+    z-index: 1;
+}
+
+.nb-left::before {
+    content: '';
+    position: absolute;
+    left: 52px; top: 0; bottom: 0;
+    width: 1.5px;
+    background: rgba(195, 60, 60, 0.28);
+    z-index: 1;
+}
+
+.nb-right::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 30px;
+    background: linear-gradient(to left, transparent, rgba(20, 10, 2, 0.10));
+    pointer-events: none;
+    z-index: 1;
+}
+
+.nb-left__inner {
+    position: relative;
+    z-index: 2;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: 22px 32px 20px 68px;
+}
+
+.nb-left__stamp {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: 2px solid rgba(130, 90, 20, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-serif);
+    font-weight: 700;
+    font-size: 0.78rem;
+    color: rgba(130, 90, 20, 0.65);
+    letter-spacing: 0.04em;
+    margin-bottom: 10px;
+    flex-shrink: 0;
+}
+
+.nb-left__title {
+    font-family: var(--font-serif);
+    font-weight: 700;
+    font-style: italic;
+    font-size: 2.9rem;
+    color: #2a1a0e;
+    line-height: 1.0;
+    margin: 0 0 8px;
+    flex-shrink: 0;
+}
+
+.nb-left__rule {
+    width: 44px;
+    height: 2px;
+    border-radius: 999px;
+    background: rgba(130, 90, 20, 0.45);
+    margin-bottom: 10px;
+    flex-shrink: 0;
+}
+
+.nb-left__body {
+    font-family: var(--font-sans);
+    font-size: 0.9rem;
+    color: #3d2a1a;
+    line-height: 1.65;
+    margin: 0 0 12px;
+    flex-shrink: 1;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.nb-left__stats {
+    display: flex;
+    gap: 22px;
+    margin-bottom: 14px;
+    flex-shrink: 0;
+}
+
+.nb-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.nb-stat b {
+    font-family: var(--font-serif);
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #2a1a0e;
+    line-height: 1;
+}
+
+.nb-stat span {
+    font-family: var(--font-sans);
+    font-size: 0.66rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(61, 42, 26, 0.55);
+}
+
+.nb-left__cta {
+    display: inline-flex;
+    align-items: center;
+    padding: 10px 24px;
+    background: #2a1a0e;
+    color: #F8F2E4;
+    font-family: var(--font-sans);
+    font-size: 0.82rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-decoration: none;
+    border-radius: 999px;
+    align-self: flex-start;
+    margin-top: auto;
+    flex-shrink: 0;
+}
+
+.nb-spine {
+    width: 30px;
+    background: linear-gradient(
+        to right,
+        #110c06 0%,
+        #2a1d11 25%,
+        #3a2c1c 50%,
+        #2a1d11 75%,
+        #110c06 100%
+    );
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-evenly;
+    padding: 24px 0;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 2;
+    box-shadow:
+        inset 5px 0 10px rgba(0, 0, 0, 0.55),
+        inset -5px 0 10px rgba(0, 0, 0, 0.55);
+}
+
+.nb-ring {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 3px solid #4a3828;
+    background: radial-gradient(circle at 38% 35%, #2c2015 30%, #0e0906 100%);
+    box-shadow:
+        inset 0 2px 5px rgba(0, 0, 0, 0.75),
+        0 0 0 1px rgba(255, 255, 255, 0.03);
+    flex-shrink: 0;
+}
+
+.nb-right__inner {
+    position: relative;
+    z-index: 2;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 18px 30px 18px 26px;
+}
+
+.nb-right__header {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    margin-bottom: 8px;
+    flex-shrink: 0;
+}
+
+.nb-right__gen {
+    font-family: var(--font-sans);
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: rgba(130, 90, 20, 0.75);
+}
+
+.nb-right__name {
+    font-family: var(--font-serif);
+    font-weight: 700;
+    font-size: 2.8rem;
+    color: #2a1a0e;
+    line-height: 1;
+}
+
+.nb-right__img {
+    width: 100%;
+    max-width: 400px;
+    min-height: 0;
+    object-fit: contain;
+    align-self: center;
+    display: block;
+    flex-shrink: 1;
+    filter:
+        drop-shadow(0 10px 20px rgba(0, 0, 0, 0.22))
+        drop-shadow(0 26px 34px rgba(20, 10, 2, 0.18))
+        brightness(1.16)
+        contrast(1.07)
+        saturate(1.08);
+}
+
+.nb-right__fact {
+    background: rgba(150, 105, 20, 0.08);
+    border: 1px solid rgba(150, 105, 20, 0.2);
+    border-left: 3px solid rgba(150, 105, 20, 0.55);
+    border-radius: 0 10px 10px 0;
+    padding: 12px 14px;
+    flex-shrink: 0;
+}
+
+.nb-right__fact-label {
+    display: block;
+    font-family: var(--font-sans);
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: rgba(130, 90, 20, 0.85);
+    margin-bottom: 6px;
+}
+
+.nb-right__fact-text {
+    font-family: var(--font-sans);
+    font-size: 0.83rem;
+    font-style: italic;
+    color: #3d2a1a;
+    line-height: 1.6;
+    margin: 0;
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════ SCREENSHOT THIS FRAME ═══════════ -->
+<div class="shot" id="shot">
+    <div class="nb-book-wrap">
+
+        <div class="nb-cover-edge nb-cover-edge--top"></div>
+        <div class="nb-cover-edge nb-cover-edge--bottom"></div>
+
+        <div class="nb-book">
+
+            <!-- ── LEFT PAGE ─────────────────────────── -->
+            <div class="nb-left">
+                <div class="nb-left__inner">
+
+                    <!-- EDIT: stamp (delete this line to hide it) -->
+                    <div class="nb-left__stamp" contenteditable="true" spellcheck="false">CN</div>
+
+                    <!-- EDIT: title (<br> = new line) -->
+                    <h2 class="nb-left__title" contenteditable="true" spellcheck="false">Who We Are</h2>
+
+                    <div class="nb-left__rule"></div>
+
+                    <!-- EDIT: body text -->
+                    <p class="nb-left__body" contenteditable="true" spellcheck="false">Cnote Bakery (Console Notebook) is like a hobby dedicated to the world of gaming consoles. It brings together history, technology, and community in one place. But it aims to go beyond documentation. Cnote Bakery seeks to revive a part of us — the authentic gaming spirit that many lost as the industry changed. Here you can discover consoles, learn how they work, and help preserve an important piece of gaming culture. You're just one button away from starting your own console journey, connecting with fellow enthusiasts, and diving into the rich world of gaming history and technology.</p>
+
+                    <!-- EDIT: stats (delete a whole <div class="nb-stat">…</div> to hide one) -->
+                    <div class="nb-left__stats">
+                        <div class="nb-stat">
+                            <b contenteditable="true" spellcheck="false">50+</b>
+                            <span contenteditable="true" spellcheck="false">Consoles</span>
+                        </div>
+                        <div class="nb-stat">
+                            <b contenteditable="true" spellcheck="false">9</b>
+                            <span contenteditable="true" spellcheck="false">Generations</span>
+                        </div>
+                        <div class="nb-stat">
+                            <b contenteditable="true" spellcheck="false">1972</b>
+                            <span contenteditable="true" spellcheck="false">Since</span>
+                        </div>
+                    </div>
+
+                    <!-- EDIT: button (delete this line to hide it) -->
+                    <span class="nb-left__cta" contenteditable="true" spellcheck="false">Log in →</span>
+
+                </div>
+            </div>
+
+            <!-- ── SPINE ─────────────────────────────── -->
+            <div class="nb-spine">
+                <div class="nb-ring"></div>
+                <div class="nb-ring"></div>
+                <div class="nb-ring"></div>
+                <div class="nb-ring"></div>
+                <div class="nb-ring"></div>
+                <div class="nb-ring"></div>
+                <div class="nb-ring"></div>
+                <div class="nb-ring"></div>
+                <div class="nb-ring"></div>
+                <div class="nb-ring"></div>
+            </div>
+
+            <!-- ── RIGHT PAGE ────────────────────────── -->
+            <div class="nb-right">
+                <div class="nb-right__inner">
+
+                    <div class="nb-right__header">
+                        <!-- EDIT: small label -->
+                        <span class="nb-right__gen" contenteditable="true" spellcheck="false">GEN II · 1977</span>
+                        <!-- EDIT: title -->
+                        <span class="nb-right__name" contenteditable="true" spellcheck="false">Atari 2600</span>
+                    </div>
+
+                    <!-- EDIT: picture (PNG with transparent background looks best) -->
+                    <img class="nb-right__img" id="picture"
+                         src="../../assets/images/consoles/atari-2600.webp"
+                         alt="Atari 2600" title="Click to choose another picture">
+
+                    <!-- EDIT: fun fact (delete the whole block to hide it) -->
+                    <div class="nb-right__fact">
+                        <span class="nb-right__fact-label" contenteditable="true" spellcheck="false">★ Fun Fact</span>
+                        <p class="nb-right__fact-text" contenteditable="true" spellcheck="false">Only 128 bytes of RAM — less than this sentence takes to store — yet it changed gaming forever.</p>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+<!-- ═══════════ END OF FRAME ═══════════ -->
+
+<p class="help">
+    <b>Click any text</b> to change it, <b>click the picture</b> to pick another one, then screenshot the frame above
+    (Windows: <b>Win + Shift + S</b>). Browser edits are lost on reload; edit the HTML file to keep them.
+</p>
+<input type="file" id="picture-file" accept="image/*" hidden>
+
+<script>
+(function () {
+    var img = document.getElementById('picture');
+    var input = document.getElementById('picture-file');
+    img.addEventListener('click', function () { input.click(); });
+    input.addEventListener('change', function () {
+        var file = input.files && input.files[0];
+        if (!file) return;
+        img.src = URL.createObjectURL(file);
+        img.alt = file.name;
+        input.value = '';
+    });
+    // Paste plain text only, so copied text doesn't bring its own fonts/colors.
+    document.querySelectorAll('[contenteditable]').forEach(function (el) {
+        el.addEventListener('paste', function (e) {
+            e.preventDefault();
+            var text = (e.clipboardData || window.clipboardData).getData('text/plain');
+            document.execCommand('insertText', false, text);
+        });
+    });
+})();
+</script>
+</body>
+</html>
