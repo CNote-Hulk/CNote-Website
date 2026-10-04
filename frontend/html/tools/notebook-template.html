@@ -196,8 +196,8 @@ body {
 }
 .pic {
     display: block;
-    max-width: 100%;
-    max-height: 100%;
+    max-width: 78%;    /* picture size on the page: lower = smaller */
+    max-height: 82%;
     object-fit: contain;
     filter:
         drop-shadow(0 10px 20px rgba(0, 0, 0, 0.22))
@@ -345,19 +345,6 @@ body {
     text-transform: uppercase;
     color: var(--gold-text);
 }
-.cta {
-    align-self: flex-start;
-    margin-top: auto;
-    padding: 11px 26px;
-    border-radius: 999px;
-    background: var(--ink);
-    color: #F8F2E4;
-    font-family: var(--font-sans);
-    font-weight: 600;
-    font-size: 16px;
-    letter-spacing: 0.05em;
-    flex-shrink: 0;
-}
 </style>
 </head>
 <body>
@@ -446,9 +433,6 @@ body {
                         <span contenteditable="true" spellcheck="false">Units sold</span>
                     </div>
                 </div>
-
-                <!-- EDIT: button (delete the line to hide it) -->
-                <div class="cta" contenteditable="true" spellcheck="false">Read more · link in bio →</div>
 
             </div>
         </div>
