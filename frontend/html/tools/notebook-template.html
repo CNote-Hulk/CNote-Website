@@ -171,6 +171,12 @@ body {
     color: var(--gold-text);
     line-height: var(--line);
 }
+.label-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
 .name {
     font-family: var(--font-serif);
     font-weight: 800;
@@ -364,8 +370,11 @@ body {
         <div class="page page--left">
             <div class="pic-inner">
 
-                <!-- EDIT: small label (generation · year) -->
-                <div class="label" contenteditable="true" spellcheck="false">Gen I · 1972</div>
+                <!-- EDIT: small label (generation · year) + series counter (same as on the right page) -->
+                <div class="label-row">
+                    <div class="label" contenteditable="true" spellcheck="false">Gen I · 1972</div>
+                    <div class="counter" data-sync="counter" contenteditable="true" spellcheck="false">Console 1 / 52</div>
+                </div>
 
                 <!-- EDIT: console name -->
                 <h1 class="name" contenteditable="true" spellcheck="false">Magnavox Odyssey</h1>
@@ -406,10 +415,11 @@ body {
         <div class="page page--right">
             <div class="text-inner">
 
-                <!-- EDIT: stamp (left) + series counter (right): console N of 52 on the site -->
+                <!-- EDIT: stamp (left) + series counter (right): console N of 52 on the site.
+                     The counter is on both pages — change both (in the browser they stay in sync). -->
                 <div class="stamp-row">
                     <div class="stamp" contenteditable="true" spellcheck="false">CN</div>
-                    <div class="counter" contenteditable="true" spellcheck="false">Console 1 / 52</div>
+                    <div class="counter" data-sync="counter" contenteditable="true" spellcheck="false">Console 1 / 52</div>
                 </div>
 
                 <!-- EDIT: title = the section's name on the site (<br> = new line) -->
@@ -467,6 +477,14 @@ body {
         img.alt = file.name;
         input.value = '';
     });
+    // The series counter appears on both pages: typing in one updates the other.
+    var synced = document.querySelectorAll('[data-sync="counter"]');
+    synced.forEach(function (el) {
+        el.addEventListener('input', function () {
+            synced.forEach(function (other) { if (other !== el) other.textContent = el.textContent; });
+        });
+    });
+
     // Paste plain text only, so copied text doesn't bring its own fonts/colors.
     document.querySelectorAll('[contenteditable]').forEach(function (el) {
         el.addEventListener('paste', function (e) {
