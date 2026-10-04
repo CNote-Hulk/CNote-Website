@@ -1,20 +1,25 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 <head>
 <!-- =====================================================
      NOTEBOOK TEMPLATE — Instagram posts
-     A copy of the notebook from html/pages/index.html (same markup,
-     same nb-* CSS from css/pages/index.css, dark-theme paper), with
-     everything else removed. Edit the text and the picture below,
-     open the page in a browser, screenshot the frame, then do the
-     pixel-art pass on the screenshot.
+     The landing-page notebook (html/pages/index.html) in the site's own
+     style (Playfair Display + DM Sans, warm ruled paper, spiral spine),
+     laid out like the first @consolenotebook post: 3:2 spread, big
+     title, big centered picture, gold-framed fun fact box, text written
+     on the ruled lines, stats row. The pixel-art pass is done afterwards
+     in ChatGPT, from a screenshot of this page.
+
+     Picture page on the LEFT (carousel slide 1), site text on the
+     RIGHT (slide 2).
 
      HOW TO EDIT
        • Text: change it in the HTML below (every spot is marked
          "EDIT"), OR click any text in the browser and type.
        • Picture: change the <img src="..."> below, OR click the
-         picture in the browser and pick a file from your computer.
-       • Size of the notebook: --book-w / --book-h in :root.
+         picture in the browser and pick a file.
+       • Notebook size: --book-w / --book-h in :root (3:2 → each
+         page is a 3:4 Instagram slide).
      Self-contained: no site JS/navbar. Unlinked, noindex.
      ===================================================== -->
 <meta charset="UTF-8">
@@ -24,31 +29,39 @@
 <link rel="icon" type="image/x-icon" href="../../assets/icons/favicon.ico">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,700&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
 <style>
 :root {
-    /* Notebook size — the site shows it at about 890×650 on a 1920px screen */
-    --book-w: 890px;
-    --book-h: 650px;
-    /* Dark space around the notebook inside the screenshot frame */
-    --frame-pad: 48px;
+    --book-w: 1200px;
+    --book-h: 800px;
+    --line: 30px;                 /* ruled-line spacing; the body text sits on these */
 
-    /* Site values (css/base/variables.css, dark theme) */
-    --primary-color: #0a0907;
-    --primary-rgb: 10, 9, 7;
-    --font-sans: 'DM Sans', system-ui, sans-serif;
+    /* Site palette (css/pages/index.css nb-* values) */
+    --frame: #1b110a;
+    --cover: #2a1d13;
+    --cover-dark: #1a1008;
+    --paper: #F4E9D5;
+    --paper-line: rgba(155, 120, 75, 0.24);
+    --margin-red: rgba(195, 60, 60, 0.38);
+    --ink: #2a1a0e;
+    --ink-soft: #3d2a1a;
+    --gold-text: rgba(130, 90, 20, 0.88);
+    --gold: rgba(176, 128, 42, 0.85);
+
     --font-serif: 'Playfair Display', Georgia, serif;
-
-    /* Paper tone — dark theme, same as consolenotebook.com in dark mode */
-    --nb-paper-bg: #E1D3BC;
-    --nb-paper-line: rgba(120, 86, 45, 0.28);
+    --font-sans: 'DM Sans', system-ui, sans-serif;
     color-scheme: dark;
 }
 
+/* Straight (lining) digits everywhere: Playfair's default old-style 5/9 drop
+   below the line and are easier for the pixel-art redraw to misread. */
+.shot { font-variant-numeric: lining-nums; }
+
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 html, body { margin: 0; }
 body {
-    background: #050403;
+    background: #0b0705;
     color: #e8ddcc;
     font-family: var(--font-sans);
     min-height: 100vh;
@@ -58,23 +71,6 @@ body {
     padding: 24px 16px;
     gap: 14px;
 }
-
-/* ── Screenshot frame: same wallpaper + overlay as the landing page ── */
-.shot {
-    position: relative;
-    padding: var(--frame-pad);
-    background: url('../../assets/images/wallpapers/index.jpg') center / cover no-repeat;
-    background-color: var(--primary-color);
-    isolation: isolate;
-}
-.shot::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    background: rgba(var(--primary-rgb), 0.78);
-}
-
 .help {
     margin: 0;
     max-width: 900px;
@@ -85,417 +81,382 @@ body {
 }
 .help b { color: #e8ddcc; }
 
-/* Editing in the browser: no outlines/spellcheck marks in the screenshot */
-[contenteditable] { outline: none; cursor: text; }
-[contenteditable]:hover { box-shadow: 0 0 0 1px rgba(130, 90, 20, 0.25); }
-[contenteditable]:focus { box-shadow: none; }
-.nb-right__img { cursor: pointer; }
+/* Editing in the browser: nothing that would show up in the screenshot */
+[contenteditable] { outline: none; cursor: text; caret-color: var(--ink); }
+.pic { cursor: pointer; }
 
-/* ===== Copied from css/pages/index.css (nb-*) ===== */
+/* ── Frame (screenshot this) ─────────────────── */
+.shot {
+    padding: 22px;
+    background: var(--frame);
+}
 
-.nb-book-wrap {
-    position: relative;
+/* ── Book: cover around both pages ───────────── */
+.book {
     width: var(--book-w);
-}
-
-.nb-cover-edge {
-    position: absolute;
-    left: 7px;
-    right: 7px;
-    height: 10px;
-    background: #2a1d13;
-    border-radius: 4px;
-    z-index: -1;
-}
-.nb-cover-edge--top    { top: -5px;    border-radius: 6px 6px 0 0; }
-.nb-cover-edge--bottom { bottom: -5px; border-radius: 0 0 6px 6px; }
-
-.nb-book {
-    display: flex;
-    border-radius: 10px;
-    overflow: hidden;
     height: var(--book-h);
+    padding: 14px;
+    border-radius: 14px;
+    background: var(--cover);
     box-shadow:
-        0 48px 110px rgba(0, 0, 0, 0.70),
-        0 14px 36px  rgba(0, 0, 0, 0.45),
-        inset 0 1px 0 rgba(255, 255, 255, 0.04);
-    background: #1a1008;
-    border: 1px solid rgba(255, 255, 255, 0.03);
+        inset 0 0 0 3px var(--cover-dark),
+        inset 0 0 0 6px #3d2a1a,
+        0 30px 60px rgba(0, 0, 0, 0.55);
+    display: flex;
 }
 
-.nb-left,
-.nb-right {
+.page {
     flex: 1;
     min-width: 0;
     position: relative;
-    background-color: var(--nb-paper-bg);
+    border-radius: 6px;
+    background-color: var(--paper);
     background-image: repeating-linear-gradient(
         to bottom,
-        transparent 0px,
-        transparent 27px,
-        var(--nb-paper-line) 27px,
-        var(--nb-paper-line) 28px
+        transparent 0,
+        transparent calc(var(--line) - 1.5px),
+        var(--paper-line) calc(var(--line) - 1.5px),
+        var(--paper-line) var(--line)
     );
-    background-size: 100% 28px;
     overflow: hidden;
 }
-
-.nb-left::after {
+/* Shading toward the spine (.nb-left::after / .nb-right::before on the site) */
+.page--left::after,
+.page--right::after {
     content: '';
     position: absolute;
-    right: 0; top: 0; bottom: 0;
-    width: 30px;
-    background: linear-gradient(to right, transparent, rgba(20, 10, 2, 0.13));
+    top: 0; bottom: 0;
+    width: 34px;
     pointer-events: none;
-    z-index: 1;
 }
+.page--left::after  { right: 0; background: linear-gradient(to right, transparent, rgba(20, 10, 2, 0.13)); }
+.page--right::after { left: 0;  background: linear-gradient(to left,  transparent, rgba(20, 10, 2, 0.11)); }
 
-.nb-left::before {
-    content: '';
-    position: absolute;
-    left: 52px; top: 0; bottom: 0;
-    width: 1.5px;
-    background: rgba(195, 60, 60, 0.28);
-    z-index: 1;
-}
-
-.nb-right::before {
-    content: '';
-    position: absolute;
-    left: 0; top: 0; bottom: 0;
-    width: 30px;
-    background: linear-gradient(to left, transparent, rgba(20, 10, 2, 0.10));
-    pointer-events: none;
-    z-index: 1;
-}
-
-.nb-left__inner {
-    position: relative;
-    z-index: 2;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    padding: 22px 32px 20px 68px;
-}
-
-.nb-left__stamp {
-    width: 42px;
-    height: 42px;
-    border-radius: 50%;
-    border: 2px solid rgba(130, 90, 20, 0.45);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: var(--font-serif);
-    font-weight: 700;
-    font-size: 0.78rem;
-    color: rgba(130, 90, 20, 0.65);
-    letter-spacing: 0.04em;
-    margin-bottom: 10px;
-    flex-shrink: 0;
-}
-
-.nb-left__title {
-    font-family: var(--font-serif);
-    font-weight: 700;
-    font-style: italic;
-    font-size: 2.9rem;
-    color: #2a1a0e;
-    line-height: 1.0;
-    margin: 0 0 8px;
-    flex-shrink: 0;
-}
-
-.nb-left__rule {
+/* ── Spine (.nb-spine / .nb-ring) ────────────── */
+.spine {
     width: 44px;
-    height: 2px;
-    border-radius: 999px;
-    background: rgba(130, 90, 20, 0.45);
-    margin-bottom: 10px;
     flex-shrink: 0;
-}
-
-.nb-left__body {
-    font-family: var(--font-sans);
-    font-size: 0.9rem;
-    color: #3d2a1a;
-    line-height: 1.65;
-    margin: 0 0 12px;
-    flex-shrink: 1;
-    min-height: 0;
-    overflow: hidden;
-}
-
-.nb-left__stats {
-    display: flex;
-    gap: 22px;
-    margin-bottom: 14px;
-    flex-shrink: 0;
-}
-
-.nb-stat {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-}
-
-.nb-stat b {
-    font-family: var(--font-serif);
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #2a1a0e;
-    line-height: 1;
-}
-
-.nb-stat span {
-    font-family: var(--font-sans);
-    font-size: 0.66rem;
-    font-weight: 500;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: rgba(61, 42, 26, 0.55);
-}
-
-.nb-left__cta {
-    display: inline-flex;
-    align-items: center;
-    padding: 10px 24px;
-    background: #2a1a0e;
-    color: #F8F2E4;
-    font-family: var(--font-sans);
-    font-size: 0.82rem;
-    font-weight: 600;
-    letter-spacing: 0.06em;
-    text-decoration: none;
-    border-radius: 999px;
-    align-self: flex-start;
-    margin-top: auto;
-    flex-shrink: 0;
-}
-
-.nb-spine {
-    width: 30px;
-    background: linear-gradient(
-        to right,
-        #110c06 0%,
-        #2a1d11 25%,
-        #3a2c1c 50%,
-        #2a1d11 75%,
-        #110c06 100%
-    );
+    background: linear-gradient(to right, #110c06 0%, #2a1d11 25%, #3a2c1c 50%, #2a1d11 75%, #110c06 100%);
+    box-shadow: inset 5px 0 10px rgba(0, 0, 0, 0.55), inset -5px 0 10px rgba(0, 0, 0, 0.55);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: space-evenly;
-    padding: 24px 0;
-    flex-shrink: 0;
-    position: relative;
-    z-index: 2;
-    box-shadow:
-        inset 5px 0 10px rgba(0, 0, 0, 0.55),
-        inset -5px 0 10px rgba(0, 0, 0, 0.55);
+    padding: 20px 0;
 }
-
-.nb-ring {
-    width: 20px;
-    height: 20px;
+.ring {
+    width: 26px;
+    height: 26px;
     border-radius: 50%;
-    border: 3px solid #4a3828;
+    border: 4px solid #6b4a2c;
     background: radial-gradient(circle at 38% 35%, #2c2015 30%, #0e0906 100%);
-    box-shadow:
-        inset 0 2px 5px rgba(0, 0, 0, 0.75),
-        0 0 0 1px rgba(255, 255, 255, 0.03);
-    flex-shrink: 0;
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.75);
 }
 
-.nb-right__inner {
+/* ── LEFT: picture page ──────────────────────── */
+.pic-inner {
+    position: relative;
+    z-index: 1;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: var(--line) 40px 34px 44px;
+}
+.label {
+    font-family: var(--font-sans);
+    font-weight: 700;
+    font-size: 17px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--gold-text);
+    line-height: var(--line);
+}
+.name {
+    font-family: var(--font-serif);
+    font-weight: 800;
+    font-size: 62px;
+    line-height: 1.05;
+    color: var(--ink);
+    margin: 4px 0 0;
+    text-wrap: balance;
+}
+.pic-wrap {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 14px 0;
+}
+.pic {
+    display: block;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    filter:
+        drop-shadow(0 10px 20px rgba(0, 0, 0, 0.22))
+        drop-shadow(0 26px 34px rgba(20, 10, 2, 0.18))
+        brightness(1.1)
+        contrast(1.05);
+}
+
+/* Fun fact box: full gold frame, label with a rule running to the right */
+.fact {
+    flex-shrink: 0;
+    border: 3px solid var(--gold);
+    border-radius: 10px;
+    background: rgba(150, 105, 20, 0.05);
+    padding: 14px 22px 18px;
+}
+.fact__label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--font-sans);
+    font-weight: 700;
+    font-size: 17px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--gold-text);
+    margin-bottom: 8px;
+}
+.fact__label .star { font-size: 22px; letter-spacing: 0; color: var(--gold); }
+.fact__label span { white-space: nowrap; }
+.fact__label::after {
+    content: '';
+    flex: 1;
+    height: 2px;
+    background: var(--gold);
+    opacity: 0.6;
+}
+.fact__text {
+    margin: 0;
+    font-family: var(--font-sans);
+    font-style: italic;
+    font-size: 20px;
+    line-height: 1.5;
+    color: var(--ink-soft);
+}
+
+/* ── RIGHT: text page ────────────────────────── */
+.page--right::before {           /* red margin line */
+    content: '';
+    position: absolute;
+    left: 50px; top: 0; bottom: 0;
+    width: 2px;
+    background: var(--margin-red);
+    z-index: 1;
+}
+.text-inner {
     position: relative;
     z-index: 2;
     height: 100%;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
-    padding: 18px 30px 18px 26px;
+    padding: var(--line) 38px var(--line) 80px;
 }
-
-.nb-right__header {
+/* Every block above the body is a whole number of ruled lines tall, so the body text lands on the lines. */
+.stamp-row {
     display: flex;
-    flex-direction: column;
-    gap: 3px;
-    margin-bottom: 8px;
+    align-items: center;
+    justify-content: space-between;
+    height: 50px;
+    margin-bottom: calc(var(--line) * 2 - 50px);
     flex-shrink: 0;
 }
-
-.nb-right__gen {
+.counter {
     font-family: var(--font-sans);
-    font-size: 0.62rem;
     font-weight: 700;
+    font-size: 17px;
     letter-spacing: 0.16em;
     text-transform: uppercase;
-    color: rgba(130, 90, 20, 0.75);
+    color: var(--gold-text);
+    font-variant-numeric: tabular-nums;
 }
-
-.nb-right__name {
+.stamp {
+    width: 50px;
+    height: 50px;
+    border: 2.5px solid rgba(130, 90, 20, 0.5);
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
     font-family: var(--font-serif);
     font-weight: 700;
-    font-size: 2.8rem;
-    color: #2a1a0e;
-    line-height: 1;
-}
-
-.nb-right__img {
-    width: 100%;
-    max-width: 400px;
-    min-height: 0;
-    object-fit: contain;
-    align-self: center;
-    display: block;
-    flex-shrink: 1;
-    filter:
-        drop-shadow(0 10px 20px rgba(0, 0, 0, 0.22))
-        drop-shadow(0 26px 34px rgba(20, 10, 2, 0.18))
-        brightness(1.16)
-        contrast(1.07)
-        saturate(1.08);
-}
-
-.nb-right__fact {
-    background: rgba(150, 105, 20, 0.08);
-    border: 1px solid rgba(150, 105, 20, 0.2);
-    border-left: 3px solid rgba(150, 105, 20, 0.55);
-    border-radius: 0 10px 10px 0;
-    padding: 12px 14px;
+    font-size: 17px;
+    letter-spacing: 0.04em;
+    color: rgba(130, 90, 20, 0.75);
     flex-shrink: 0;
 }
-
-.nb-right__fact-label {
-    display: block;
-    font-family: var(--font-sans);
-    font-size: 0.6rem;
-    font-weight: 700;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: rgba(130, 90, 20, 0.85);
-    margin-bottom: 6px;
+.title-block {
+    align-self: flex-start;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
 }
-
-.nb-right__fact-text {
-    font-family: var(--font-sans);
-    font-size: 0.83rem;
-    font-style: italic;
-    color: #3d2a1a;
-    line-height: 1.6;
+.title {
+    font-family: var(--font-serif);
+    font-weight: 800;
+    font-size: 54px;
+    line-height: calc(var(--line) * 2);
+    color: var(--ink);
     margin: 0;
 }
-
-/* ===== Series layout: picture page on the LEFT, text page on the RIGHT =====
-   The pages keep their site classes (.nb-left = red margin line + shadow
-   toward the spine, .nb-right = shadow from the spine); only the content
-   is swapped, so the paddings below re-space it for its new side. */
-.nb-page--picture .nb-right__inner { padding: 22px 28px 20px 68px; } /* clears the red margin line */
-.nb-page--text .nb-left__inner     { padding: 22px 32px 20px 34px; }
+.rule {
+    height: 4px;
+    border-radius: 2px;
+    margin: 4px 0 calc(var(--line) - 8px);
+    background: var(--gold);
+}
+.body {
+    margin: 0;
+    font-family: var(--font-sans);
+    font-size: 19px;
+    line-height: var(--line);
+    color: var(--ink-soft);
+    flex-shrink: 1;
+    min-height: 0;
+    overflow: hidden;
+}
+.stats {
+    display: flex;
+    gap: 44px;
+    margin-top: var(--line);
+    flex-shrink: 0;
+}
+.stat { display: flex; flex-direction: column; gap: 4px; }
+.stat b {
+    font-family: var(--font-serif);
+    font-weight: 800;
+    font-size: 38px;
+    line-height: 1;
+    color: var(--ink);
+}
+.stat span {
+    font-family: var(--font-sans);
+    font-weight: 600;
+    font-size: 14px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gold-text);
+}
+.cta {
+    align-self: flex-start;
+    margin-top: auto;
+    padding: 11px 26px;
+    border-radius: 999px;
+    background: var(--ink);
+    color: #F8F2E4;
+    font-family: var(--font-sans);
+    font-weight: 600;
+    font-size: 16px;
+    letter-spacing: 0.05em;
+    flex-shrink: 0;
+}
 </style>
 </head>
 <body>
 
 <!-- ═══════════ SCREENSHOT THIS FRAME ═══════════ -->
 <div class="shot" id="shot">
-    <div class="nb-book-wrap">
+    <div class="book">
 
-        <div class="nb-cover-edge nb-cover-edge--top"></div>
-        <div class="nb-cover-edge nb-cover-edge--bottom"></div>
+        <!-- ── LEFT PAGE — picture + fun fact (slide 1) ── -->
+        <div class="page page--left">
+            <div class="pic-inner">
 
-        <div class="nb-book">
+                <!-- EDIT: small label (generation · year) -->
+                <div class="label" contenteditable="true" spellcheck="false">Gen I · 1972</div>
 
-            <!-- ── LEFT PAGE — picture + fun fact (slide 1 of the carousel) ── -->
-            <div class="nb-left nb-page--picture">
-                <div class="nb-right__inner">
+                <!-- EDIT: console name -->
+                <h1 class="name" contenteditable="true" spellcheck="false">Magnavox Odyssey</h1>
 
-                    <div class="nb-right__header">
-                        <!-- EDIT: small label (generation · year) -->
-                        <span class="nb-right__gen" contenteditable="true" spellcheck="false">GEN I · 1972</span>
-                        <!-- EDIT: console name -->
-                        <span class="nb-right__name" contenteditable="true" spellcheck="false">Magnavox Odyssey</span>
-                    </div>
-
-                    <!-- EDIT: picture (PNG/WebP with transparent background looks best) -->
-                    <img class="nb-right__img" id="picture"
+                <!-- EDIT: picture (PNG/WebP with transparent background looks best) -->
+                <div class="pic-wrap">
+                    <img class="pic" id="picture"
                          src="../../assets/images/consoles/magnavox-odyssey.webp"
                          alt="Magnavox Odyssey" title="Click to choose another picture">
-
-                    <!-- EDIT: fun fact (delete the whole block to hide it) -->
-                    <div class="nb-right__fact">
-                        <span class="nb-right__fact-label" contenteditable="true" spellcheck="false">★ Fun Fact</span>
-                        <p class="nb-right__fact-text" contenteditable="true" spellcheck="false">Atari's founder saw Odyssey's Table Tennis in May 1972 and went on to create Pong. Magnavox sued, and won $1.5 million.</p>
-                    </div>
-
                 </div>
-            </div>
 
-            <!-- ── SPINE ─────────────────────────────── -->
-            <div class="nb-spine">
-                <div class="nb-ring"></div>
-                <div class="nb-ring"></div>
-                <div class="nb-ring"></div>
-                <div class="nb-ring"></div>
-                <div class="nb-ring"></div>
-                <div class="nb-ring"></div>
-                <div class="nb-ring"></div>
-                <div class="nb-ring"></div>
-                <div class="nb-ring"></div>
-                <div class="nb-ring"></div>
-            </div>
-
-            <!-- ── RIGHT PAGE — site text excerpt (slide 2 of the carousel) ── -->
-            <div class="nb-right nb-page--text">
-                <div class="nb-left__inner">
-
-                    <!-- EDIT: stamp = post number in the series (delete this line to hide it) -->
-                    <div class="nb-left__stamp" contenteditable="true" spellcheck="false">01</div>
-
-                    <!-- EDIT: title = the section's name on the site -->
-                    <h2 class="nb-left__title" contenteditable="true" spellcheck="false">Console Development</h2>
-
-                    <div class="nb-left__rule"></div>
-
-                    <!-- EDIT: excerpt, copied word for word from the site, ending in "…" -->
-                    <p class="nb-left__body" contenteditable="true" spellcheck="false">The concept was born in August 1966, when Ralph H. Baer, an engineer at Sanders Associates, conceived the idea of an interactive device connected to a television. Together with colleagues Bill Harrison and Bill Rusch, Baer built seven successive prototypes between 1966 and 1969. The seventh, named “Brown Box,” included game mechanics and a light gun. After negotiations with several manufacturers who declined…</p>
-
-                    <!-- EDIT: stats (delete a whole <div class="nb-stat">…</div> to hide one) -->
-                    <div class="nb-left__stats">
-                        <div class="nb-stat">
-                            <b contenteditable="true" spellcheck="false">1972</b>
-                            <span contenteditable="true" spellcheck="false">Released</span>
-                        </div>
-                        <div class="nb-stat">
-                            <b contenteditable="true" spellcheck="false">$99.95</b>
-                            <span contenteditable="true" spellcheck="false">Launch price</span>
-                        </div>
-                        <div class="nb-stat">
-                            <b contenteditable="true" spellcheck="false">350K+</b>
-                            <span contenteditable="true" spellcheck="false">Units sold</span>
-                        </div>
+                <!-- EDIT: fun fact (delete the whole block to hide it) -->
+                <div class="fact">
+                    <div class="fact__label">
+                        <span class="star">★</span>
+                        <span contenteditable="true" spellcheck="false">Fun Fact</span>
                     </div>
-
-                    <!-- EDIT: button (delete this line to hide it) -->
-                    <span class="nb-left__cta" contenteditable="true" spellcheck="false">Read more · link in bio →</span>
-
+                    <p class="fact__text" contenteditable="true" spellcheck="false">Atari's founder saw Odyssey's Table Tennis in May 1972 and went on to create Pong. Magnavox sued, and won $1.5 million.</p>
                 </div>
-            </div>
 
+            </div>
         </div>
+
+        <!-- ── SPINE ── -->
+        <div class="spine">
+            <div class="ring"></div>
+            <div class="ring"></div>
+            <div class="ring"></div>
+            <div class="ring"></div>
+            <div class="ring"></div>
+            <div class="ring"></div>
+            <div class="ring"></div>
+            <div class="ring"></div>
+            <div class="ring"></div>
+        </div>
+
+        <!-- ── RIGHT PAGE — text from the site (slide 2) ── -->
+        <div class="page page--right">
+            <div class="text-inner">
+
+                <!-- EDIT: stamp (left) + series counter (right): console N of 52 on the site -->
+                <div class="stamp-row">
+                    <div class="stamp" contenteditable="true" spellcheck="false">CN</div>
+                    <div class="counter" contenteditable="true" spellcheck="false">Console 1 / 52</div>
+                </div>
+
+                <!-- EDIT: title = the section's name on the site (<br> = new line) -->
+                <div class="title-block">
+                    <h2 class="title" contenteditable="true" spellcheck="false">Console<br>Development</h2>
+                    <div class="rule"></div>
+                </div>
+
+                <!-- EDIT: excerpt, copied word for word from the site, ending in "…" -->
+                <p class="body" contenteditable="true" spellcheck="false">The concept was born in August 1966, when Ralph H. Baer, an engineer at Sanders Associates, conceived the idea of an interactive device connected to a television. Together with colleagues Bill Harrison and Bill Rusch, Baer built seven successive prototypes between 1966 and 1969. The seventh, named “Brown Box,” included game mechanics and a light gun. After negotiations with several manufacturers who declined…</p>
+
+                <!-- EDIT: stats (delete a whole <div class="stat">…</div> to hide one) -->
+                <div class="stats">
+                    <div class="stat">
+                        <b contenteditable="true" spellcheck="false">1972</b>
+                        <span contenteditable="true" spellcheck="false">Released</span>
+                    </div>
+                    <div class="stat">
+                        <b contenteditable="true" spellcheck="false">$99.95</b>
+                        <span contenteditable="true" spellcheck="false">Launch price</span>
+                    </div>
+                    <div class="stat">
+                        <b contenteditable="true" spellcheck="false">350K+</b>
+                        <span contenteditable="true" spellcheck="false">Units sold</span>
+                    </div>
+                </div>
+
+                <!-- EDIT: button (delete the line to hide it) -->
+                <div class="cta" contenteditable="true" spellcheck="false">Read more · link in bio →</div>
+
+            </div>
+        </div>
+
     </div>
 </div>
 <!-- ═══════════ END OF FRAME ═══════════ -->
 
 <p class="help">
     <b>Click any text</b> to change it, <b>click the picture</b> to pick another one, then screenshot the frame above
-    (Windows: <b>Win + Shift + S</b>). Browser edits are lost on reload; edit the HTML file to keep them.
+    (Windows: <b>Win + Shift + S</b>) and give it to ChatGPT for the pixel-art pass.
+    Browser edits are lost on reload; edit the HTML file to keep them.
 </p>
 <input type="file" id="picture-file" accept="image/*" hidden>
 
 <script>
 (function () {
+    'use strict';
     var img = document.getElementById('picture');
     var input = document.getElementById('picture-file');
     img.addEventListener('click', function () { input.click(); });
