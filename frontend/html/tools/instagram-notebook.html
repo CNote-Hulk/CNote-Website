@@ -1,0 +1,1360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- =====================================================
+     INSTAGRAM NOTEBOOK — internal content tool
+     Rebuilds the index.html notebook spread (nb-* styles in
+     css/pages/index.css) on a <canvas> at Instagram sizes, with
+     editable text/images, so the PNG can be handed to an image
+     model for a pixel-art redraw. Self-contained on purpose:
+     works served by the site AND opened as a local file.
+     Not linked from the site, not in the sitemap, noindex.
+     ===================================================== -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#15100c">
+<title>Notebook Post Maker</title>
+<link rel="icon" type="image/x-icon" href="../../assets/icons/favicon.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,700&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Pixelify+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* Layout: editor column on the left, live canvas preview on the right
+   (stacked, preview first, on phones). Single dark look = the site's
+   dark theme, so the notebook paper reads the same as on index.html. */
+:root {
+    --bg: #15100c;
+    --panel: #1f1813;
+    --panel-2: #271f18;
+    --line: #3a2d22;
+    --ink: #efe5d4;
+    --muted: #a8977f;
+    --gold: #c9973f;
+    --gold-ink: #1b130c;
+    --danger: #e0715f;
+    --font-display: 'Playfair Display', Georgia, serif;
+    --font-ui: 'DM Sans', system-ui, sans-serif;
+    color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-ui);
+    font-size: 14px;
+    line-height: 1.45;
+}
+button, input, select, textarea { font: inherit; color: inherit; }
+
+.top {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 6px 16px;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--line);
+}
+.top h1 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 1.45rem;
+    letter-spacing: 0.01em;
+}
+.top p { margin: 0; color: var(--muted); font-size: 0.85rem; }
+
+.app {
+    display: grid;
+    grid-template-columns: minmax(300px, 400px) minmax(0, 1fr);
+    align-items: start;
+}
+
+/* ── Editor column ─────────────────────────── */
+.editor {
+    border-right: 1px solid var(--line);
+    padding: 16px 20px 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    min-width: 0;
+}
+.group, .fields { display: flex; flex-direction: column; gap: 10px; }
+[hidden] { display: none !important; }
+.group > h2 {
+    margin: 0;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--gold);
+}
+.group + .group { border-top: 1px solid var(--line); padding-top: 16px; }
+.hint { margin: 0; color: var(--muted); font-size: 0.8rem; }
+.hint b { color: var(--ink); font-weight: 600; }
+
+.field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.field > span { font-size: 0.78rem; color: var(--muted); }
+.row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.row-3 { display: grid; grid-template-columns: 0.8fr 1.2fr; gap: 8px; }
+input[type="text"], select, textarea {
+    width: 100%;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 8px 10px;
+}
+textarea { resize: vertical; min-height: 64px; line-height: 1.5; }
+input[type="text"]:focus, select:focus, textarea:focus,
+button:focus-visible, .seg button:focus-visible, .drop:focus-within {
+    outline: 2px solid var(--gold);
+    outline-offset: 1px;
+}
+input[type="range"] { width: 100%; accent-color: var(--gold); }
+.check { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+.check input { accent-color: var(--gold); width: 16px; height: 16px; }
+
+.seg {
+    display: flex;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 3px;
+    gap: 3px;
+}
+.seg button {
+    flex: 1;
+    border: 0;
+    background: transparent;
+    padding: 7px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    color: var(--muted);
+    font-weight: 600;
+    font-size: 0.82rem;
+}
+.seg button[aria-pressed="true"] { background: var(--panel-2); color: var(--ink); box-shadow: inset 0 -2px 0 var(--gold); }
+
+.swatches { display: flex; gap: 8px; }
+.swatches button {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    border: 2px solid var(--line);
+    cursor: pointer;
+}
+.swatches button[aria-pressed="true"] { border-color: var(--gold); box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--gold); }
+
+.btn {
+    border: 1px solid var(--line);
+    background: var(--panel-2);
+    border-radius: 7px;
+    padding: 9px 12px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+.btn:hover { border-color: var(--muted); }
+.btn--main { background: var(--gold); border-color: var(--gold); color: var(--gold-ink); }
+.btn--main:hover { filter: brightness(1.08); border-color: var(--gold); }
+.btn--danger { color: var(--danger); }
+.btns { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.drop {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 14px;
+    border: 1.5px dashed var(--line);
+    border-radius: 8px;
+    text-align: center;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 0.82rem;
+}
+.drop.is-over { border-color: var(--gold); color: var(--ink); }
+.drop input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.drop b { color: var(--ink); }
+
+.page-tabs { position: sticky; top: 0; z-index: 2; background: var(--bg); padding-block: 4px; }
+
+/* ── Preview column ────────────────────────── */
+.stage {
+    position: sticky;
+    top: 0;
+    padding: 18px 20px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;
+}
+.stage__bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
+.stage__bar .seg { max-width: 420px; flex: 1; }
+.stage__meta { color: var(--muted); font-size: 0.8rem; font-variant-numeric: tabular-nums; }
+.canvas-wrap {
+    background: repeating-conic-gradient(#1c1510 0% 25%, #19130e 0% 50%) 0 0 / 22px 22px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 14px;
+    display: flex;
+    justify-content: center;
+}
+#preview {
+    display: block;
+    max-width: 100%;
+    max-height: calc(100vh - 170px);
+    width: auto;
+    height: auto;
+    border-radius: 2px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+.status { min-height: 1.3em; margin: 0; font-size: 0.82rem; color: var(--muted); }
+.status.is-error { color: var(--danger); }
+
+#prompt-out { min-height: 160px; font-size: 0.8rem; }
+
+.slices { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; }
+.slice { display: flex; flex-direction: column; gap: 6px; }
+.slice canvas { width: 100%; height: auto; border: 1px solid var(--line); border-radius: 4px; }
+
+@media (max-width: 900px) {
+    .app { grid-template-columns: minmax(0, 1fr); }
+    .stage { position: static; order: -1; padding: 14px 16px 8px; }
+    .editor { border-right: 0; padding: 12px 16px 40px; }
+    .top { padding: 12px 16px; }
+    #preview { max-height: 60vh; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+
+<header class="top">
+    <h1>Notebook Post Maker</h1>
+    <p>Fill in the notebook, export the PNG, then hand it to ChatGPT with the prompt below for the pixel-art redraw.</p>
+</header>
+
+<div class="app">
+
+    <!-- ══════════ EDITOR ══════════ -->
+    <form class="editor" id="editor" autocomplete="off">
+
+        <section class="group">
+            <h2>Format</h2>
+            <div class="field">
+                <span>Instagram size (per slide)</span>
+                <div class="seg" id="aspect-seg">
+                    <button type="button" data-aspect="4:5">4:5 · 1080×1350</button>
+                    <button type="button" data-aspect="3:4">3:4 · 1080×1440</button>
+                </div>
+            </div>
+            <div class="row">
+                <div class="field">
+                    <span>Paper tone</span>
+                    <div class="swatches" id="paper-swatches">
+                        <button type="button" data-paper="light" title="Light (site light theme)" style="background:#F8F2E4"></button>
+                        <button type="button" data-paper="warm" title="Warm" style="background:#EDE0C8"></button>
+                        <button type="button" data-paper="aged" title="Aged (site dark theme)" style="background:#E1D3BC"></button>
+                    </div>
+                </div>
+                <label class="field">
+                    <span>Fonts</span>
+                    <select id="fontSet">
+                        <option value="site">Site (Playfair + DM Sans)</option>
+                        <option value="pixel">Pixel (Pixelify Sans)</option>
+                    </select>
+                </label>
+            </div>
+            <label class="field">
+                <span>Title size: <b id="titleScale-val">100%</b></span>
+                <input type="range" id="titleScale" min="60" max="140" step="5">
+            </label>
+            <label class="check"><input type="checkbox" id="titleItalic"> Italic intro titles (like the site)</label>
+            <label class="check"><input type="checkbox" id="onLines"> Write body text on the ruled lines</label>
+        </section>
+
+        <section class="group">
+            <div class="seg page-tabs" id="page-seg">
+                <button type="button" data-page="0">Left page</button>
+                <button type="button" data-page="1">Right page</button>
+            </div>
+            <label class="field">
+                <span>Page layout</span>
+                <select id="layout">
+                    <option value="text">Intro: stamp, title, text, stats</option>
+                    <option value="showcase">Showcase: label, title, picture, fun fact</option>
+                </select>
+            </label>
+
+            <!-- Intro layout -->
+            <div class="only-text fields">
+                <label class="field"><span>Stamp (max 4 letters, empty = none)</span><input type="text" id="stamp" maxlength="4"></label>
+                <label class="field"><span>Title (Enter = new line)</span><textarea id="title-text" rows="2"></textarea></label>
+                <label class="field"><span>Text (shrinks automatically to fit)</span><textarea id="body" rows="7"></textarea></label>
+                <div class="field">
+                    <span>Stats (leave a row empty to hide it)</span>
+                    <div class="row-3"><input type="text" id="s0v" placeholder="50+"><input type="text" id="s0l" placeholder="Consoles"></div>
+                    <div class="row-3"><input type="text" id="s1v" placeholder="9"><input type="text" id="s1l" placeholder="Generations"></div>
+                    <div class="row-3"><input type="text" id="s2v" placeholder="1972"><input type="text" id="s2l" placeholder="Since"></div>
+                </div>
+                <label class="field"><span>Button text (empty = none)</span><input type="text" id="cta" placeholder="consolenotebook.com →"></label>
+            </div>
+
+            <!-- Showcase layout -->
+            <div class="only-showcase fields">
+                <label class="field"><span>Small label</span><input type="text" id="label" placeholder="Gen II · 1977"></label>
+                <label class="field"><span>Title</span><textarea id="title-show" rows="1"></textarea></label>
+                <label class="drop" id="drop">
+                    <input type="file" id="image-file" accept="image/*">
+                    <b>Choose or drop a picture</b>
+                    <span>PNG with a transparent background looks best</span>
+                </label>
+                <div class="row">
+                    <label class="field"><span>Zoom: <b id="zoom-val">100%</b></span><input type="range" id="zoom" min="30" max="250" step="5"></label>
+                    <label class="check"><input type="checkbox" id="shadow"> Drop shadow</label>
+                </div>
+                <div class="row">
+                    <label class="field"><span>Move left / right</span><input type="range" id="offX" min="-50" max="50" step="1"></label>
+                    <label class="field"><span>Move up / down</span><input type="range" id="offY" min="-50" max="50" step="1"></label>
+                </div>
+                <div class="btns"><button type="button" class="btn" id="image-clear">Remove picture</button></div>
+                <label class="field"><span>Box label</span><input type="text" id="factLabel" placeholder="★ Fun Fact"></label>
+                <label class="field"><span>Box text (empty = no box)</span><textarea id="factText" rows="3"></textarea></label>
+                <label class="field"><span>Corner signature (empty = none)</span><input type="text" id="signature" placeholder="consolenotebook.com"></label>
+            </div>
+        </section>
+
+        <section class="group">
+            <h2>Export</h2>
+            <p class="hint">The carousel buttons cut the spread down the middle of the spine, so swiping from slide 1 to slide 2 reads as one continuous notebook.</p>
+            <div class="btns">
+                <button type="button" class="btn btn--main" id="dl-spread">Download spread</button>
+                <button type="button" class="btn" id="dl-left">Slide 1 (left)</button>
+                <button type="button" class="btn" id="dl-right">Slide 2 (right)</button>
+            </div>
+            <label class="check"><input type="checkbox" id="pixel"> Pixel preview (rough look, no AI)</label>
+            <label class="field"><span>Pixel size: <b id="pixelSize-val">6 px</b></span><input type="range" id="pixelSize" min="2" max="16" step="1"></label>
+            <label class="check"><input type="checkbox" id="pixelExport"> Apply the pixel effect to downloads too</label>
+        </section>
+
+        <section class="group">
+            <h2>ChatGPT prompt</h2>
+            <p class="hint">Written for the view selected above the preview. Paste it together with the exported PNG. <b>Check every word in the result</b>: image models still misspell text.</p>
+            <textarea id="prompt-out" readonly></textarea>
+            <div class="btns"><button type="button" class="btn" id="copy-prompt">Copy prompt</button></div>
+        </section>
+
+        <section class="group">
+            <h2>Cut a finished image into slides</h2>
+            <p class="hint">Drop the pixel art ChatGPT gave you. A landscape image is split into 2 slides, a portrait one becomes 1, both at the size chosen under Format.</p>
+            <label class="field">
+                <span>Fit</span>
+                <select id="split-fit">
+                    <option value="contain">Keep everything (dark bars if needed)</option>
+                    <option value="cover">Fill the slide (crops the edges)</option>
+                </select>
+            </label>
+            <label class="drop" id="split-drop">
+                <input type="file" id="split-file" accept="image/*">
+                <b>Choose or drop the finished image</b>
+            </label>
+            <div class="slices" id="slices"></div>
+        </section>
+
+        <section class="group">
+            <h2>Draft</h2>
+            <p class="hint">The editor remembers your last draft in this browser. Save a file to keep a post for later or move it to another device.</p>
+            <div class="btns">
+                <button type="button" class="btn" id="save-json">Save draft file</button>
+                <button type="button" class="btn" id="load-json">Open draft file</button>
+                <button type="button" class="btn btn--danger" id="reset">Start over</button>
+            </div>
+            <input type="file" id="json-file" accept="application/json,.json" hidden>
+        </section>
+    </form>
+
+    <!-- ══════════ PREVIEW ══════════ -->
+    <section class="stage" aria-label="Preview">
+        <div class="stage__bar">
+            <div class="seg" id="view-seg">
+                <button type="button" data-view="spread">Spread</button>
+                <button type="button" data-view="left">Slide 1</button>
+                <button type="button" data-view="right">Slide 2</button>
+            </div>
+            <span class="stage__meta" id="meta"></span>
+        </div>
+        <div class="canvas-wrap"><canvas id="preview" width="2160" height="1350"></canvas></div>
+        <p class="status" id="status" role="status"></p>
+    </section>
+</div>
+
+<script>
+(function () {
+    'use strict';
+
+    /* ── Constants (mirroring css/pages/index.css's nb-* values) ── */
+    var STORAGE_KEY = 'cnote-ig-notebook-v1';
+    var SAMPLE_IMAGE = '../../assets/images/consoles/atari-2600.png';
+    var FORMATS = {
+        '4:5': { pageW: 1080, H: 1350 },
+        '3:4': { pageW: 1080, H: 1440 }
+    };
+    var PAPERS = {
+        light: { bg: '#F8F2E4', line: 'rgba(155, 120, 75, 0.22)' },
+        warm:  { bg: '#EDE0C8', line: 'rgba(130, 95, 52, 0.26)' },
+        aged:  { bg: '#E1D3BC', line: 'rgba(120, 86, 45, 0.30)' }
+    };
+    var FONTSETS = {
+        site:  { serif: '"Playfair Display", Georgia, serif', sans: '"DM Sans", system-ui, sans-serif', italic: true, scale: 1 },
+        pixel: { serif: '"Pixelify Sans", "Courier New", monospace', sans: '"Pixelify Sans", "Courier New", monospace', italic: false, scale: 1.04 }
+    };
+    var INK = '#2a1a0e';
+    var BODY_INK = '#3d2a1a';
+    var GOLD = 'rgba(140, 98, 24, 0.88)';
+    var GOLD_SOFT = 'rgba(150, 105, 20, 0.55)';
+
+    function blankPage() {
+        return {
+            layout: 'text', stamp: 'CN', title: '', body: '',
+            stats: [{ v: '', l: '' }, { v: '', l: '' }, { v: '', l: '' }], cta: '',
+            label: '', image: null, zoom: 100, offX: 0, offY: 0, shadow: true,
+            factLabel: '★ Fun Fact', factText: '', signature: ''
+        };
+    }
+    function defaultState() {
+        var left = blankPage();
+        left.title = 'Welcome to\nCNote World';
+        left.body = 'CNote (Console Notebook) is a hobby project dedicated to the world of gaming consoles. It brings together history, technology, and community in one place. More than documentation, CNote is about rediscovering the authentic gaming spirit. Here you can explore consoles, learn how they work, and help preserve an important piece of gaming culture. Start your own console journey and dive into the rich world of gaming history and technology.';
+        left.stats = [{ v: '50+', l: 'Consoles' }, { v: '9', l: 'Generations' }, { v: '1972', l: 'Since' }];
+        var right = blankPage();
+        right.layout = 'showcase';
+        right.title = 'Atari 2600';
+        right.label = 'Gen II · 1977';
+        right.factText = 'Only 128 bytes of RAM — less than this sentence takes to store — yet it changed gaming forever.';
+        right.signature = 'consolenotebook.com';
+        return {
+            aspect: '4:5', paper: 'warm', fontSet: 'site', titleScale: 100,
+            titleItalic: true, onLines: true,
+            pixel: false, pixelSize: 6, pixelExport: false,
+            view: 'spread', activePage: 0,
+            pages: [left, right]
+        };
+    }
+
+    var state = defaultState();
+    var images = [null, null];   // decoded HTMLImageElements, parallel to state.pages[i].image (data URLs)
+
+    /* ── Storage (per-browser convenience only) ─────────────── */
+    function saveLocal() {
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); return; } catch (e) { /* quota: retry without pictures */ }
+        try {
+            var lite = JSON.parse(JSON.stringify(state));
+            lite.pages.forEach(function (p) { p.image = null; });
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(lite));
+        } catch (e) { /* storage unavailable */ }
+    }
+    function loadLocal() {
+        try {
+            var raw = localStorage.getItem(STORAGE_KEY);
+            return raw ? JSON.parse(raw) : null;
+        } catch (e) { return null; }
+    }
+    function mergeState(src) {
+        var base = defaultState();
+        if (!src || typeof src !== 'object') return base;
+        Object.keys(base).forEach(function (k) {
+            if (k !== 'pages' && src[k] !== undefined && typeof src[k] === typeof base[k]) base[k] = src[k];
+        });
+        if (!FORMATS[base.aspect]) base.aspect = '4:5';
+        if (!PAPERS[base.paper]) base.paper = 'warm';
+        if (!FONTSETS[base.fontSet]) base.fontSet = 'site';
+        if (Array.isArray(src.pages)) {
+            base.pages = [0, 1].map(function (i) {
+                var p = blankPage(), s = src.pages[i] || {};
+                Object.keys(p).forEach(function (k) {
+                    if (k === 'stats' && Array.isArray(s.stats)) {
+                        p.stats = [0, 1, 2].map(function (j) {
+                            var st = s.stats[j] || {};
+                            return { v: String(st.v || ''), l: String(st.l || '') };
+                        });
+                    } else if (k === 'image') {
+                        p.image = typeof s.image === 'string' && s.image.indexOf('data:image/') === 0 ? s.image : null;
+                    } else if (s[k] !== undefined && typeof s[k] === typeof p[k]) {
+                        p[k] = s[k];
+                    }
+                });
+                if (p.layout !== 'showcase') p.layout = 'text';
+                return p;
+            });
+        }
+        return base;
+    }
+
+    /* ── Images ─────────────────────────────────────────────── */
+    function decode(dataUrl) {
+        return new Promise(function (resolve) {
+            if (!dataUrl) return resolve(null);
+            var img = new Image();
+            img.onload = function () { resolve(img); };
+            img.onerror = function () { resolve(null); };
+            img.src = dataUrl;
+        });
+    }
+    // Downscale big uploads so drafts stay small enough for localStorage.
+    function fileToDataUrl(file, maxSide) {
+        return new Promise(function (resolve, reject) {
+            var reader = new FileReader();
+            reader.onerror = function () { reject(new Error('read')); };
+            reader.onload = function () {
+                var img = new Image();
+                img.onerror = function () { reject(new Error('decode')); };
+                img.onload = function () {
+                    var k = Math.min(1, maxSide / Math.max(img.width, img.height));
+                    if (k === 1 && file.size < 1.5e6) return resolve(reader.result);
+                    var c = document.createElement('canvas');
+                    c.width = Math.round(img.width * k);
+                    c.height = Math.round(img.height * k);
+                    var x = c.getContext('2d');
+                    x.imageSmoothingQuality = 'high';
+                    x.drawImage(img, 0, 0, c.width, c.height);
+                    resolve(c.toDataURL('image/png'));
+                };
+                img.src = reader.result;
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+    function loadSample() {
+        // Fails silently when opened as a local file (file:// blocks fetch);
+        // the page then just shows the "your picture here" placeholder.
+        return fetch(SAMPLE_IMAGE).then(function (r) {
+            if (!r.ok) throw new Error('sample');
+            return r.blob();
+        }).then(function (blob) {
+            return fileToDataUrl(blob, 1400);
+        }).catch(function () { return null; });
+    }
+
+    /* ── Canvas helpers ─────────────────────────────────────── */
+    function font(style, weight, px, family) { return style + ' ' + weight + ' ' + px.toFixed(1) + 'px ' + family; }
+    function spacing(ctx, px) { if ('letterSpacing' in ctx) ctx.letterSpacing = px.toFixed(1) + 'px'; }
+    function rr(ctx, x, y, w, h, r) {
+        var R = typeof r === 'number' ? [r, r, r, r] : r;
+        ctx.beginPath();
+        ctx.moveTo(x + R[0], y);
+        ctx.lineTo(x + w - R[1], y);
+        ctx.quadraticCurveTo(x + w, y, x + w, y + R[1]);
+        ctx.lineTo(x + w, y + h - R[2]);
+        ctx.quadraticCurveTo(x + w, y + h, x + w - R[2], y + h);
+        ctx.lineTo(x + R[3], y + h);
+        ctx.quadraticCurveTo(x, y + h, x, y + h - R[3]);
+        ctx.lineTo(x, y + R[0]);
+        ctx.quadraticCurveTo(x, y, x + R[0], y);
+        ctx.closePath();
+    }
+    function wrapLines(ctx, text, maxW) {
+        var out = [];
+        String(text).split('\n').forEach(function (para) {
+            var words = para.split(/\s+/).filter(Boolean);
+            if (!words.length) { out.push(''); return; }
+            var line = '';
+            words.forEach(function (w) {
+                while (ctx.measureText(w).width > maxW && w.length > 1) {
+                    var i = w.length - 1;
+                    while (i > 1 && ctx.measureText(w.slice(0, i)).width > maxW) i--;
+                    if (line) { out.push(line); line = ''; }
+                    out.push(w.slice(0, i));
+                    w = w.slice(i);
+                }
+                var test = line ? line + ' ' + w : w;
+                if (!line || ctx.measureText(test).width <= maxW) line = test;
+                else { out.push(line); line = w; }
+            });
+            if (line) out.push(line);
+        });
+        return out;
+    }
+    function ellipsize(ctx, line, maxW) {
+        var s = line.replace(/[\s.,;:!?—-]+$/, '');
+        while (s && ctx.measureText(s + '…').width > maxW) s = s.slice(0, -1).replace(/\s+$/, '');
+        return s + '…';
+    }
+    function widest(ctx, lines) {
+        return lines.reduce(function (m, l) { return Math.max(m, ctx.measureText(l).width); }, 0);
+    }
+    // Shrinks the title until no word overflows and it fits in maxLines.
+    function fitTitle(ctx, text, maxW, size, family, italic, maxLines) {
+        var style = italic ? 'italic' : 'normal';
+        var min = size * 0.35, lines = [];
+        for (; size >= min; size *= 0.95) {
+            ctx.font = font(style, 700, size, family);
+            var words = String(text).split(/\s+/).filter(Boolean);
+            var tooWide = words.some(function (w) { return ctx.measureText(w).width > maxW; });
+            lines = wrapLines(ctx, text, maxW);
+            if (!tooWide && lines.length <= maxLines) break;
+        }
+        ctx.font = font(style, 700, size, family);
+        return { size: size, lines: lines.filter(function (l, i) { return l || i < lines.length - 1; }) };
+    }
+
+    /* ── Book ───────────────────────────────────────────────── */
+    function renderSpread() {
+        var fmt = FORMATS[state.aspect];
+        var W = fmt.pageW * 2, H = fmt.H;
+        var c = document.createElement('canvas');
+        c.width = W; c.height = H;
+        var ctx = c.getContext('2d');
+
+        // Desk behind the book
+        var bg = ctx.createRadialGradient(W / 2, H / 2, H * 0.2, W / 2, H / 2, W * 0.7);
+        bg.addColorStop(0, '#2b1f15');
+        bg.addColorStop(1, '#100a06');
+        ctx.fillStyle = bg;
+        ctx.fillRect(0, 0, W, H);
+
+        var m = Math.round(H * 0.04);
+        var bx = m, by = m, bw = W - 2 * m, bh = H - 2 * m;
+        var radius = Math.round(H * 0.014);
+        var cover = Math.round(H * 0.008);
+
+        // Cover peeking out above/below the pages (.nb-cover-edge) + drop shadow
+        ctx.save();
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.7)';
+        ctx.shadowBlur = H * 0.06;
+        ctx.shadowOffsetY = H * 0.025;
+        ctx.fillStyle = '#2a1d13';
+        rr(ctx, bx + cover, by - cover, bw - 2 * cover, bh + 2 * cover, radius);
+        ctx.fill();
+        ctx.restore();
+
+        ctx.save();
+        rr(ctx, bx, by, bw, bh, radius);
+        ctx.clip();
+        ctx.fillStyle = '#1a1008';
+        ctx.fillRect(bx, by, bw, bh);
+        var spineW = Math.round(bh * 0.046);
+        var pw = (bw - spineW) / 2;
+        drawPage(ctx, state.pages[0], images[0], bx, by, pw, bh, 'left');
+        drawPage(ctx, state.pages[1], images[1], bx + pw + spineW, by, pw, bh, 'right');
+        drawSpine(ctx, bx + pw, by, spineW, bh);
+        ctx.restore();
+        return c;
+    }
+
+    function drawSpine(ctx, x, y, w, h) {
+        var g = ctx.createLinearGradient(x, 0, x + w, 0);
+        g.addColorStop(0, '#110c06');
+        g.addColorStop(0.25, '#2a1d11');
+        g.addColorStop(0.5, '#3a2c1c');
+        g.addColorStop(0.75, '#2a1d11');
+        g.addColorStop(1, '#110c06');
+        ctx.fillStyle = g;
+        ctx.fillRect(x, y, w, h);
+
+        var n = 10, d = w * 0.68, pad = h * 0.037;
+        var gapE = (h - 2 * pad - n * d) / (n + 1);
+        var cx = x + w / 2;
+        for (var i = 0; i < n; i++) {
+            var cy = y + pad + gapE * (i + 1) + d * (i + 0.5);
+            var rg = ctx.createRadialGradient(cx - d * 0.12, cy - d * 0.15, d * 0.05, cx, cy, d / 2);
+            rg.addColorStop(0.3, '#2c2015');
+            rg.addColorStop(1, '#0e0906');
+            ctx.beginPath();
+            ctx.arc(cx, cy, d / 2 - d * 0.08, 0, Math.PI * 2);
+            ctx.fillStyle = rg;
+            ctx.fill();
+            ctx.lineWidth = d * 0.15;
+            ctx.strokeStyle = '#5a4330';
+            ctx.stroke();
+        }
+    }
+
+    function drawPage(ctx, p, img, x, y, w, h, side) {
+        var paper = PAPERS[state.paper];
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(x, y, w, h);
+        ctx.clip();
+
+        ctx.fillStyle = paper.bg;
+        ctx.fillRect(x, y, w, h);
+
+        // Ruled lines — same 28-per-650px rhythm as .nb-left/.nb-right
+        var gap = h / 23.2, lw = Math.max(1.5, gap / 24), lines = [];
+        ctx.fillStyle = paper.line;
+        for (var ly = y + gap; ly < y + h; ly += gap) {
+            ctx.fillRect(x, Math.round(ly - lw), w, lw);
+            lines.push(ly);
+        }
+        var u = w / 540;
+
+        var marginX = null;
+        if (side === 'left') {
+            marginX = x + w * 0.092;
+            ctx.fillStyle = 'rgba(195, 60, 60, 0.34)';
+            ctx.fillRect(marginX, y, Math.max(2, 2.4 * u), h);
+        }
+
+        // Spine shading
+        var sw = w * 0.06, sg;
+        if (side === 'left') {
+            sg = ctx.createLinearGradient(x + w - sw, 0, x + w, 0);
+            sg.addColorStop(0, 'rgba(20, 10, 2, 0)');
+            sg.addColorStop(1, 'rgba(20, 10, 2, 0.17)');
+            ctx.fillStyle = sg;
+            ctx.fillRect(x + w - sw, y, sw, h);
+        } else {
+            sg = ctx.createLinearGradient(x, 0, x + sw, 0);
+            sg.addColorStop(0, 'rgba(20, 10, 2, 0.14)');
+            sg.addColorStop(1, 'rgba(20, 10, 2, 0)');
+            ctx.fillStyle = sg;
+            ctx.fillRect(x, y, sw, h);
+        }
+
+        var box = side === 'left'
+            ? { x: marginX + w * 0.06, y: y + h * 0.06, r: x + w - w * 0.085, b: y + h - h * 0.055 }
+            : { x: x + w * 0.085, y: y + h * 0.06, r: x + w - w * 0.075, b: y + h - h * 0.055 };
+        box.w = box.r - box.x;
+        box.h = box.b - box.y;
+
+        var info = { ctx: ctx, p: p, img: img, u: u, gap: gap, lines: lines, box: box, f: FONTSETS[state.fontSet] };
+        if (p.layout === 'showcase') drawShowcase(info);
+        else drawIntro(info);
+        ctx.restore();
+    }
+
+    /* ── Intro layout (.nb-left__*) ─────────────────────────── */
+    function drawIntro(o) {
+        var ctx = o.ctx, p = o.p, u = o.u, box = o.box, f = o.f;
+        var cy = box.y;
+        ctx.textBaseline = 'alphabetic';
+        ctx.textAlign = 'left';
+
+        var stamp = (p.stamp || '').trim();
+        if (stamp) {
+            var d = 50 * u, cx = box.x + d / 2, sy = cy + d / 2;
+            ctx.beginPath();
+            ctx.arc(cx, sy, d / 2 - 1.2 * u, 0, Math.PI * 2);
+            ctx.lineWidth = 2.4 * u;
+            ctx.strokeStyle = GOLD_SOFT;
+            ctx.stroke();
+            ctx.fillStyle = GOLD;
+            ctx.font = font('normal', 700, (stamp.length > 2 ? 12 : 15) * u, f.serif);
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(stamp, cx, sy + u);
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'alphabetic';
+            cy += d + 16 * u;
+        }
+
+        if ((p.title || '').trim()) {
+            var t = fitTitle(ctx, p.title.trim(), box.w, 60 * u * f.scale * state.titleScale / 100, f.serif, state.titleItalic && f.italic, 3);
+            ctx.fillStyle = INK;
+            t.lines.forEach(function (ln, i) { ctx.fillText(ln, box.x, cy + t.size * 0.86 + i * t.size * 1.04); });
+            var ruleW = Math.min(box.w, widest(ctx, t.lines));
+            cy += t.lines.length * t.size * 1.04 + 12 * u;
+            ctx.fillStyle = 'rgba(160, 116, 42, 0.8)';
+            rr(ctx, box.x, cy, ruleW, 3.4 * u, 1.7 * u);
+            ctx.fill();
+            cy += 3.4 * u + 18 * u;
+        }
+
+        // Bottom-up: button, then stats, then the body fills what's left.
+        var bottom = box.b;
+        var cta = (p.cta || '').trim();
+        if (cta) {
+            ctx.font = font('normal', 600, 16 * u, f.sans);
+            spacing(ctx, 1 * u);
+            var ch = 48 * u, cw = ctx.measureText(cta).width + 52 * u;
+            var ctaY = bottom - ch;
+            ctx.fillStyle = INK;
+            rr(ctx, box.x, ctaY, cw, ch, ch / 2);
+            ctx.fill();
+            ctx.fillStyle = '#F8F2E4';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(cta, box.x + 26 * u, ctaY + ch / 2 + u);
+            ctx.textBaseline = 'alphabetic';
+            spacing(ctx, 0);
+            bottom = ctaY - 22 * u;
+        }
+
+        var stats = p.stats.filter(function (s) { return s.v.trim() || s.l.trim(); });
+        if (stats.length) {
+            var vs = 36 * u * f.scale, ls = 12.5 * u, sh = vs + 9 * u + ls;
+            var top = bottom - sh, sx = box.x;
+            stats.forEach(function (s) {
+                ctx.font = font('normal', 700, vs, f.serif);
+                ctx.fillStyle = INK;
+                ctx.fillText(s.v.trim(), sx, top + vs * 0.84);
+                var vw = ctx.measureText(s.v.trim()).width;
+                ctx.font = font('normal', 600, ls, f.sans);
+                spacing(ctx, ls * 0.1);
+                ctx.fillStyle = 'rgba(61, 42, 26, 0.62)';
+                var lab = s.l.trim().toUpperCase();
+                ctx.fillText(lab, sx, top + vs + 9 * u + ls * 0.8);
+                var lw2 = ctx.measureText(lab).width;
+                spacing(ctx, 0);
+                sx += Math.max(vw, lw2) + 36 * u;
+            });
+            bottom = top - 22 * u;
+        }
+
+        drawBody(o, (p.body || '').trim(), cy, bottom);
+    }
+
+    function drawBody(o, text, top, bottom) {
+        if (!text || bottom - top < 10) return;
+        var ctx = o.ctx, u = o.u, box = o.box, f = o.f, gap = o.gap;
+        ctx.fillStyle = BODY_INK;
+        var size, wrapped, i;
+        if (state.onLines) {
+            // Sit each line on a ruled line, like handwriting in a notebook.
+            var base = o.lines.filter(function (ly) { return ly - gap * 0.66 >= top && ly - gap * 0.1 <= bottom; });
+            if (!base.length) return;
+            size = Math.min(gap * 0.56, 21 * u) * f.scale;
+            var min = gap * 0.34;
+            for (;;) {
+                ctx.font = font('normal', 400, size, f.sans);
+                wrapped = wrapLines(ctx, text, box.w);
+                if (wrapped.length <= base.length || size <= min) break;
+                size -= 0.5;
+            }
+            if (wrapped.length > base.length) {
+                wrapped = wrapped.slice(0, base.length);
+                wrapped[base.length - 1] = ellipsize(ctx, wrapped[base.length - 1], box.w);
+            }
+            for (i = 0; i < wrapped.length; i++) ctx.fillText(wrapped[i], box.x, base[i] - gap * 0.2);
+        } else {
+            size = 20 * u * f.scale;
+            var lh, maxLines;
+            for (;;) {
+                ctx.font = font('normal', 400, size, f.sans);
+                lh = size * 1.6;
+                maxLines = Math.max(1, Math.floor((bottom - top) / lh));
+                wrapped = wrapLines(ctx, text, box.w);
+                if (wrapped.length <= maxLines || size <= 11 * u) break;
+                size -= 0.5;
+            }
+            if (wrapped.length > maxLines) {
+                wrapped = wrapped.slice(0, maxLines);
+                wrapped[maxLines - 1] = ellipsize(ctx, wrapped[maxLines - 1], box.w);
+            }
+            for (i = 0; i < wrapped.length; i++) ctx.fillText(wrapped[i], box.x, top + size + i * lh);
+        }
+    }
+
+    /* ── Showcase layout (.nb-right__*) ─────────────────────── */
+    function drawShowcase(o) {
+        var ctx = o.ctx, p = o.p, u = o.u, box = o.box, f = o.f;
+        var cy = box.y;
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'alphabetic';
+
+        var label = (p.label || '').trim();
+        if (label) {
+            var ls = 15 * u;
+            ctx.font = font('normal', 700, ls, f.sans);
+            spacing(ctx, ls * 0.16);
+            ctx.fillStyle = GOLD;
+            ctx.fillText(label.toUpperCase(), box.x, cy + ls * 0.85);
+            spacing(ctx, 0);
+            cy += ls + 14 * u;
+        }
+
+        if ((p.title || '').trim()) {
+            var t = fitTitle(ctx, p.title.trim(), box.w, 66 * u * f.scale * state.titleScale / 100, f.serif, false, 2);
+            ctx.fillStyle = INK;
+            t.lines.forEach(function (ln, i) { ctx.fillText(ln, box.x, cy + t.size * 0.82 + i * t.size * 1.04); });
+            cy += t.lines.length * t.size * 1.04 + 22 * u;
+        }
+
+        var bottom = box.b;
+        var sig = (p.signature || '').trim();
+        if (sig) {
+            var ss = 12.5 * u;
+            ctx.font = font('normal', 600, ss, f.sans);
+            spacing(ctx, ss * 0.12);
+            ctx.fillStyle = 'rgba(61, 42, 26, 0.55)';
+            ctx.textAlign = 'right';
+            ctx.fillText(sig, box.r, bottom - ss * 0.2);
+            ctx.textAlign = 'left';
+            spacing(ctx, 0);
+            bottom -= ss + 18 * u;
+        }
+
+        var factText = (p.factText || '').trim();
+        if (factText) {
+            var pad = 20 * u, labS = 13 * u, bar = 5 * u;
+            var innerW = box.w - pad * 2 - bar;
+            var fs = 18 * u * f.scale, lines, lh, labelH, fh;
+            var fLabel = (p.factLabel || '').trim();
+            for (;;) {
+                ctx.font = font(f.italic ? 'italic' : 'normal', 400, fs, f.sans);
+                lines = wrapLines(ctx, factText, innerW);
+                lh = fs * 1.55;
+                labelH = fLabel ? labS + 12 * u : 0;
+                fh = pad * 2 + labelH + lines.length * lh - (lh - fs) * 0.6;
+                if (fh <= box.h * 0.4 || fs <= 11 * u) break;
+                fs -= 0.5;
+            }
+            var fy = bottom - fh;
+            rr(ctx, box.x, fy, box.w, fh, [0, 12 * u, 12 * u, 0]);
+            ctx.fillStyle = 'rgba(150, 105, 20, 0.09)';
+            ctx.fill();
+            ctx.lineWidth = 1.6 * u;
+            ctx.strokeStyle = 'rgba(150, 105, 20, 0.3)';
+            ctx.stroke();
+            ctx.fillStyle = 'rgba(150, 105, 20, 0.62)';
+            ctx.fillRect(box.x, fy, bar, fh);
+
+            var tx = box.x + bar + pad, ty = fy + pad;
+            if (fLabel) {
+                ctx.font = font('normal', 700, labS, f.sans);
+                spacing(ctx, labS * 0.16);
+                ctx.fillStyle = GOLD;
+                ctx.fillText(fLabel.toUpperCase(), tx, ty + labS * 0.85);
+                spacing(ctx, 0);
+                ty += labelH;
+            }
+            ctx.font = font(f.italic ? 'italic' : 'normal', 400, fs, f.sans);
+            ctx.fillStyle = BODY_INK;
+            lines.forEach(function (ln, i) { ctx.fillText(ln, tx, ty + fs * 0.9 + i * lh); });
+            bottom = fy - 24 * u;
+        }
+
+        drawPicture(o, { x: box.x, y: cy, w: box.w, h: Math.max(0, bottom - cy) });
+    }
+
+    function drawPicture(o, area) {
+        var ctx = o.ctx, p = o.p, img = o.img, u = o.u, f = o.f;
+        if (area.h < 20) return;
+        if (!img) {
+            ctx.save();
+            ctx.setLineDash([10 * u, 8 * u]);
+            ctx.lineWidth = 2 * u;
+            ctx.strokeStyle = 'rgba(120, 86, 45, 0.45)';
+            rr(ctx, area.x, area.y, area.w, area.h, 14 * u);
+            ctx.stroke();
+            ctx.fillStyle = 'rgba(120, 86, 45, 0.7)';
+            ctx.font = font('normal', 600, 18 * u, f.sans);
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('Your picture here', area.x + area.w / 2, area.y + area.h / 2);
+            ctx.restore();
+            return;
+        }
+        var k = Math.min(area.w / img.width, area.h / img.height) * p.zoom / 100;
+        var dw = img.width * k, dh = img.height * k;
+        var dx = area.x + (area.w - dw) / 2 + p.offX / 100 * area.w;
+        var dy = area.y + (area.h - dh) / 2 + p.offY / 100 * area.h;
+        ctx.save();
+        if (p.shadow) {
+            ctx.shadowColor = 'rgba(20, 10, 2, 0.32)';
+            ctx.shadowBlur = 34 * u;
+            ctx.shadowOffsetY = 20 * u;
+        }
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(img, dx, dy, dw, dh);
+        ctx.restore();
+    }
+
+    /* ── Output ─────────────────────────────────────────────── */
+    function pixelate(src, size) {
+        var sw = Math.max(1, Math.round(src.width / size)), sh = Math.max(1, Math.round(src.height / size));
+        var small = document.createElement('canvas');
+        small.width = sw; small.height = sh;
+        var sx = small.getContext('2d');
+        sx.imageSmoothingQuality = 'high';
+        sx.drawImage(src, 0, 0, sw, sh);
+        var out = document.createElement('canvas');
+        out.width = src.width; out.height = src.height;
+        var ox = out.getContext('2d');
+        ox.imageSmoothingEnabled = false;
+        ox.drawImage(small, 0, 0, src.width, src.height);
+        return out;
+    }
+    function crop(spread, view) {
+        if (view === 'spread') return spread;
+        var half = spread.width / 2;
+        var c = document.createElement('canvas');
+        c.width = half; c.height = spread.height;
+        c.getContext('2d').drawImage(spread, view === 'left' ? 0 : half, 0, half, spread.height, 0, 0, half, spread.height);
+        return c;
+    }
+    function build(view, forExport) {
+        var out = crop(renderSpread(), view);
+        if (state.pixel && (!forExport || state.pixelExport)) out = pixelate(out, state.pixelSize);
+        return out;
+    }
+
+    var previewEl = document.getElementById('preview');
+    var metaEl = document.getElementById('meta');
+    var statusEl = document.getElementById('status');
+    var queued = false;
+    function scheduleRender() {
+        if (queued) return;
+        queued = true;
+        requestAnimationFrame(function () {
+            queued = false;
+            var out = build(state.view, false);
+            previewEl.width = out.width;
+            previewEl.height = out.height;
+            previewEl.getContext('2d').drawImage(out, 0, 0);
+            var fmt = FORMATS[state.aspect];
+            metaEl.textContent = out.width + ' × ' + out.height + ' px' +
+                (state.view === 'spread' ? ' · carousel = 2 × ' + fmt.pageW + '×' + fmt.H : '');
+            updatePrompt();
+        });
+    }
+    function setStatus(msg, isError) {
+        statusEl.textContent = msg;
+        statusEl.classList.toggle('is-error', !!isError);
+    }
+
+    function slug(s) {
+        return String(s || 'post').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
+            .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'post';
+    }
+    function saveBlob(blob, name) {
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = name;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(function () { URL.revokeObjectURL(url); }, 5000);
+    }
+    function downloadCanvas(canvas, name) {
+        try {
+            canvas.toBlob(function (blob) {
+                if (!blob) { setStatus('The browser could not create the PNG. Try a smaller picture.', true); return; }
+                saveBlob(blob, name);
+                setStatus('Saved ' + name + ' (' + canvas.width + '×' + canvas.height + ').');
+            }, 'image/png');
+        } catch (e) {
+            setStatus('The browser blocked the export. Upload the picture again with "Choose or drop a picture" and retry.', true);
+        }
+    }
+    function exportView(view) {
+        var base = 'cnote-' + slug(state.pages[0].title || state.pages[1].title);
+        var suffix = view === 'spread' ? 'spread' : view === 'left' ? 'slide-1' : 'slide-2';
+        downloadCanvas(build(view, true), base + '-' + suffix + '.png');
+    }
+
+    /* ── ChatGPT prompt ─────────────────────────────────────── */
+    function q(s) { return '"' + String(s).replace(/\s*\n\s*/g, ' ').trim() + '"'; }
+    function describePage(p, name) {
+        var out = [name];
+        if (p.layout === 'showcase') {
+            if (p.label.trim()) out.push('- Small label at the top: ' + q(p.label.toUpperCase()));
+            if (p.title.trim()) out.push('- Big title: ' + q(p.title));
+            out.push(images[state.pages.indexOf(p)]
+                ? '- Picture: redraw the photo as a detailed pixel-art sprite, same angle, same colors, same size and position on the page.'
+                : '- Picture area: leave it as it is.');
+            if (p.factText.trim()) {
+                if (p.factLabel.trim()) out.push('- Box label: ' + q(p.factLabel.toUpperCase()));
+                out.push('- Box text: ' + q(p.factText));
+            }
+            if (p.signature.trim()) out.push('- Small corner text: ' + q(p.signature));
+        } else {
+            if (p.stamp.trim()) out.push('- Round stamp: ' + q(p.stamp));
+            if (p.title.trim()) out.push('- Big title: ' + q(p.title));
+            if (p.body.trim()) out.push('- Body text: ' + q(p.body));
+            var stats = p.stats.filter(function (s) { return s.v.trim() || s.l.trim(); });
+            if (stats.length) out.push('- Stats: ' + stats.map(function (s) { return q(s.v) + ' ' + q(s.l.toUpperCase()); }).join(' | '));
+            if (p.cta.trim()) out.push('- Button: ' + q(p.cta));
+        }
+        return out.join('\n');
+    }
+    function updatePrompt() {
+        var v = state.view;
+        var shape = v === 'spread'
+            ? 'a landscape 3:2 image (both pages of the open notebook)'
+            : 'a portrait image (one page of the notebook, with half of the spiral spine on its ' + (v === 'left' ? 'right' : 'left') + ' edge)';
+        var pages = v === 'spread'
+            ? describePage(state.pages[0], 'LEFT PAGE') + '\n\n' + describePage(state.pages[1], 'RIGHT PAGE')
+            : describePage(state.pages[v === 'left' ? 0 : 1], 'THE PAGE');
+        var text =
+            'Redraw the attached image as detailed retro pixel art (16-bit, SNES-era style). Keep the exact same composition, layout and proportions, as ' + shape + '. Only the rendering style changes.\n\n' +
+            'Scene: an open spiral notebook on a dark wooden desk. Cream ruled paper with faint horizontal lines' + (v !== 'right' ? ', a thin red margin line on the left page' : '') + ', dark brown spiral rings along the spine, soft shading toward the spine.\n\n' +
+            'Text rules (most important): copy every piece of text EXACTLY as written below, letter by letter, in a crisp, readable pixel font. Do not translate, shorten, rephrase, add or drop words. Keep every number and Roman numeral exactly as written (for example "II" stays "II", never "11").\n\n' +
+            pages + '\n\n' +
+            'Palette: warm cream paper, dark brown ink, muted gold accents. No extra text, logos, watermarks or interface elements.';
+        document.getElementById('prompt-out').value = text;
+    }
+
+    /* ── Split a finished image ─────────────────────────────── */
+    function splitImage(img) {
+        var fmt = FORMATS[state.aspect];
+        var fit = document.getElementById('split-fit').value;
+        var two = img.width > img.height * 1.15;
+        var parts = two ? [[0, img.width / 2], [img.width / 2, img.width / 2]] : [[0, img.width]];
+        var list = document.getElementById('slices');
+        list.innerHTML = '';
+        parts.forEach(function (part, i) {
+            var c = document.createElement('canvas');
+            c.width = fmt.pageW; c.height = fmt.H;
+            var x = c.getContext('2d');
+            x.fillStyle = '#120c07';
+            x.fillRect(0, 0, c.width, c.height);
+            var sw = part[1], sh = img.height;
+            var k = fit === 'cover' ? Math.max(c.width / sw, c.height / sh) : Math.min(c.width / sw, c.height / sh);
+            var dw = sw * k, dh = sh * k;
+            x.imageSmoothingQuality = 'high';
+            x.drawImage(img, part[0], 0, sw, sh, (c.width - dw) / 2, (c.height - dh) / 2, dw, dh);
+
+            var wrap = document.createElement('div');
+            wrap.className = 'slice';
+            wrap.appendChild(c);
+            var b = document.createElement('button');
+            b.type = 'button';
+            b.className = 'btn';
+            b.textContent = 'Download slide ' + (i + 1);
+            b.addEventListener('click', function () { downloadCanvas(c, 'cnote-pixel-slide-' + (i + 1) + '.png'); });
+            wrap.appendChild(b);
+            list.appendChild(wrap);
+        });
+        setStatus(two ? 'Cut into 2 slides of ' + fmt.pageW + '×' + fmt.H + '.' : 'Fitted into 1 slide of ' + fmt.pageW + '×' + fmt.H + '.');
+    }
+    var lastSplit = null;
+
+    /* ── Form wiring ────────────────────────────────────────── */
+    var $ = function (id) { return document.getElementById(id); };
+    function page() { return state.pages[state.activePage]; }
+
+    function setPressed(groupId, attr, value) {
+        $(groupId).querySelectorAll('button').forEach(function (b) {
+            b.setAttribute('aria-pressed', String(b.getAttribute(attr) === String(value)));
+        });
+    }
+    function syncForm() {
+        setPressed('aspect-seg', 'data-aspect', state.aspect);
+        setPressed('paper-swatches', 'data-paper', state.paper);
+        setPressed('page-seg', 'data-page', state.activePage);
+        setPressed('view-seg', 'data-view', state.view);
+        $('fontSet').value = state.fontSet;
+        $('titleScale').value = state.titleScale;
+        $('titleScale-val').textContent = state.titleScale + '%';
+        $('titleItalic').checked = state.titleItalic;
+        $('onLines').checked = state.onLines;
+        $('pixel').checked = state.pixel;
+        $('pixelSize').value = state.pixelSize;
+        $('pixelSize-val').textContent = state.pixelSize + ' px';
+        $('pixelExport').checked = state.pixelExport;
+
+        var p = page();
+        $('layout').value = p.layout;
+        document.querySelectorAll('.only-text').forEach(function (el) { el.hidden = p.layout !== 'text'; });
+        document.querySelectorAll('.only-showcase').forEach(function (el) { el.hidden = p.layout !== 'showcase'; });
+        $('stamp').value = p.stamp;
+        $('title-text').value = p.title;
+        $('title-show').value = p.title;
+        $('body').value = p.body;
+        for (var i = 0; i < 3; i++) { $('s' + i + 'v').value = p.stats[i].v; $('s' + i + 'l').value = p.stats[i].l; }
+        $('cta').value = p.cta;
+        $('label').value = p.label;
+        $('zoom').value = p.zoom;
+        $('zoom-val').textContent = p.zoom + '%';
+        $('offX').value = p.offX;
+        $('offY').value = p.offY;
+        $('shadow').checked = p.shadow;
+        $('factLabel').value = p.factLabel;
+        $('factText').value = p.factText;
+        $('signature').value = p.signature;
+    }
+
+    var saveTimer = null;
+    function changed() {
+        scheduleRender();
+        clearTimeout(saveTimer);
+        saveTimer = setTimeout(saveLocal, 400);
+    }
+
+    function bindText(id, key) {
+        $(id).addEventListener('input', function (e) { page()[key] = e.target.value; changed(); });
+    }
+    ['stamp', 'body', 'cta', 'label', 'factLabel', 'factText', 'signature'].forEach(function (k) { bindText(k, k); });
+    bindText('title-text', 'title');
+    bindText('title-show', 'title');
+    [0, 1, 2].forEach(function (i) {
+        $('s' + i + 'v').addEventListener('input', function (e) { page().stats[i].v = e.target.value; changed(); });
+        $('s' + i + 'l').addEventListener('input', function (e) { page().stats[i].l = e.target.value; changed(); });
+    });
+    ['zoom', 'offX', 'offY'].forEach(function (k) {
+        $(k).addEventListener('input', function (e) {
+            page()[k] = Number(e.target.value);
+            if (k === 'zoom') $('zoom-val').textContent = page().zoom + '%';
+            changed();
+        });
+    });
+    // Double-click a position slider to re-center it.
+    ['offX', 'offY'].forEach(function (k) {
+        $(k).addEventListener('dblclick', function () { page()[k] = 0; $(k).value = 0; changed(); });
+    });
+    $('shadow').addEventListener('change', function (e) { page().shadow = e.target.checked; changed(); });
+    $('layout').addEventListener('change', function (e) { page().layout = e.target.value; syncForm(); changed(); });
+
+    $('fontSet').addEventListener('change', function (e) { state.fontSet = e.target.value; changed(); });
+    $('titleScale').addEventListener('input', function (e) {
+        state.titleScale = Number(e.target.value);
+        $('titleScale-val').textContent = state.titleScale + '%';
+        changed();
+    });
+    $('titleItalic').addEventListener('change', function (e) { state.titleItalic = e.target.checked; changed(); });
+    $('onLines').addEventListener('change', function (e) { state.onLines = e.target.checked; changed(); });
+    $('pixel').addEventListener('change', function (e) { state.pixel = e.target.checked; changed(); });
+    $('pixelExport').addEventListener('change', function (e) { state.pixelExport = e.target.checked; changed(); });
+    $('pixelSize').addEventListener('input', function (e) {
+        state.pixelSize = Number(e.target.value);
+        $('pixelSize-val').textContent = state.pixelSize + ' px';
+        changed();
+    });
+
+    $('aspect-seg').addEventListener('click', function (e) {
+        var b = e.target.closest('button'); if (!b) return;
+        state.aspect = b.getAttribute('data-aspect');
+        syncForm(); changed();
+        if (lastSplit) splitImage(lastSplit);
+    });
+    $('paper-swatches').addEventListener('click', function (e) {
+        var b = e.target.closest('button'); if (!b) return;
+        state.paper = b.getAttribute('data-paper');
+        syncForm(); changed();
+    });
+    $('page-seg').addEventListener('click', function (e) {
+        var b = e.target.closest('button'); if (!b) return;
+        state.activePage = Number(b.getAttribute('data-page'));
+        syncForm(); saveLocal();
+    });
+    $('view-seg').addEventListener('click', function (e) {
+        var b = e.target.closest('button'); if (!b) return;
+        state.view = b.getAttribute('data-view');
+        if (state.view !== 'spread') state.activePage = state.view === 'left' ? 0 : 1;
+        syncForm(); changed();
+    });
+    $('editor').addEventListener('submit', function (e) { e.preventDefault(); });
+
+    // Picture upload (button or drag & drop)
+    function setImage(file) {
+        if (!file || !/^image\//.test(file.type)) { setStatus('That file is not an image.', true); return; }
+        var idx = state.activePage;
+        fileToDataUrl(file, 1600).then(function (url) {
+            state.pages[idx].image = url;
+            return decode(url);
+        }).then(function (img) {
+            images[idx] = img;
+            setStatus('Picture added to the ' + (idx === 0 ? 'left' : 'right') + ' page.');
+            changed();
+        }).catch(function () { setStatus('Could not read that picture. Try a PNG or JPG.', true); });
+    }
+    function wireDrop(dropId, inputId, onFile) {
+        var drop = $(dropId);
+        $(inputId).addEventListener('change', function (e) { if (e.target.files[0]) onFile(e.target.files[0]); e.target.value = ''; });
+        drop.addEventListener('dragover', function (e) { e.preventDefault(); drop.classList.add('is-over'); });
+        drop.addEventListener('dragleave', function () { drop.classList.remove('is-over'); });
+        drop.addEventListener('drop', function (e) {
+            e.preventDefault();
+            drop.classList.remove('is-over');
+            if (e.dataTransfer.files[0]) onFile(e.dataTransfer.files[0]);
+        });
+    }
+    wireDrop('drop', 'image-file', setImage);
+    $('image-clear').addEventListener('click', function () {
+        page().image = null;
+        images[state.activePage] = null;
+        changed();
+    });
+
+    wireDrop('split-drop', 'split-file', function (file) {
+        if (!/^image\//.test(file.type)) { setStatus('That file is not an image.', true); return; }
+        var url = URL.createObjectURL(file);
+        decode(url).then(function (img) {
+            if (!img) { setStatus('Could not read that image.', true); return; }
+            lastSplit = img;
+            splitImage(img);
+        });
+    });
+    $('split-fit').addEventListener('change', function () { if (lastSplit) splitImage(lastSplit); });
+
+    $('dl-spread').addEventListener('click', function () { exportView('spread'); });
+    $('dl-left').addEventListener('click', function () { exportView('left'); });
+    $('dl-right').addEventListener('click', function () { exportView('right'); });
+
+    $('copy-prompt').addEventListener('click', function () {
+        var ta = $('prompt-out');
+        var done = function () { setStatus('Prompt copied.'); };
+        var fallback = function () { ta.focus(); ta.select(); setStatus('Press Ctrl+C to copy the selected prompt.'); };
+        if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(ta.value).then(done, fallback);
+        else fallback();
+    });
+
+    $('save-json').addEventListener('click', function () {
+        var blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+        saveBlob(blob, 'cnote-' + slug(state.pages[0].title || state.pages[1].title) + '.json');
+        setStatus('Draft file saved.');
+    });
+    $('load-json').addEventListener('click', function () { $('json-file').click(); });
+    $('json-file').addEventListener('change', function (e) {
+        var file = e.target.files[0];
+        e.target.value = '';
+        if (!file) return;
+        file.text().then(function (txt) {
+            applyState(mergeState(JSON.parse(txt)));
+            setStatus('Draft "' + file.name + '" opened.');
+        }).catch(function () { setStatus('That file is not a Notebook Post Maker draft.', true); });
+    });
+
+    // Two-step reset: the first click arms it, the second one within 4s confirms.
+    var resetArmed = null;
+    $('reset').addEventListener('click', function (e) {
+        var b = e.target;
+        if (!resetArmed) {
+            b.textContent = 'Click again to clear everything';
+            resetArmed = setTimeout(function () { resetArmed = null; b.textContent = 'Start over'; }, 4000);
+            return;
+        }
+        clearTimeout(resetArmed); resetArmed = null;
+        b.textContent = 'Start over';
+        var fresh = defaultState();
+        loadSample().then(function (url) {
+            fresh.pages[1].image = url;
+            applyState(fresh);
+            setStatus('Back to the example post.');
+        });
+    });
+
+    function applyState(next) {
+        state = next;
+        return Promise.all(state.pages.map(function (p) { return decode(p.image); })).then(function (imgs) {
+            images = imgs;
+            syncForm();
+            changed();
+        });
+    }
+
+    /* ── Boot ───────────────────────────────────────────────── */
+    var saved = loadLocal();
+    var boot = saved ? Promise.resolve(mergeState(saved)) : loadSample().then(function (url) {
+        var s = defaultState();
+        s.pages[1].image = url;
+        return s;
+    });
+    boot.then(applyState);
+
+    // Canvas text needs the web fonts actually loaded; redraw once they are.
+    if (document.fonts && document.fonts.load) {
+        Promise.all([
+            '700 40px "Playfair Display"', 'italic 700 40px "Playfair Display"',
+            '400 20px "DM Sans"', 'italic 400 20px "DM Sans"', '600 20px "DM Sans"', '700 20px "DM Sans"',
+            '400 20px "Pixelify Sans"', '600 20px "Pixelify Sans"', '700 20px "Pixelify Sans"'
+        ].map(function (f) { return document.fonts.load(f).catch(function () {}); }))
+            .then(scheduleRender);
+    }
+})();
+</script>
+</body>
+</html>
