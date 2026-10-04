@@ -34,7 +34,12 @@
 :root {
     --book-w: 1200px;
     --book-h: 800px;
-    --line: 30px;                 /* ruled-line spacing; the body text sits on these */
+    --line: 33px;                 /* ruled-line spacing; the body text sits on these */
+    /* Proportions below were measured from the first post's pixel-art image
+       (page = 955px tall there, 772px here): picture page = label 5.7%,
+       name 9.8%, picture 21.7–63.6% at ~92% width, fun-fact box 67.3–85.9%,
+       ~14% empty below; text page = stamp 3.7%, title 13.5–30.6%, rule 32.3%,
+       11 lines of text from 35.8%, stats 85.3–92.5%. */
 
     /* Site palette (css/pages/index.css nb-* values) */
     --frame: #1b110a;
@@ -134,7 +139,7 @@ body {
 
 /* ── Spine (.nb-spine / .nb-ring) ────────────── */
 .spine {
-    width: 44px;
+    width: 66px;
     flex-shrink: 0;
     background: linear-gradient(to right, #110c06 0%, #2a1d11 25%, #3a2c1c 50%, #2a1d11 75%, #110c06 100%);
     box-shadow: inset 5px 0 10px rgba(0, 0, 0, 0.55), inset -5px 0 10px rgba(0, 0, 0, 0.55);
@@ -145,10 +150,10 @@ body {
     padding: 20px 0;
 }
 .ring {
-    width: 26px;
-    height: 26px;
+    width: 30px;
+    height: 30px;
     border-radius: 50%;
-    border: 4px solid #6b4a2c;
+    border: 5px solid #6b4a2c;
     background: radial-gradient(circle at 38% 35%, #2c2015 30%, #0e0906 100%);
     box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.75);
 }
@@ -160,16 +165,16 @@ body {
     height: 100%;
     display: flex;
     flex-direction: column;
-    padding: var(--line) 40px 34px 44px;
+    padding: 42px 28px 108px 34px;   /* bottom ≈ 14% left empty under the fun fact box */
 }
 .label {
     font-family: var(--font-sans);
     font-weight: 700;
-    font-size: 17px;
-    letter-spacing: 0.16em;
+    font-size: 20px;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
     color: var(--gold-text);
-    line-height: var(--line);
+    line-height: 1;
 }
 .label-row {
     display: flex;
@@ -180,24 +185,25 @@ body {
 .name {
     font-family: var(--font-serif);
     font-weight: 800;
-    font-size: 62px;
-    line-height: 1.05;
+    font-size: 78px;
+    line-height: 1;
     color: var(--ink);
-    margin: 4px 0 0;
+    margin: 14px 0 0;
     text-wrap: balance;
 }
 .pic-wrap {
+    margin: 0 -16px;   /* lets the picture use almost the full page width, like the reference */
     flex: 1;
     min-height: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 14px 0;
+    padding: 18px 0 26px;
 }
 .pic {
     display: block;
-    max-width: 78%;    /* picture size on the page: lower = smaller */
-    max-height: 82%;
+    max-width: 96%;    /* picture size on the page: lower = smaller */
+    max-height: 100%;
     object-fit: contain;
     filter:
         drop-shadow(0 10px 20px rgba(0, 0, 0, 0.22))
@@ -209,10 +215,10 @@ body {
 /* Fun fact box: full gold frame, label with a rule running to the right */
 .fact {
     flex-shrink: 0;
-    border: 3px solid var(--gold);
-    border-radius: 10px;
+    border: 4px solid var(--gold);
+    border-radius: 8px;
     background: rgba(150, 105, 20, 0.05);
-    padding: 14px 22px 18px;
+    padding: 16px 22px 18px;
 }
 .fact__label {
     display: flex;
@@ -220,11 +226,11 @@ body {
     gap: 10px;
     font-family: var(--font-sans);
     font-weight: 700;
-    font-size: 17px;
-    letter-spacing: 0.16em;
+    font-size: 22px;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
     color: var(--gold-text);
-    margin-bottom: 8px;
+    margin-bottom: 10px;
 }
 .fact__label .star { font-size: 22px; letter-spacing: 0; color: var(--gold); }
 .fact__label span { white-space: nowrap; }
@@ -239,8 +245,8 @@ body {
     margin: 0;
     font-family: var(--font-sans);
     font-style: italic;
-    font-size: 20px;
-    line-height: 1.5;
+    font-size: 21px;
+    line-height: 1.45;
     color: var(--ink-soft);
 }
 
@@ -248,10 +254,15 @@ body {
 .page--right::before {           /* red margin line */
     content: '';
     position: absolute;
-    left: 50px; top: 0; bottom: 0;
-    width: 2px;
+    left: 58px; top: 0; bottom: 0;
+    width: 3px;
     background: var(--margin-red);
     z-index: 1;
+}
+.page--right {
+    /* The title block ends half a line off the ruling, so this page's lines are
+       shifted half a line to keep the body text sitting on them. */
+    background-position: 0 calc(var(--line) / 2);
 }
 .text-inner {
     position: relative;
@@ -259,38 +270,37 @@ body {
     height: 100%;
     display: flex;
     flex-direction: column;
-    padding: var(--line) 38px var(--line) 80px;
+    padding: 29px 28px 58px 84px;
 }
-/* Every block above the body is a whole number of ruled lines tall, so the body text lands on the lines. */
+/* Stamp row 2 lines + title 4.5 lines + rule 1 line = 7.5 lines above the body (see the half-line shift above). */
 .stamp-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    height: 50px;
-    margin-bottom: calc(var(--line) * 2 - 50px);
+    height: calc(var(--line) * 2);
     flex-shrink: 0;
 }
 .counter {
     font-family: var(--font-sans);
     font-weight: 700;
-    font-size: 17px;
-    letter-spacing: 0.16em;
+    font-size: 20px;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
     color: var(--gold-text);
     font-variant-numeric: tabular-nums;
 }
 .stamp {
-    width: 50px;
-    height: 50px;
-    border: 2.5px solid rgba(130, 90, 20, 0.5);
+    width: 58px;
+    height: 58px;
+    border: 3px solid rgba(130, 90, 20, 0.55);
     border-radius: 50%;
     display: grid;
     place-items: center;
     font-family: var(--font-serif);
     font-weight: 700;
-    font-size: 17px;
+    font-size: 20px;
     letter-spacing: 0.04em;
-    color: rgba(130, 90, 20, 0.75);
+    color: rgba(130, 90, 20, 0.8);
     flex-shrink: 0;
 }
 .title-block {
@@ -302,21 +312,21 @@ body {
 .title {
     font-family: var(--font-serif);
     font-weight: 800;
-    font-size: 54px;
-    line-height: calc(var(--line) * 2);
+    font-size: 66px;
+    line-height: calc(var(--line) * 2.25);
     color: var(--ink);
     margin: 0;
 }
 .rule {
-    height: 4px;
+    height: 5px;
     border-radius: 2px;
-    margin: 4px 0 calc(var(--line) - 8px);
+    margin: 0 0 calc(var(--line) - 5px);
     background: var(--gold);
 }
 .body {
     margin: 0;
     font-family: var(--font-sans);
-    font-size: 19px;
+    font-size: 21px;
     line-height: var(--line);
     color: var(--ink-soft);
     flex-shrink: 1;
@@ -325,23 +335,25 @@ body {
 }
 .stats {
     display: flex;
-    gap: 44px;
-    margin-top: var(--line);
+    gap: 34px;
+    margin-top: auto;
     flex-shrink: 0;
 }
-.stat { display: flex; flex-direction: column; gap: 4px; }
+.stat { display: flex; flex-direction: column; gap: 6px; }
 .stat b {
     font-family: var(--font-serif);
     font-weight: 800;
-    font-size: 38px;
+    font-size: 40px;
     line-height: 1;
     color: var(--ink);
 }
 .stat span {
     font-family: var(--font-sans);
     font-weight: 600;
-    font-size: 14px;
-    letter-spacing: 0.1em;
+    font-size: 16px;
+    line-height: 1.1;
+    white-space: nowrap;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--gold-text);
 }
