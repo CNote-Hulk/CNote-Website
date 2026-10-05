@@ -165,7 +165,7 @@
         'VRR':              "Variable Refresh Rate \u2014 the display dynamically syncs its refresh rate to the GPU's output, eliminating screen tearing and stutter.",
     };
 
-    var HELP_SVG = '<svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor" aria-hidden="true"><circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.5" fill="none"/><circle cx="8" cy="5.5" r="1"/><rect x="7.25" y="7.5" width="1.5" height="4" rx="0.75"/></svg>';
+    var HELP_SVG = '<svg viewBox="0 0 24 24" width="12" height="12" aria-hidden="true" fill="currentColor" shape-rendering="crispEdges"><path d="M18 22H6V20H18V22ZM6 20H4V18H6V20ZM20 20H18V18H20V20ZM4 18H2V6H4V18ZM22 18H20V6H22V18ZM13 17H11V11H13V17ZM13 9H11V7H13V9ZM6 6H4V4H6V6ZM20 6H18V4H20V6ZM18 4H6V2H18V4Z"/></svg>';
 
     function tip(label) {
         var text = SPEC_TIPS[label];

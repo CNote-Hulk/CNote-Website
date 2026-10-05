@@ -33,14 +33,14 @@
 
 /* === PAGE-SPECIFIC === */
 @import url('./pages/home.css?v=20260909');
-@import url('./pages/index.css');
+@import url('./pages/index.css?v=20261005');
 @import url('./pages/evolutie.css');
 @import url('./pages/comparatie.css');
 @import url('./pages/console-detail.css');
-@import url('./pages/contact.css');
-@import url('./pages/auth-profile.css?v=20260909');
+@import url('./pages/contact.css?v=20261005');
+@import url('./pages/auth-profile.css?v=20261005');
 @import url('./pages/stats.css?v=20260909');
-@import url('./pages/community-hub.css');
+@import url('./pages/community-hub.css?v=20261005');
 @import url('./pages/community-landing.css');
 @import url('./pages/help.css');
 @import url('./pages/help-sub.css');

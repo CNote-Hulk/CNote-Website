@@ -205,7 +205,7 @@ export async function initModelDirectory({
         btn.type = 'button';
         btn.id = 'model-directory-add-btn';
         btn.className = 'model-directory-add-trigger';
-        btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg><span>${I18nModule.t('model_add_btn')}</span>`;
+        btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor" shape-rendering="crispEdges"><path d="M13 11h7v2h-7v7h-2v-7H4v-2h7V4h2v7Z"/></svg><span>${I18nModule.t('model_add_btn')}</span>`;
         btn.addEventListener('click', openAddModelForm);
         anchor.after(btn);
     }

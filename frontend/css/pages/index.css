@@ -529,7 +529,7 @@ html[data-theme='light'] {
 .nb-card__icon svg {
     width: 18px;
     height: 18px;
-    stroke: var(--accent-color);
+    color: var(--accent-color); /* pixel icons are filled with currentColor (2026-10-05) */
 }
 
 .nb-card__name {

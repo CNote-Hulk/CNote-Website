@@ -746,16 +746,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                         const btn = document.createElement('button');
                         btn.className = 'activity-show-more';
                         const remaining = events.length - INITIAL_SHOW;
-                        btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg> Show ${remaining} more`;
+                        btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges"><path d="M13 16h-2v-2h2v2Zm-2-2H9v-2h2v2Zm4 0h-2v-2h2v2Zm-6-2H7v-2h2v2Zm8 0h-2v-2h2v2ZM7 10H5V8h2v2Zm12 0h-2V8h2v2Z"/></svg> Show ${remaining} more`;
                         let expanded = false;
                         const extraItems = activityList.querySelectorAll('li.activity-hidden');
                         btn.addEventListener('click', () => {
                             expanded = !expanded;
                             extraItems.forEach(li => li.classList.toggle('activity-hidden', !expanded));
                             if (expanded) {
-                                btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg> Show less`;
+                                btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges"><path d="M13 8h-2v2h2V8Zm-2 2H9v2h2v-2Zm4 0h-2v2h2v-2Zm-6 2H7v2h2v-2Zm8 0h-2v2h2v-2ZM7 14H5v2h2v-2Zm12 0h-2v2h2v-2Z"/></svg> Show less`;
                             } else {
-                                btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg> Show ${remaining} more`;
+                                btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges"><path d="M13 16h-2v-2h2v2Zm-2-2H9v-2h2v2Zm4 0h-2v-2h2v2Zm-6-2H7v-2h2v2Zm8 0h-2v-2h2v2ZM7 10H5V8h2v2Zm12 0h-2V8h2v2Z"/></svg> Show ${remaining} more`;
                             }
                         });
                         activityList.after(btn);
@@ -957,7 +957,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <div class="home-listing-card__info">
                             <div class="home-listing-card__title">${escapeHtml(l.title)}</div>
                             <div class="home-listing-card__price">${Number(l.price).toFixed(0)} RON</div>
-                            <div class="home-listing-card__seller">${escapeHtml(l.seller_name || '')}${l.seller_is_official ? `<span class="home-official-badge"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>${I18nModule.t('marketplace_official_badge')}</span>` : ''}</div>
+                            <div class="home-listing-card__seller">${escapeHtml(l.seller_name || '')}${l.seller_is_official ? `<span class="home-official-badge"><svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges"><path d="M10 18H8v-2h2v2Zm-2-2H6v-2h2v2Zm4-2v2h-2v-2h2Zm-6 0H4v-2h2v2Zm8 0h-2v-2h2v2Zm2-2h-2v-2h2v2Zm2-2h-2V8h2v2Zm2-2h-2V6h2v2Z"/></svg>${I18nModule.t('marketplace_official_badge')}</span>` : ''}</div>
                         </div>
                     </a>`;
                 }).join('');

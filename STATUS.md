@@ -41,6 +41,10 @@ own notes.
   redone in retro pixel style, separate from the real `index.html` so Andrei can judge it live. Shapes
   keep the site's rounded corners/pills/circles, drawn as pixel staircases (not square frames). Next:
   decide which parts (if any) move into the real site / which other pages get the same treatment.
+- Pixel-art UI icons (2026-10-05): all 478 inline line-icon SVGs on the site (93 distinct icons) were
+  replaced by their Pixelarticons equivalents, plus the CSS select arrows/checkmark; pixel emoji were
+  resized to emoji size (1.2em, were ≥24px and looked too big). Left as-is: progress rings, dashed
+  connector lines, Google logo, KaTeX.
 - Pixel-art emoji (2026-10-05, stage 1 of 3): the site's emoji now render as retro pixel icons
   (Pixelarticons, MIT) site-wide via `pixel-emoji.js`; user-written text keeps native emoji. Next:
   stage 2 = pixel versions of the 6 chat quick reactions are already covered by the same map

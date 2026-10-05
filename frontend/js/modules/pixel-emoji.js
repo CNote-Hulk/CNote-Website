@@ -7,9 +7,11 @@
    chat, notifications, toasts, i18n re-renders).
 
    - Icons: Pixelarticons by Gerrit Halfmann (MIT, see pixelarticons.LICENSE.txt
-     next to this file), 24×24 grid. Pixel art is only crisp at whole multiples
-     of its grid, so icons render at 24px or 48px (1.5em rounded down to a
-     multiple of 24, minimum 24) — never in between.
+     next to this file), 24×24 grid. Sized like a normal emoji: 1.2em rounded
+     to a multiple of 4px (16px next to 14px text, 20px next to 16px text…),
+     drawn with crisp edges. (Until 2026-10-05 evening they were forced to
+     24px minimum for perfect pixels, which made them look too big next to
+     small text — Andrei: "arată prea mari".)
    - Monochrome icons take the surrounding text color (fill: currentColor);
      emoji whose meaning is their color (❤ red, 🏆 gold, ✅ green…) get a
      retro palette color instead.
@@ -729,12 +731,12 @@ function injectStyles() {
     style.id = 'px-emoji-styles';
     style.textContent = `
         .px-emoji {
-            display: inline-block; width: 24px; height: 24px;
-            vertical-align: middle; margin-block: -4px; flex-shrink: 0;
+            display: inline-block; width: 1.2em; height: 1.2em;
+            vertical-align: -0.2em; flex-shrink: 0;
             fill: currentColor; shape-rendering: crispEdges;
         }
-        @supports (width: round(down, 30px, 24px)) {
-            .px-emoji { width: max(24px, round(down, 1.5em, 24px)); height: max(24px, round(down, 1.5em, 24px)); }
+        @supports (width: round(nearest, 30px, 4px)) {
+            .px-emoji { width: max(12px, round(nearest, 1.2em, 4px)); height: max(12px, round(nearest, 1.2em, 4px)); }
         }
         ${Object.entries(COLORS).map(([k, v]) => `.px-emoji--${k} { fill: ${v}; }`).join('\n')}
     `;

@@ -487,7 +487,7 @@ function renderSidebarTOC(course, completedIds) {
         const backLink = document.createElement('a');
         backLink.className = 'lsn-cnav-back';
         backLink.href = `course.html?slug=${encodeURIComponent(courseSlug)}`;
-        backLink.innerHTML = `<svg width="12" height="12" viewBox="0 0 10 10" fill="none"><path d="M6 2L3 5l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg> ${course ? course.title : 'Course'}`;
+        backLink.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges"><path d="M8 13v-2h2v2H8Zm2-2V9h2v2h-2Zm0 4v-2h2v2h-2Zm2-6V7h2v2h-2Zm0 8v-2h2v2h-2Zm2-10V5h2v2h-2Zm0 12v-2h2v2h-2Z"/></svg> ${course ? course.title : 'Course'}`;
         nav.appendChild(backLink);
     }
 
@@ -804,7 +804,7 @@ function renderNavButtons(allLessons, lsnIdx, hasQuiz) {
         prevBtn.href = '#';
         prevBtn.innerHTML = `
             <div class="lsn-nav-btn__direction">
-                <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M6 2L3 5l3 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges"><path d="M8 13v-2h2v2H8Zm2-2V9h2v2h-2Zm0 4v-2h2v2h-2Zm2-6V7h2v2h-2Zm0 8v-2h2v2h-2Zm2-10V5h2v2h-2Zm0 12v-2h2v2h-2Z"/></svg>
                 Previous
             </div>
             <div class="lsn-nav-btn__title">${esc(prevLesson.title)}</div>
@@ -818,7 +818,7 @@ function renderNavButtons(allLessons, lsnIdx, hasQuiz) {
         prevBtn.href = '#';
         prevBtn.innerHTML = `
             <div class="lsn-nav-btn__direction">
-                <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M6 2L3 5l3 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges"><path d="M8 13v-2h2v2H8Zm2-2V9h2v2h-2Zm0 4v-2h2v2h-2Zm2-6V7h2v2h-2Zm0 8v-2h2v2h-2Zm2-10V5h2v2h-2Zm0 12v-2h2v2h-2Z"/></svg>
                 Previous
             </div>
             <div class="lsn-nav-btn__title">Course overview</div>
@@ -846,7 +846,7 @@ function renderNavButtons(allLessons, lsnIdx, hasQuiz) {
     nextBtn.innerHTML = `
         <div class="lsn-nav-btn__direction">
             Next lesson
-            <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M4 2l3 3-3 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges"><path d="M16 13v-2h-2v2h2Zm-2-2V9h-2v2h2Zm0 4v-2h-2v2h2Zm-2-6V7h-2v2h2Zm0 8v-2h-2v2h2ZM10 7V5H8v2h2Zm0 12v-2H8v2h2Z"/></svg>
         </div>
         <div class="lsn-nav-btn__title">${nextTitle}</div>
         ${nextNum}
@@ -1013,7 +1013,7 @@ function openLessonEditor() {
     });
 }
 
-const EDIT_PENCIL_SVG = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>';
+const EDIT_PENCIL_SVG = '<svg width="13" height="13" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor" shape-rendering="crispEdges"><path d="M4 16H6V18H8V20H10V22H2V14H4V16ZM12 20H10V18H12V20ZM14 18H12V16H14V18ZM10 16H8V14H10V16ZM16 16H14V14H16V16ZM6 14H4V12H6V14ZM12 14H10V12H12V14ZM18 14H16V12H18V14ZM8 12H6V10H8V12ZM14 12H12V10H14V12ZM20 12H18V10H20V12ZM10 10H8V8H10V10ZM18 10H16V8H18V10ZM22 10H20V8H22V10ZM12 8H10V6H12V8ZM16 8H14V6H16V8ZM20 8H18V6H20V8ZM14 6H12V4H14V6ZM18 6H16V4H18V6ZM16 4H14V2H16V4Z"/></svg>';
 
 function initLessonAdminEditButton() {
     if (!isAdmin()) return;

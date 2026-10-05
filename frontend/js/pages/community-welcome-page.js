@@ -263,7 +263,7 @@
                     var title = esc(l.title || 'Untitled');
                     var img = l.images && l.images.length ? l.images[0] : '';
                     html += '<button class="cl-marketplace__card" data-hub-navigate="marketplace" type="button">'
-                        + (img ? '<div class="cl-marketplace__img" style="background-image:url(\'' + esc(img) + '\')"></div>' : '<div class="cl-marketplace__img cl-marketplace__img--empty"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>')
+                        + (img ? '<div class="cl-marketplace__img" style="background-image:url(\'' + esc(img) + '\')"></div>' : '<div class="cl-marketplace__img cl-marketplace__img--empty"><svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges"><path d="M4 2h16v2H4zm0 18h16v2H4zM2 4h2v16H2zm18 0h2v16h-2zm-4 8h2v2h-2zm-2 2h2v2h-2zm4 0h2v2h-2zm-8 0h2v2h-2zm2 2h2v2h-2zm2 2h2v2h-2z M20 16h2v2h-2zM8 16h2v2H8zm-2 2h2v2H6zM8 6h2v2H8zM6 8h2v2H6zm2 2h2v2H8zm2-2h2v2h-2z"/></svg></div>')
                         + '<div class="cl-marketplace__body">'
                         + '<div class="cl-marketplace__title">' + title + '</div>'
                         + '<div class="cl-marketplace__meta">'

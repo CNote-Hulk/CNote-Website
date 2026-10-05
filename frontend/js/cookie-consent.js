@@ -36,7 +36,7 @@ function showYtFallback(placeholder, videoId) {
   // Extra guard: strip anything that isn't a standard YouTube video ID character (A-Z a-z 0-9 - _).
   const safeVideoId = String(videoId).replace(/[^A-Za-z0-9_-]/g, '');
   fallback.innerHTML = `
-    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.4"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    <svg width="48" height="48" viewBox="0 0 24 24" opacity="0.4" fill="currentColor" shape-rendering="crispEdges"><path d="M4 2h16v2H4zm0 18h16v2H4zM20 4h2v16h-2zM2 4h2v16H2zm9 2h2v8h-2zm0 10h2v2h-2z"/></svg>
     <p>Videoclipul nu poate fi afișat direct.</p>
     <a href="https://www.youtube.com/watch?v=${safeVideoId}" target="_blank" rel="noopener noreferrer" class="yt-fallback__link">Vizionează pe YouTube →</a>
   `;

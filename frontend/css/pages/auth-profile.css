@@ -251,7 +251,7 @@
     background: rgba(var(--accent-rgb, 245,240,232), 0.1);
     border: 1px solid rgba(var(--accent-rgb, 245,240,232), 0.2);
     flex-shrink: 0;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23F5F0E8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23F5F0E8' shape-rendering='crispEdges'%3E%3Cpath d='M10%2018H8v-2h2v2Zm-2-2H6v-2h2v2Zm4-2v2h-2v-2h2Zm-6%200H4v-2h2v2Zm8%200h-2v-2h2v2Zm2-2h-2v-2h2v2Zm2-2h-2V8h2v2Zm2-2h-2V6h2v2Z'/%3E%3C/svg%3E");
     background-size: 10px;
     background-repeat: no-repeat;
     background-position: center;

@@ -1233,7 +1233,7 @@ button.hub-action-pill:hover {
     appearance: none;
     -webkit-appearance: none;
     background-color: rgba(255, 255, 255, 0.05);
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='%23888' shape-rendering='crispEdges'%3E%3Cpath d='M13%2016h-2v-2h2v2Zm-2-2H9v-2h2v2Zm4%200h-2v-2h2v2Zm-6-2H7v-2h2v2Zm8%200h-2v-2h2v2ZM7%2010H5V8h2v2Zm12%200h-2V8h2v2Z'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 10px center;
     background-size: 14px;
@@ -3545,7 +3545,7 @@ button.hub-action-pill:hover {
 .hub-form-select {
     appearance: none;
     -webkit-appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='%23888' shape-rendering='crispEdges'%3E%3Cpath d='M13%2016h-2v-2h2v2Zm-2-2H9v-2h2v2Zm4%200h-2v-2h2v2Zm-6-2H7v-2h2v2Zm8%200h-2v-2h2v2ZM7%2010H5V8h2v2Zm12%200h-2V8h2v2Z'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 12px center;
     background-size: 13px;
@@ -4331,7 +4331,7 @@ body.community-navbar-page {
 
 [data-theme="light"] .hub-market-select,
 [data-theme="light"] .hub-form-select {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23555' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='%23555' shape-rendering='crispEdges'%3E%3Cpath d='M13%2016h-2v-2h2v2Zm-2-2H9v-2h2v2Zm4%200h-2v-2h2v2Zm-6-2H7v-2h2v2Zm8%200h-2v-2h2v2ZM7%2010H5V8h2v2Zm12%200h-2V8h2v2Z'/%3E%3C/svg%3E");
 }
 
 [data-theme="light"] .hub-filter-drawer {
