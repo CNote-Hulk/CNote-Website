@@ -93,27 +93,67 @@ a:focus-visible, button:focus-visible, input:focus-visible { outline: 3px solid 
 .px-title { font-family: var(--font-title); font-weight: 900; filter: url(#px4); -webkit-text-stroke: 2px currentColor; paint-order: stroke fill; letter-spacing: 0.02em; }
 .px-title--3 { filter: url(#px3); -webkit-text-stroke: 1.5px currentColor; }
 
+/* ── Pixel-rounded shapes (2026-10-05) ──────────────
+   The original site's rounded corners, pills and circles, redrawn as pixel
+   staircases that follow a real circle (generated below: name = radius / pixel step).
+   .pxf = framed shape: the element is clipped to --shape and painted in the
+        border color; ::before (inset by --bw) is the fill, clipped to --shape-in.
+   .pxw = wrapper that draws the hard drop shadow under the same --shape, so the
+        shadow stays put while the element on top lifts / presses. */
+:root {
+    --rB: polygon(0 28px, 0 16px, 4px 16px, 4px 12px, 8px 12px, 8px 8px, 12px 8px, 12px 4px, 16px 4px, 16px 0, calc(100% - 16px) 0, calc(100% - 16px) 4px, calc(100% - 12px) 4px, calc(100% - 12px) 8px, calc(100% - 8px) 8px, calc(100% - 8px) 12px, calc(100% - 4px) 12px, calc(100% - 4px) 16px, 100% 16px, 100% 28px, 100% calc(100% - 28px), 100% calc(100% - 16px), calc(100% - 4px) calc(100% - 16px), calc(100% - 4px) calc(100% - 12px), calc(100% - 8px) calc(100% - 12px), calc(100% - 8px) calc(100% - 8px), calc(100% - 12px) calc(100% - 8px), calc(100% - 12px) calc(100% - 4px), calc(100% - 16px) calc(100% - 4px), calc(100% - 16px) 100%, 16px 100%, 16px calc(100% - 4px), 12px calc(100% - 4px), 12px calc(100% - 8px), 8px calc(100% - 8px), 8px calc(100% - 12px), 4px calc(100% - 12px), 4px calc(100% - 16px), 0 calc(100% - 16px), 0 calc(100% - 28px));
+    --rBi: polygon(0 24px, 0 16px, 4px 16px, 4px 8px, 8px 8px, 8px 4px, 16px 4px, 16px 0, calc(100% - 16px) 0, calc(100% - 16px) 4px, calc(100% - 8px) 4px, calc(100% - 8px) 8px, calc(100% - 4px) 8px, calc(100% - 4px) 16px, 100% 16px, 100% 24px, 100% calc(100% - 24px), 100% calc(100% - 16px), calc(100% - 4px) calc(100% - 16px), calc(100% - 4px) calc(100% - 8px), calc(100% - 8px) calc(100% - 8px), calc(100% - 8px) calc(100% - 4px), calc(100% - 16px) calc(100% - 4px), calc(100% - 16px) 100%, 16px 100%, 16px calc(100% - 4px), 8px calc(100% - 4px), 8px calc(100% - 8px), 4px calc(100% - 8px), 4px calc(100% - 16px), 0 calc(100% - 16px), 0 calc(100% - 24px));
+    --rBii: polygon(0 20px, 0 12px, 4px 12px, 4px 4px, 12px 4px, 12px 0, calc(100% - 12px) 0, calc(100% - 12px) 4px, calc(100% - 4px) 4px, calc(100% - 4px) 12px, 100% 12px, 100% 20px, 100% calc(100% - 20px), 100% calc(100% - 12px), calc(100% - 4px) calc(100% - 12px), calc(100% - 4px) calc(100% - 4px), calc(100% - 12px) calc(100% - 4px), calc(100% - 12px) 100%, 12px 100%, 12px calc(100% - 4px), 4px calc(100% - 4px), 4px calc(100% - 12px), 0 calc(100% - 12px), 0 calc(100% - 20px));
+    --rP: polygon(0 12px, 0 6px, 3px 6px, 3px 3px, 6px 3px, 6px 0, calc(100% - 6px) 0, calc(100% - 6px) 3px, calc(100% - 3px) 3px, calc(100% - 3px) 6px, 100% 6px, 100% 12px, 100% calc(100% - 12px), 100% calc(100% - 6px), calc(100% - 3px) calc(100% - 6px), calc(100% - 3px) calc(100% - 3px), calc(100% - 6px) calc(100% - 3px), calc(100% - 6px) 100%, 6px 100%, 6px calc(100% - 3px), 3px calc(100% - 3px), 3px calc(100% - 6px), 0 calc(100% - 6px), 0 calc(100% - 12px));
+    --rC: polygon(0 21px, 0 12px, 3px 12px, 3px 9px, 6px 9px, 6px 6px, 9px 6px, 9px 3px, 12px 3px, 12px 0, calc(100% - 12px) 0, calc(100% - 12px) 3px, calc(100% - 9px) 3px, calc(100% - 9px) 6px, calc(100% - 6px) 6px, calc(100% - 6px) 9px, calc(100% - 3px) 9px, calc(100% - 3px) 12px, 100% 12px, 100% 21px, 100% calc(100% - 21px), 100% calc(100% - 12px), calc(100% - 3px) calc(100% - 12px), calc(100% - 3px) calc(100% - 9px), calc(100% - 6px) calc(100% - 9px), calc(100% - 6px) calc(100% - 6px), calc(100% - 9px) calc(100% - 6px), calc(100% - 9px) calc(100% - 3px), calc(100% - 12px) calc(100% - 3px), calc(100% - 12px) 100%, 12px 100%, 12px calc(100% - 3px), 9px calc(100% - 3px), 9px calc(100% - 6px), 6px calc(100% - 6px), 6px calc(100% - 9px), 3px calc(100% - 9px), 3px calc(100% - 12px), 0 calc(100% - 12px), 0 calc(100% - 21px));
+    --rCi: polygon(0 18px, 0 12px, 3px 12px, 3px 6px, 6px 6px, 6px 3px, 12px 3px, 12px 0, calc(100% - 12px) 0, calc(100% - 12px) 3px, calc(100% - 6px) 3px, calc(100% - 6px) 6px, calc(100% - 3px) 6px, calc(100% - 3px) 12px, 100% 12px, 100% 18px, 100% calc(100% - 18px), 100% calc(100% - 12px), calc(100% - 3px) calc(100% - 12px), calc(100% - 3px) calc(100% - 6px), calc(100% - 6px) calc(100% - 6px), calc(100% - 6px) calc(100% - 3px), calc(100% - 12px) calc(100% - 3px), calc(100% - 12px) 100%, 12px 100%, 12px calc(100% - 3px), 6px calc(100% - 3px), 6px calc(100% - 6px), 3px calc(100% - 6px), 3px calc(100% - 12px), 0 calc(100% - 12px), 0 calc(100% - 18px));
+    --rI: polygon(0 15px, 0 9px, 3px 9px, 3px 3px, 9px 3px, 9px 0, calc(100% - 9px) 0, calc(100% - 9px) 3px, calc(100% - 3px) 3px, calc(100% - 3px) 9px, 100% 9px, 100% 15px, 100% calc(100% - 15px), 100% calc(100% - 9px), calc(100% - 3px) calc(100% - 9px), calc(100% - 3px) calc(100% - 3px), calc(100% - 9px) calc(100% - 3px), calc(100% - 9px) 100%, 9px 100%, 9px calc(100% - 3px), 3px calc(100% - 3px), 3px calc(100% - 9px), 0 calc(100% - 9px), 0 calc(100% - 15px));
+    --rIi: polygon(0 12px, 0 6px, 3px 6px, 3px 3px, 6px 3px, 6px 0, calc(100% - 6px) 0, calc(100% - 6px) 3px, calc(100% - 3px) 3px, calc(100% - 3px) 6px, 100% 6px, 100% 12px, 100% calc(100% - 12px), 100% calc(100% - 6px), calc(100% - 3px) calc(100% - 6px), calc(100% - 3px) calc(100% - 3px), calc(100% - 6px) calc(100% - 3px), calc(100% - 6px) 100%, 6px 100%, 6px calc(100% - 3px), 3px calc(100% - 3px), 3px calc(100% - 6px), 0 calc(100% - 6px), 0 calc(100% - 12px));
+    --rE: polygon(0 21px, 0 12px, 3px 12px, 3px 9px, 6px 9px, 6px 6px, 9px 6px, 9px 3px, 12px 3px, 12px 0, calc(100% - 12px) 0, calc(100% - 12px) 3px, calc(100% - 9px) 3px, calc(100% - 9px) 6px, calc(100% - 6px) 6px, calc(100% - 6px) 9px, calc(100% - 3px) 9px, calc(100% - 3px) 12px, 100% 12px, 100% 21px, 100% calc(100% - 21px), 100% calc(100% - 12px), calc(100% - 3px) calc(100% - 12px), calc(100% - 3px) calc(100% - 9px), calc(100% - 6px) calc(100% - 9px), calc(100% - 6px) calc(100% - 6px), calc(100% - 9px) calc(100% - 6px), calc(100% - 9px) calc(100% - 3px), calc(100% - 12px) calc(100% - 3px), calc(100% - 12px) 100%, 12px 100%, 12px calc(100% - 3px), 9px calc(100% - 3px), 9px calc(100% - 6px), 6px calc(100% - 6px), 6px calc(100% - 9px), 3px calc(100% - 9px), 3px calc(100% - 12px), 0 calc(100% - 12px), 0 calc(100% - 21px));
+    --rEi: polygon(0 18px, 0 12px, 3px 12px, 3px 6px, 6px 6px, 6px 3px, 12px 3px, 12px 0, calc(100% - 12px) 0, calc(100% - 12px) 3px, calc(100% - 6px) 3px, calc(100% - 6px) 6px, calc(100% - 3px) 6px, calc(100% - 3px) 12px, 100% 12px, 100% 18px, 100% calc(100% - 18px), 100% calc(100% - 12px), calc(100% - 3px) calc(100% - 12px), calc(100% - 3px) calc(100% - 6px), calc(100% - 6px) calc(100% - 6px), calc(100% - 6px) calc(100% - 3px), calc(100% - 12px) calc(100% - 3px), calc(100% - 12px) 100%, 12px 100%, 12px calc(100% - 3px), 6px calc(100% - 3px), 6px calc(100% - 6px), 3px calc(100% - 6px), 3px calc(100% - 12px), 0 calc(100% - 12px), 0 calc(100% - 18px));
+    --rF: polygon(0 20px, 0 12px, 4px 12px, 4px 4px, 12px 4px, 12px 0, calc(100% - 12px) 0, calc(100% - 12px) 4px, calc(100% - 4px) 4px, calc(100% - 4px) 12px, 100% 12px, 100% 20px, 100% calc(100% - 20px), 100% calc(100% - 12px), calc(100% - 4px) calc(100% - 12px), calc(100% - 4px) calc(100% - 4px), calc(100% - 12px) calc(100% - 4px), calc(100% - 12px) 100%, 12px 100%, 12px calc(100% - 4px), 4px calc(100% - 4px), 4px calc(100% - 12px), 0 calc(100% - 12px), 0 calc(100% - 20px));
+    --rFi: polygon(0 16px, 0 8px, 4px 8px, 4px 4px, 8px 4px, 8px 0, calc(100% - 8px) 0, calc(100% - 8px) 4px, calc(100% - 4px) 4px, calc(100% - 4px) 8px, 100% 8px, 100% 16px, 100% calc(100% - 16px), 100% calc(100% - 8px), calc(100% - 4px) calc(100% - 8px), calc(100% - 4px) calc(100% - 4px), calc(100% - 8px) calc(100% - 4px), calc(100% - 8px) 100%, 8px 100%, 8px calc(100% - 4px), 4px calc(100% - 4px), 4px calc(100% - 8px), 0 calc(100% - 8px), 0 calc(100% - 16px));
+    --r8: polygon(0 9px, 0 3px, 3px 3px, 3px 0, calc(100% - 3px) 0, calc(100% - 3px) 3px, 100% 3px, 100% 9px, 100% calc(100% - 9px), 100% calc(100% - 3px), calc(100% - 3px) calc(100% - 3px), calc(100% - 3px) 100%, 3px 100%, 3px calc(100% - 3px), 0 calc(100% - 3px), 0 calc(100% - 9px));
+    --pill48: polygon(0 24px, 0 15px, 3px 15px, 3px 9px, 6px 9px, 6px 6px, 9px 6px, 9px 3px, 15px 3px, 15px 0, calc(100% - 15px) 0, calc(100% - 15px) 3px, calc(100% - 9px) 3px, calc(100% - 9px) 6px, calc(100% - 6px) 6px, calc(100% - 6px) 9px, calc(100% - 3px) 9px, calc(100% - 3px) 15px, 100% 15px, 100% 24px, 100% calc(100% - 24px), 100% calc(100% - 15px), calc(100% - 3px) calc(100% - 15px), calc(100% - 3px) calc(100% - 9px), calc(100% - 6px) calc(100% - 9px), calc(100% - 6px) calc(100% - 6px), calc(100% - 9px) calc(100% - 6px), calc(100% - 9px) calc(100% - 3px), calc(100% - 15px) calc(100% - 3px), calc(100% - 15px) 100%, 15px 100%, 15px calc(100% - 3px), 9px calc(100% - 3px), 9px calc(100% - 6px), 6px calc(100% - 6px), 6px calc(100% - 9px), 3px calc(100% - 9px), 3px calc(100% - 15px), 0 calc(100% - 15px), 0 calc(100% - 24px));
+    --pill42: polygon(0 21px, 0 12px, 3px 12px, 3px 9px, 6px 9px, 6px 6px, 9px 6px, 9px 3px, 12px 3px, 12px 0, calc(100% - 12px) 0, calc(100% - 12px) 3px, calc(100% - 9px) 3px, calc(100% - 9px) 6px, calc(100% - 6px) 6px, calc(100% - 6px) 9px, calc(100% - 3px) 9px, calc(100% - 3px) 12px, 100% 12px, 100% 21px, 100% calc(100% - 21px), 100% calc(100% - 12px), calc(100% - 3px) calc(100% - 12px), calc(100% - 3px) calc(100% - 9px), calc(100% - 6px) calc(100% - 9px), calc(100% - 6px) calc(100% - 6px), calc(100% - 9px) calc(100% - 6px), calc(100% - 9px) calc(100% - 3px), calc(100% - 12px) calc(100% - 3px), calc(100% - 12px) 100%, 12px 100%, 12px calc(100% - 3px), 9px calc(100% - 3px), 9px calc(100% - 6px), 6px calc(100% - 6px), 6px calc(100% - 9px), 3px calc(100% - 9px), 3px calc(100% - 12px), 0 calc(100% - 12px), 0 calc(100% - 21px));
+    --c56: polygon(0 28px, 0 16px, 4px 16px, 4px 12px, 8px 12px, 8px 8px, 12px 8px, 12px 4px, 16px 4px, 16px 0, calc(100% - 16px) 0, calc(100% - 16px) 4px, calc(100% - 12px) 4px, calc(100% - 12px) 8px, calc(100% - 8px) 8px, calc(100% - 8px) 12px, calc(100% - 4px) 12px, calc(100% - 4px) 16px, 100% 16px, 100% 28px, 100% calc(100% - 28px), 100% calc(100% - 16px), calc(100% - 4px) calc(100% - 16px), calc(100% - 4px) calc(100% - 12px), calc(100% - 8px) calc(100% - 12px), calc(100% - 8px) calc(100% - 8px), calc(100% - 12px) calc(100% - 8px), calc(100% - 12px) calc(100% - 4px), calc(100% - 16px) calc(100% - 4px), calc(100% - 16px) 100%, 16px 100%, 16px calc(100% - 4px), 12px calc(100% - 4px), 12px calc(100% - 8px), 8px calc(100% - 8px), 8px calc(100% - 12px), 4px calc(100% - 12px), 4px calc(100% - 16px), 0 calc(100% - 16px), 0 calc(100% - 28px));
+    --c48: polygon(0 24px, 0 16px, 4px 16px, 4px 8px, 8px 8px, 8px 4px, 16px 4px, 16px 0, calc(100% - 16px) 0, calc(100% - 16px) 4px, calc(100% - 8px) 4px, calc(100% - 8px) 8px, calc(100% - 4px) 8px, calc(100% - 4px) 16px, 100% 16px, 100% 24px, 100% calc(100% - 24px), 100% calc(100% - 16px), calc(100% - 4px) calc(100% - 16px), calc(100% - 4px) calc(100% - 8px), calc(100% - 8px) calc(100% - 8px), calc(100% - 8px) calc(100% - 4px), calc(100% - 16px) calc(100% - 4px), calc(100% - 16px) 100%, 16px 100%, 16px calc(100% - 4px), 8px calc(100% - 4px), 8px calc(100% - 8px), 4px calc(100% - 8px), 4px calc(100% - 16px), 0 calc(100% - 16px), 0 calc(100% - 24px));
+    --c28: polygon(0 14px, 0 8px, 2px 8px, 2px 6px, 4px 6px, 4px 4px, 6px 4px, 6px 2px, 8px 2px, 8px 0, calc(100% - 8px) 0, calc(100% - 8px) 2px, calc(100% - 6px) 2px, calc(100% - 6px) 4px, calc(100% - 4px) 4px, calc(100% - 4px) 6px, calc(100% - 2px) 6px, calc(100% - 2px) 8px, 100% 8px, 100% 14px, 100% calc(100% - 14px), 100% calc(100% - 8px), calc(100% - 2px) calc(100% - 8px), calc(100% - 2px) calc(100% - 6px), calc(100% - 4px) calc(100% - 6px), calc(100% - 4px) calc(100% - 4px), calc(100% - 6px) calc(100% - 4px), calc(100% - 6px) calc(100% - 2px), calc(100% - 8px) calc(100% - 2px), calc(100% - 8px) 100%, 8px 100%, 8px calc(100% - 2px), 6px calc(100% - 2px), 6px calc(100% - 4px), 4px calc(100% - 4px), 4px calc(100% - 6px), 2px calc(100% - 6px), 2px calc(100% - 8px), 0 calc(100% - 8px), 0 calc(100% - 14px));
+    --c12: polygon(0 6px, 0 2px, 2px 2px, 2px 0, calc(100% - 2px) 0, calc(100% - 2px) 2px, 100% 2px, 100% 6px, 100% calc(100% - 6px), 100% calc(100% - 2px), calc(100% - 2px) calc(100% - 2px), calc(100% - 2px) 100%, 2px 100%, 2px calc(100% - 2px), 0 calc(100% - 2px), 0 calc(100% - 6px));
+}
+.pxf { position: relative; isolation: isolate; background: var(--bd, var(--line)); clip-path: var(--shape); }
+.pxf::before {
+    content: ''; position: absolute; inset: var(--bw, 3px); z-index: -1;
+    background: var(--fill, var(--panel)); clip-path: var(--shape-in);
+}
+.pxw { position: relative; display: block; }
+.pxw::before {
+    content: ''; position: absolute; inset: 0;
+    background: var(--shadow); clip-path: var(--shape);
+    transform: translate(var(--sh, 6px), var(--sh, 6px));
+}
+.pxw > * { position: relative; }
+.explore > .pxw > *, .side .pxw > * { height: 100%; }  /* grid stretches the wrapper; the card must fill it or the shadow sticks out */
+
 .ico { width: 24px; height: 24px; fill: currentColor; shape-rendering: crispEdges; flex-shrink: 0; display: block; }
 .ico--48 { width: 48px; height: 48px; }
 
-/* Square pixel frame: 3px border + hard drop shadow */
-.frame {
-    background: var(--panel);
-    box-shadow: 0 0 0 3px var(--line), 6px 6px 0 3px var(--shadow);
-}
+/* Cards: pixel-rounded 14px corners (the site's card radius), 3px border */
+.card-shape { --shape: var(--rC); --shape-in: var(--rCi); }
 
 /* Retro button: presses down on hover/click */
 .px-btn {
     display: inline-flex; align-items: center; gap: 10px;
-    padding: 8px 18px 9px;
+    height: 48px; padding: 0 26px 2px;
     background: var(--ink); color: var(--paper);
     font-family: var(--font-px); font-size: 23px; letter-spacing: 0.04em;
-    box-shadow: 4px 4px 0 var(--shadow);
-    transition: transform 0.06s steps(1), box-shadow 0.06s steps(1);
+    clip-path: var(--pill48);
+    transition: transform 0.06s steps(1);
     cursor: pointer; border: 0;
 }
-.px-btn:hover { transform: translate(2px, 2px); box-shadow: 2px 2px 0 var(--shadow); }
-.px-btn:active { transform: translate(4px, 4px); box-shadow: 0 0 0 var(--shadow); }
+.btn-wrap { --shape: var(--pill48); --sh: 4px; display: inline-block; }
+.px-btn:hover { transform: translate(2px, 2px); }
+.px-btn:active { transform: translate(4px, 4px); }
 
 /* ── Navbar ───────────────────────────────── */
 .nav {
@@ -132,8 +172,8 @@ a:focus-visible, button:focus-visible, input:focus-visible { outline: 3px solid 
 .search {
     flex: 1; max-width: 340px;
     display: flex; align-items: center; gap: 10px;
-    padding: 6px 12px;
-    background: var(--panel); box-shadow: 0 0 0 3px var(--line);
+    height: 48px; padding: 0 20px;
+    --shape: var(--pill48); --shape-in: var(--pill42);
     color: var(--muted);
 }
 .search input {
@@ -146,7 +186,7 @@ a:focus-visible, button:focus-visible, input:focus-visible { outline: 3px solid 
 .nav__links a {
     padding: 6px 10px; font-size: 22px; color: var(--muted);
 }
-.nav__links a:hover { color: var(--text); background: var(--panel-hi); box-shadow: 0 0 0 2px var(--line); }
+.nav__links a:hover { color: var(--text); background: var(--panel-hi); clip-path: var(--r8); }
 .nav__user { padding: 6px; color: var(--text); }
 .nav__burger { display: none; background: none; border: 0; color: var(--text); padding: 6px; cursor: pointer; }
 
@@ -168,41 +208,36 @@ a:focus-visible, button:focus-visible, input:focus-visible { outline: 3px solid 
     transition: transform 0.06s steps(1);
 }
 .side-card:hover { transform: translate(-2px, -2px); }
-.side-card:hover .side-card__icon { background: var(--gold); color: var(--ink); }
+.side-card:hover .side-card__icon { --fill: var(--gold); color: var(--ink); }
 .side-card__icon {
-    width: 48px; height: 48px; display: grid; place-items: center;
-    background: var(--panel-hi); box-shadow: 0 0 0 3px var(--line);
+    width: 54px; height: 54px; display: grid; place-items: center;
+    --shape: var(--rI); --shape-in: var(--rIi); --fill: var(--panel-hi);
     color: var(--gold);
 }
 .side-card__name { font-size: 25px; color: var(--text); }
 .side-card__sub { font-size: 18px; color: var(--muted); line-height: 1.1; }
-/* Dotted pixel connectors toward the notebook */
-.side-card::after {
+/* Dotted pixel connectors toward the notebook (on the wrapper: the card itself is clipped) */
+.side .pxw::after {
     content: ''; position: absolute; top: 50%; width: 36px; height: 4px;
     background: linear-gradient(90deg, var(--line-hi) 50%, transparent 50%) 0 0 / 8px 4px;
 }
-.side--left .side-card::after { right: -35px; width: 32px; }
-.side--right .side-card::after { left: -35px; width: 32px; }
+.side--left .pxw::after { right: -35px; width: 32px; }
+.side--right .pxw::after { left: -35px; width: 32px; }
 
 /* ── Notebook (pixel) ─────────────────────── */
 .book-wrap { filter: drop-shadow(10px 10px 0 rgba(0, 0, 0, 0.75)); }
 .book {
-    --n: 10px;
+    --shape: var(--rB); --shape-in: var(--rBi); --bd: var(--cover-dk); --fill: var(--cover-lt); --bw: 4px;
     display: flex;
     height: 640px;
     padding: 14px;
-    background: var(--cover);
-    box-shadow: inset 0 0 0 4px var(--cover-dk), inset 0 0 0 8px var(--cover-lt), inset 0 0 0 11px var(--cover-dk);
 }
-.notch {
-    clip-path: polygon(
-        var(--n) 0, calc(100% - var(--n)) 0, calc(100% - var(--n)) var(--n), 100% var(--n),
-        100% calc(100% - var(--n)), calc(100% - var(--n)) calc(100% - var(--n)), calc(100% - var(--n)) 100%,
-        var(--n) 100%, var(--n) calc(100% - var(--n)), 0 calc(100% - var(--n)), 0 var(--n), var(--n) var(--n)
-    );
+/* cover bands: dark 4px (the frame) → light 4px (::before) → cover (::after), all pixel-rounded */
+.book::after {
+    content: ''; position: absolute; inset: 8px; z-index: -1;
+    background: var(--cover); clip-path: var(--rBii);
 }
 .page {
-    --n: 6px;
     flex: 1; min-width: 0; position: relative; overflow: hidden;
     background-color: var(--paper);
     background-image: repeating-linear-gradient(to bottom,
@@ -210,6 +245,7 @@ a:focus-visible, button:focus-visible, input:focus-visible { outline: 3px solid 
         var(--paper-line) calc(var(--line-h) - 2px), var(--paper-line) var(--line-h));
     box-shadow: inset 0 0 0 3px rgba(140, 100, 55, 0.16);
     color: var(--ink);
+    clip-path: var(--rP);
 }
 .page--left::before {
     content: ''; position: absolute; left: 52px; top: 0; bottom: 0; width: 3px;
@@ -227,13 +263,8 @@ a:focus-visible, button:focus-visible, input:focus-visible { outline: 3px solid 
     display: flex; flex-direction: column; align-items: center; justify-content: space-evenly; padding: 16px 0;
 }
 .ring {
-    --n: 5px;
-    width: 28px; height: 28px; display: grid; place-items: center;
-    background: var(--ring);
-    box-shadow: inset -3px -3px 0 #8e5a2e, inset 3px 3px 0 #e2a874;
-}
-.ring::before {
-    content: ''; width: 12px; height: 12px; background: #1d1008;
+    width: 28px; height: 28px;
+    --shape: var(--c28); --shape-in: var(--c12); --bd: var(--ring); --fill: #1d1008; --bw: 8px;
 }
 
 .left-inner {
@@ -242,9 +273,9 @@ a:focus-visible, button:focus-visible, input:focus-visible { outline: 3px solid 
     padding: var(--line-h) 40px var(--line-h) 76px;
 }
 .stamp {
-    width: 52px; height: 52px; margin-bottom: 8px;
+    width: 56px; height: 56px; margin-bottom: 8px;
     display: grid; place-items: center;
-    box-shadow: 0 0 0 4px var(--gold);
+    --shape: var(--c56); --shape-in: var(--c48); --bd: var(--gold); --fill: var(--paper); --bw: 4px;
     color: var(--gold-dk); font-size: 24px;
     flex-shrink: 0;
 }
@@ -254,7 +285,7 @@ a:focus-visible, button:focus-visible, input:focus-visible { outline: 3px solid 
 .stats { display: flex; gap: 30px; margin: 18px 0 18px; flex-shrink: 0; }
 .stat b { display: block; font-size: 42px; line-height: 1; color: var(--ink); font-weight: 400; }
 .stat span { font-size: 18px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--brown); }
-.left-inner .px-btn { align-self: flex-start; margin-top: auto; }
+.left-inner .btn-wrap { align-self: flex-start; margin-top: auto; }
 
 .right-inner {
     position: relative; z-index: 1; height: 100%;
@@ -265,8 +296,8 @@ a:focus-visible, button:focus-visible, input:focus-visible { outline: 3px solid 
 .console-name { font-size: 54px; line-height: 1.05; margin: 4px 0 0; color: var(--ink); }
 .pic { flex: 1; min-height: 0; display: grid; place-items: center; padding: 10px 0; }
 .pic img, .pic canvas { max-width: 92%; max-height: 100%; image-rendering: pixelated; }
-.fact { --n: 8px; flex-shrink: 0; padding: 4px; background: var(--gold); }
-.fact__in { --n: 5px; background: var(--paper); padding: 12px 18px 14px; }
+.fact { flex-shrink: 0; --shape: var(--rF); --shape-in: var(--rFi); --bd: var(--gold); --fill: var(--paper); --bw: 4px; }
+.fact__in { padding: 14px 20px 16px; }
 .fact__label { display: flex; align-items: center; gap: 10px; font-size: 24px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--brown); margin-bottom: 4px; }
 .fact__label::after { content: ''; flex: 1; height: 3px; background: var(--gold); opacity: 0.7; }
 .fact__label .ico { fill: var(--gold); }
@@ -281,10 +312,11 @@ a:focus-visible, button:focus-visible, input:focus-visible { outline: 3px solid 
 .explore-card { display: flex; flex-direction: column; gap: 10px; padding: 26px 24px 24px; transition: transform 0.06s steps(1); }
 .explore-card:hover { transform: translate(-3px, -3px); }
 .explore-card__icon {
-    width: 72px; height: 72px; display: grid; place-items: center;
-    background: var(--panel-hi); box-shadow: 0 0 0 3px var(--line); color: var(--gold);
+    width: 78px; height: 78px; display: grid; place-items: center;
+    --shape: var(--rE); --shape-in: var(--rEi); --fill: var(--panel-hi); color: var(--gold);
     margin-bottom: 6px;
 }
+.explore-card:hover .explore-card__icon { --fill: var(--gold); color: var(--ink); }
 .explore-card h3 { margin: 0; font-size: 28px; font-weight: 400; color: var(--text); }
 .explore-card p { margin: 0; color: var(--muted); font-size: 20px; line-height: 1.3; }
 
@@ -293,19 +325,19 @@ a:focus-visible, button:focus-visible, input:focus-visible { outline: 3px solid 
 .lb-head h2 { font-size: 40px; margin: 0; }
 .lb-head a { color: var(--gold); font-size: 21px; }
 .lb-head a:hover { text-decoration: underline; text-underline-offset: 4px; }
-.lb { padding: 6px; }
+.lb { padding: 8px 10px; }
 .lb__row {
     display: grid; grid-template-columns: 56px 48px minmax(0, 1fr) auto;
     align-items: center; gap: 14px;
     padding: 10px 14px; font-size: 22px;
 }
 .lb__row + .lb__row { border-top: 3px dashed var(--line); }
-.lb__row:hover { background: var(--panel-hi); }
+.lb__row:hover { background: var(--panel-hi); clip-path: var(--r8); }
 .lb__rank { color: var(--muted); display: flex; justify-content: center; }
 .lb__rank .ico { width: 24px; height: 24px; }
 .lb__avatar {
     width: 48px; height: 48px; object-fit: cover; image-rendering: pixelated;
-    box-shadow: 0 0 0 3px var(--line); background: var(--panel-hi);
+    clip-path: var(--c48); background: var(--panel-hi);
     display: grid; place-items: center; color: var(--gold); font-size: 26px;
 }
 .lb__name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -327,8 +359,8 @@ a:focus-visible, button:focus-visible, input:focus-visible { outline: 3px solid 
     .scene { grid-template-columns: minmax(0, 1fr); gap: 30px; }
     .side { flex-direction: row; justify-content: center; flex-wrap: wrap; gap: 24px; }
     .side--left { order: 2; } .side--right { order: 3; }
-    .side-card { width: 200px; }
-    .side-card::after { display: none; }
+    .side .pxw { width: 200px; }
+    .side .pxw::after { display: none; }
 }
 @media (max-width: 900px) {
     .nav__links, .search { display: none; }
@@ -351,7 +383,7 @@ a:focus-visible, button:focus-visible, input:focus-visible { outline: 3px solid 
     .right-inner { padding: var(--line-h) 18px 22px 22px; }
     .who { font-size: 44px; } .console-name { font-size: 44px; }
     .stats { gap: 20px; } .stat b { font-size: 34px; }
-    .side-card { width: calc(50% - 12px); }
+    .side .pxw { width: calc(50% - 12px); }
     .section { padding: 40px 16px; }
     .section__head h2 { font-size: 36px; }
     .lb__row { grid-template-columns: 40px 48px minmax(0, 1fr) auto; gap: 10px; }
@@ -386,7 +418,7 @@ a:focus-visible, button:focus-visible, input:focus-visible { outline: 3px solid 
             <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAApgAAAKYB3X3/OAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAT7SURBVEhLlVULTBN3HG4U2mvvroU+eLRQxBbKG4TyUKZVnLKH47GJETZAGAE2UJ6bIFQGhDl5CD6YCMp4v8ok88ECm3MajZtOTUicbtmyLOKSMahmi1EE+e13iA0FardLvmuau/u++37f978/CwBY5oCHJW1hEepF09UeNH0pQCC44WNFjbz/Km8scS05LuFwXEw+uwTZMsQqGUEUulLUgFoguLZBJBrd5ew8ecTbG84GBcFwSAj0BgRAXZwQrh8jQUnzmswKcFksmQtJfhsmFv/4gVL5d4ufHwwh0bAZ9Af6gx+ffwtfijApQLHZ7mo+/6F2xQqox7dcSMIIHUfBIkRhaChow8OhIjoaytEFc73S3X3ahaKKTIyXtUxFkreLHR2hTC6HFJnMiLwS0ZCQAF+WlsJoRweM9fYa0JGaCp+haMuqVYyLe8i1fJGABYu1MVokmmLIGWRLpbDfzc0gcFCjMSJdiALMpNvfH/IUClgnFH60SEDEZhcm2dqCds5BnsoW8vwlhvn3BwaCLjsbxnp6FpH/0dkJVTEx0IwuBoODwZOm9cxEjARIC4u8bRLJTLqdHcQGcaGriAMX6gioCVYYXOzHmf/W2gqXqquhKS0NqqKioAyd7XF3h8NeXnAKXTACjAuNSPTxwgyst0ok99NfIuF8LQFfVxNQt4OEQncng0Abhlnm4QENvr5weq6mC3EQhTqfZfHX/CxmT0ou98q+ZA6c3UdAjA8PSnFUGQ4OJsmWwgAzSrUadiuVoLa2rjQSsGOz9zblciA2hICSuSyYTMpVKrPE89GODloRuJ5G0QVtEMBDutmTmIhw4EOmvT08b1QqipgjnQ8mhy/QSY2Hx6SVpeURg8CcCOd1ofDBmyLRLHmFwhGSvKz+15ie48B6J9jgyruPnDZGnQ2i6QvMOsiR28OBHTzoKyFwpivNEs5HP+agK+RjWcgZoaVllpEAvXx5ZJRINJOGjfqhgQvH0nkQYSsxSXYG3dViVWtxYVa7ukKukxNskoifaPz40z4y9l0lRUkWfTtWUMR4j5YD5TEk5KKTdzGTeqwgQ3YIf4ux63uQaB9+t5i8tojFj17xVIzFRq2bqChLedLXVTIV/3b45zgerlEGzxGm4F0/U8qDeIdnWTCVxXUC5c7OM5neqie7Nofos995+c+cjC3jBflR/7Q3Zz3uai+G7g4tXLtyGH690z3F4xHFRjWdDweS9PbnU48SbGxmK7tXLp9JXON3Lz9rm/6krgRONGZAV1sW6Lryoas1Cxo/fQ/OD5XCyb4PYXiwEi6eO/TYjiBu4wa1ZkkBBnIuV7cT7Wcgtm4OvnhnpG365tV6JNmD5Dmz5KcH9uJ/LRw/uhMG+grgxvc1U/V1mTcSIzVXUuTyUdz9TpkUsGSxgrCyT+MU8qlvhmrh3FAlnNRpoeqTZNidvhGS40KhoyUb+joLHlZWpNyMfS30u4iVjj/HS6WTkWLxA1/cVjGDTSYFGOBNE0ky6UxtVcYvVy/Xg667CI4ezp6ujnOdrtiu0r+x2nsk0t5OHy4U6tcKBD/5UtSQlCCSkFgwn8ekgCdJxm63tdXH2kieJviqxt6S2U8ky6STcf42vzcnu4I9zb6Mc85FQqUpjhcKzI1K7UFRX4UJhbc0VlZXAwWCRo2bYHhbkOTuaqXgxIue/U8CS0FmzR50sGZ7qx0pL3P3MvgXRvHTVww+XKUAAAAASUVORK5CYII=" alt="">
             <span>Console Notebook</span>
         </a>
-        <form class="search" action="evolutie.html" role="search">
+        <form class="search pxf" action="evolutie.html" role="search">
             <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M22 22h-2v-2h2v2Zm-2-2h-2v-2h2v2Zm-6-2H6v-2h8v2Zm4 0h-2v-2h2v2ZM6 16H4v-2h2v2Zm10 0h-2v-2h2v2ZM4 14H2V6h2v8Zm14 0h-2V6h2v8ZM6 6H4V4h2v2Zm10 0h-2V4h2v2Zm-2-2H6V2h8v2Z"/></svg>
             <input type="search" placeholder="Search anything..." aria-label="Search">
         </form>
@@ -408,23 +440,23 @@ a:focus-visible, button:focus-visible, input:focus-visible { outline: 3px solid 
     <section class="scene">
 
         <div class="side side--left">
-            <a href="invata.html" class="side-card frame">
-                <span class="side-card__icon"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 3h9v2H2zM0 19h11v2H0zM13 3h9v2h-9zm0 16h11v2H13zM11 5h2v18h-2zM0 5h2v14H0zm22 0h2v14h-2zm-7 2h5v2h-5zm0 4h5v2h-5zm0 4h2v2h-2z"/></svg></span>
+            <div class="pxw card-shape"><a href="invata.html" class="side-card pxf card-shape">
+                <span class="side-card__icon pxf"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 3h9v2H2zM0 19h11v2H0zM13 3h9v2h-9zm0 16h11v2H13zM11 5h2v18h-2zM0 5h2v14H0zm22 0h2v14h-2zm-7 2h5v2h-5zm0 4h5v2h-5zm0 4h2v2h-2z"/></svg></span>
                 <span class="side-card__name">Learn</span>
                 <span class="side-card__sub">How consoles work</span>
-            </a>
-            <a href="evolutie.html" class="side-card frame">
-                <span class="side-card__icon"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 22H8v-2h8v2Zm-8-2H6v-4h2v4Zm10 0h-2v-4h2v4Zm-8-4H8v-2h2v2Zm6 0h-2v-2h2v2Zm-6-6h4v4h-4v-4Zm0 0H8V8h2v2Zm6 0h-2V8h2v2ZM8 8H6V4h2v4Zm10 0h-2V4h2v4Zm-2-4H8V2h8v2Z"/></svg></span>
+            </a></div>
+            <div class="pxw card-shape"><a href="evolutie.html" class="side-card pxf card-shape">
+                <span class="side-card__icon pxf"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 22H8v-2h8v2Zm-8-2H6v-4h2v4Zm10 0h-2v-4h2v4Zm-8-4H8v-2h2v2Zm6 0h-2v-2h2v2Zm-6-6h4v4h-4v-4Zm0 0H8V8h2v2Zm6 0h-2V8h2v2ZM8 8H6V4h2v4Zm10 0h-2V4h2v4Zm-2-4H8V2h8v2Z"/></svg></span>
                 <span class="side-card__name">Evolution</span>
                 <span class="side-card__sub">Console history</span>
-            </a>
+            </a></div>
         </div>
 
         <div class="book-wrap">
-            <div class="book notch">
-                <div class="page page--left notch">
+            <div class="book pxf">
+                <div class="page page--left">
                     <div class="left-inner">
-                        <div class="stamp">CN</div>
+                        <div class="stamp pxf">CN</div>
                         <h1 class="who px-title">Who We Are</h1>
                         <div class="rule"></div>
                         <p class="body-text">CNote (Console Notebook) is like a hobby dedicated to the world of gaming consoles. It brings together history, technology, and community in one place. But it aims to go beyond documentation. CNote seeks to revive a part of us — the authentic gaming spirit that many lost as the industry changed.</p>
@@ -433,23 +465,23 @@ a:focus-visible, button:focus-visible, input:focus-visible { outline: 3px solid 
                             <div class="stat"><b>9</b><span>Generations</span></div>
                             <div class="stat"><b>1972</b><span>Since</span></div>
                         </div>
-                        <a href="login.html" class="px-btn">Log in <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11v2h16v-2zm12 2v2h2v-2zm-2 2v2h2v-2zm-2 2v2h2v-2zm4-6V9h2v2z M14 15V7h2v8zm-2 2V5h2v12z"/></svg></a>
+                        <span class="pxw btn-wrap"><a href="login.html" class="px-btn">Log in <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11v2h16v-2zm12 2v2h2v-2zm-2 2v2h2v-2zm-2 2v2h2v-2zm4-6V9h2v2z M14 15V7h2v8zm-2 2V5h2v12z"/></svg></a></span>
                     </div>
                 </div>
 
                 <div class="spine" aria-hidden="true">
-                    <div class="ring notch"></div><div class="ring notch"></div><div class="ring notch"></div>
-                    <div class="ring notch"></div><div class="ring notch"></div><div class="ring notch"></div>
-                    <div class="ring notch"></div><div class="ring notch"></div><div class="ring notch"></div>
+                    <div class="ring pxf"></div><div class="ring pxf"></div><div class="ring pxf"></div>
+                    <div class="ring pxf"></div><div class="ring pxf"></div><div class="ring pxf"></div>
+                    <div class="ring pxf"></div><div class="ring pxf"></div><div class="ring pxf"></div>
                 </div>
 
-                <div class="page page--right notch">
+                <div class="page page--right">
                     <div class="right-inner">
                         <div class="gen">GEN II · 1977</div>
                         <h2 class="console-name px-title">Atari 2600</h2>
                         <div class="pic"><img id="hero-pic" src="../../assets/images/consoles/atari-2600.webp" alt="Atari 2600" data-pixel="5"></div>
-                        <div class="fact notch">
-                            <div class="fact__in notch">
+                        <div class="fact pxf">
+                            <div class="fact__in">
                                 <div class="fact__label"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20H8V22H3V16H5V20ZM21 22H16V20H19V16H21V22ZM10 20H8V18H10V20ZM16 20H14V18H16V20ZM14 18H10V16H14V18ZM7 16H5V13H7V16ZM19 16H17V13H19V16ZM5 13H3V11H5V13ZM21 13H19V11H21V13ZM9 9H3V11H1V7H9V9ZM23 11H21V9H15V7H23V11ZM11 7H9V3H11V7ZM15 7H13V3H15V7ZM13 3H11V1H13V3Z"/></svg> Fun Fact</div>
                                 <p>Only 128 bytes of RAM — less than this sentence takes to store — yet it changed gaming forever.</p>
                             </div>
@@ -460,21 +492,21 @@ a:focus-visible, button:focus-visible, input:focus-visible { outline: 3px solid 
         </div>
 
         <div class="side side--right">
-            <a href="comparatie.html" class="side-card frame">
-                <span class="side-card__icon"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h18v2H4zM2 2h2v18H2zm16 11v3h-2v-3zM8 13v3H6v-3zm8-2v2H8v-2zm0 5v2H8v-2zm4-12v3h-2V4zM8 4v3H6V4zm10-2v2H8V2zm0 5v2H8V7z"/></svg></span>
+            <div class="pxw card-shape"><a href="comparatie.html" class="side-card pxf card-shape">
+                <span class="side-card__icon pxf"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h18v2H4zM2 2h2v18H2zm16 11v3h-2v-3zM8 13v3H6v-3zm8-2v2H8v-2zm0 5v2H8v-2zm4-12v3h-2V4zM8 4v3H6V4zm10-2v2H8V2zm0 5v2H8V7z"/></svg></span>
                 <span class="side-card__name">Compare</span>
                 <span class="side-card__sub">Side by side specs</span>
-            </a>
-            <a href="community-welcome-page.html" class="side-card frame">
-                <span class="side-card__icon"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 2h6v2H5zm10 0h4v2h-4zM5 10h6v2H5zm10 0h4v2h-4zm4-6h2v6h-2zm-8 0h2v6h-2zM3 4h2v6H3zM0 18h2v4H0zm14 0h2v4h-2zm8 0h2v4h-2zM4 14h8v2H4zm12 0h4v2h-4zM2 16h2v2H2zm10 0h2v2h-2zm8 0h2v2h-2z"/></svg></span>
+            </a></div>
+            <div class="pxw card-shape"><a href="community-welcome-page.html" class="side-card pxf card-shape">
+                <span class="side-card__icon pxf"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 2h6v2H5zm10 0h4v2h-4zM5 10h6v2H5zm10 0h4v2h-4zm4-6h2v6h-2zm-8 0h2v6h-2zM3 4h2v6H3zM0 18h2v4H0zm14 0h2v4h-2zm8 0h2v4h-2zM4 14h8v2H4zm12 0h4v2h-4zM2 16h2v2H2zm10 0h2v2h-2zm8 0h2v2h-2z"/></svg></span>
                 <span class="side-card__name">Community</span>
                 <span class="side-card__sub">Join the discussion</span>
-            </a>
-            <a href="help.html" class="side-card frame">
-                <span class="side-card__icon"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 22H6V20H18V22ZM6 20H4V18H6V20ZM20 20H18V18H20V20ZM4 18H2V6H4V18ZM13 18H11V16H13V18ZM22 18H20V6H22V18ZM15 13H13V15H11V11H15V13ZM17 11H15V8H17V11ZM9 10H7V8H9V10ZM15 8H9V6H15V8ZM6 6H4V4H6V6ZM20 6H18V4H20V6ZM18 4H6V2H18V4Z"/></svg></span>
+            </a></div>
+            <div class="pxw card-shape"><a href="help.html" class="side-card pxf card-shape">
+                <span class="side-card__icon pxf"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 22H6V20H18V22ZM6 20H4V18H6V20ZM20 20H18V18H20V20ZM4 18H2V6H4V18ZM13 18H11V16H13V18ZM22 18H20V6H22V18ZM15 13H13V15H11V11H15V13ZM17 11H15V8H17V11ZM9 10H7V8H9V10ZM15 8H9V6H15V8ZM6 6H4V4H6V6ZM20 6H18V4H20V6ZM18 4H6V2H18V4Z"/></svg></span>
                 <span class="side-card__name">Help</span>
                 <span class="side-card__sub">FAQ &amp; support</span>
-            </a>
+            </a></div>
         </div>
     </section>
 
@@ -485,21 +517,21 @@ a:focus-visible, button:focus-visible, input:focus-visible { outline: 3px solid 
             <p>Three ways to dive into the world of retro and modern consoles.</p>
         </div>
         <div class="explore">
-            <a href="invata.html" class="explore-card frame">
-                <span class="explore-card__icon"><svg class="ico ico--48" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2v17H3zm4 4h2v13H7zm4-2h2v15h-2zm4 0h2v5h-2zm2 5h2v5h-2zm2 5h2v5h-2z"/></svg></span>
+            <div class="pxw card-shape"><a href="invata.html" class="explore-card pxf card-shape">
+                <span class="explore-card__icon pxf"><svg class="ico ico--48" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2v17H3zm4 4h2v13H7zm4-2h2v15h-2zm4 0h2v5h-2zm2 5h2v5h-2zm2 5h2v5h-2z"/></svg></span>
                 <h3>Learn</h3>
                 <p>Step-by-step repair courses with progress tracking, from basic diagnostics to advanced fixes.</p>
-            </a>
-            <a href="evolutie.html" class="explore-card frame">
-                <span class="explore-card__icon"><svg class="ico ico--48" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 14h16v2H4zm0 6h16v2H4zm-2-4h2v4H2zm18 0h2v4h-2zM10 2h4v2h-4zM8 4h2v4H8zm6 0h2v4h-2zm-4 4h4v2h-4zm1 2h2v4h-2zm-4 2h2v2H7z"/></svg></span>
+            </a></div>
+            <div class="pxw card-shape"><a href="evolutie.html" class="explore-card pxf card-shape">
+                <span class="explore-card__icon pxf"><svg class="ico ico--48" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 14h16v2H4zm0 6h16v2H4zm-2-4h2v4H2zm18 0h2v4h-2zM10 2h4v2h-4zM8 4h2v4H8zm6 0h2v4h-2zm-4 4h4v2h-4zm1 2h2v4h-2zm-4 2h2v2H7z"/></svg></span>
                 <h3>Console Encyclopedia</h3>
                 <p>50+ consoles documented across 9 generations, from 1972 to today.</p>
-            </a>
-            <a href="comparatie.html" class="explore-card frame">
-                <span class="explore-card__icon"><svg class="ico ico--48" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 13v-2h10v2zm6 2v-2h2v2zm-2 2v-2h2v2zm2-6V9h2v2z M17 15V7h2v8zm-6-2v-2H1v2zm-6 2v-2H3v2zm2 2v-2H5v2zm-2-6V9H3v2z M7 15V7H5v8z"/></svg></span>
+            </a></div>
+            <div class="pxw card-shape"><a href="comparatie.html" class="explore-card pxf card-shape">
+                <span class="explore-card__icon pxf"><svg class="ico ico--48" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 13v-2h10v2zm6 2v-2h2v2zm-2 2v-2h2v2zm2-6V9h2v2z M17 15V7h2v8zm-6-2v-2H1v2zm-6 2v-2H3v2zm2 2v-2H5v2zm-2-6V9H3v2z M7 15V7H5v8z"/></svg></span>
                 <h3>Compare</h3>
                 <p>Put any two consoles side by side — full hardware specs, no guesswork.</p>
-            </a>
+            </a></div>
         </div>
     </section>
 
@@ -509,7 +541,7 @@ a:focus-visible, button:focus-visible, input:focus-visible { outline: 3px solid 
             <h2 class="px-title px-title--3">Top Contributors</h2>
             <a href="leaderboard.html">View full leaderboard →</a>
         </div>
-        <div class="lb frame" id="lb"><div class="lb__msg">Loading…</div></div>
+        <div class="pxw card-shape"><div class="lb pxf card-shape" id="lb"><div class="lb__msg">Loading…</div></div></div>
     </section>
 </main>
 
