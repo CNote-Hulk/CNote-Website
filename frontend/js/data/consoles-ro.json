@@ -228,7 +228,7 @@
             "Carol Shaw: prima femeie designer de jocuri video"
         ],
         "image": "assets/images/consoles/atari-2600.webp",
-        "generation": 1,
+        "generation": 2,
         "manufacturer": "Atari",
         "gpu": {
             "capabilities": "Sprite/câmp de joc",
@@ -309,7 +309,7 @@
             "architecture": "Intel 8244/8245"
         },
         "manufacturer": "Magnavox",
-        "generation": 1,
+        "generation": 2,
         "output_video": {
             "refresh": "60 Hz",
             "resolution": "160×200",
@@ -356,7 +356,7 @@
             "refresh": "60 Hz",
             "resolution": "159×96"
         },
-        "generation": 1,
+        "generation": 2,
         "manufacturer": "Mattel",
         "gpu": {
             "architecture": "STIC (Standard Television Interface Chip)",
@@ -666,7 +666,7 @@
             "units": "Custom",
             "tflops": "N/A"
         },
-        "generation": 2,
+        "generation": 3,
         "manufacturer": "Nintendo",
         "output_video": {
             "hdr": "N/A",
@@ -742,7 +742,7 @@
             "resolution": "256×192",
             "refresh": "60 Hz"
         },
-        "generation": 2,
+        "generation": 3,
         "manufacturer": "Sega",
         "gpu": {
             "architecture": "Texas Instruments TMS9918A",
@@ -1547,7 +1547,7 @@
     },
     {
         "history": "<strong>Context Istoric</strong><br><br>La începutul anilor 1990, consolele de 16 biți — SNES și Genesis — își arătau limitele generației, iar industria anticipa tranziția la 32 de biți. Trip Hawkins, fondatorul Electronic Arts, a conceput o viziune ambițioasă: un standard universal pentru divertismentul digital, similar VHS — o specificație licențiată mai multor producători, în loc de o platformă controlată central. Dave Needle și RJ Mical, creatorii Atari Lynx, au proiectat arhitectura tehnică.<br><br><strong>Dezvoltarea Consolei</strong><br><br>3DO Interactive Multiplayer folosea un procesor RISC ARM60 pe 32 de biți la 12,5 MHz, combinat cu două co-procesoare video capabile să proceseze 9–16 milioane de pixeli pe secundă. Configurația includea 2 MB DRAM, 1 MB VRAM și 32 KB SRAM. Unitatea CD-ROM cu dublă viteză oferea 300 KB/s. Sunetul DSP pe 16 biți suporta Dolby Surround și stereo la 44,1 kHz. 3DO nu producea hardware propriu — licenția specificațiile către Panasonic, GoldStar, Sanyo și alții. Redevențele mici pentru editori (3 USD/joc) au atras inițial mulți dezvoltatori.<br><br><strong>Lansare</strong><br><br>3DO a fost lansat în octombrie 1993 la 699 USD prin Panasonic — cel mai mare preț al oricărei console la acel moment — limitând rapid piața la primii adoptatori. Lansarea a avut un singur joc (Crash 'N Burn), iar biblioteca s-a extins ulterior cu Gex, Samurai Shodown, Super Street Fighter II Turbo, Need for Speed și Myst. Modelul de licențiere, fără control centralizat al producătorului, a împiedicat reducerile rapide de preț.<br><br><strong>Impact pe Piață</strong><br><br>Dominanța jocurilor bazate pe secvențe video FMV de calitate scăzută a afectat percepția platformei. În 1994–1995, sosirea PlayStation și Saturn cu hardware superior și prețuri mai accesibile a neutralizat rapid avantajul 3DO. 3DO a vândut între 1,38 și 2 milioane de unități înainte de retragerea din 1996.<br><br><strong>Moștenire</strong><br><br>3DO rămâne o lecție despre limitele modelului de platformă deschisă fără control centralizat: fără coordonare unificată a producătorului, prețurile nu pot scădea rapid, iar biblioteca nu poate fi curatoriată eficient. Cu toate acestea, principiile sale — standardizarea hardware, multimedia integrată și grafica 3D nativă — au influențat generațiile ulterioare. Compania 3DO a depus faliment în 2003 după ce a abandonat hardware-ul pentru a deveni dezvoltator de software.",
-        "generation": 4,
+        "generation": 5,
         "manufacturer": "Panasonic",
         "gpu": {
             "frequency": "N/A",
@@ -1639,7 +1639,7 @@
         ],
         "image": "assets/images/consoles/atari-jaguar.webp",
         "manufacturer": "Atari",
-        "generation": 4,
+        "generation": 5,
         "gpu": {
             "capabilities": "magistrală de date pe 64 de biți către memorie externă",
             "units": "32-bit RISC GPU, 64-bit Object Processor, 64-bit Blitter",

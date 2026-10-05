@@ -4,7 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-Console Notebook (Cnote Bakery) — a web platform for retro/console gaming enthusiasts: a console encyclopedia, hardware comparison tool, a repair course with progress tracking, a marketplace, forums, DMs, friends, and gamification (XP/levels/achievements). Beta stage, live at consolenotebook.com.
+Console Notebook (CNote) — a web platform for retro/console gaming enthusiasts: a console encyclopedia, hardware comparison tool, a repair course with progress tracking, a marketplace, forums, DMs, friends, and gamification (XP/levels/achievements). Beta stage, live at consolenotebook.com.
+
+**Brand name: "CNote" only (2026-10-05).** The old name "Cnote Bakery" was removed everywhere user-facing (page titles/meta, i18n strings in all 6 languages, legal terms, emails, the 2FA issuer, README/LICENSE) at Andrei's request — don't reintroduce it. Note the 2FA `issuer` change only affects the label of newly added authenticator entries; existing TOTP secrets keep working.
 
 **Marketplace sync with external platforms (OLX/eBay) was removed entirely 2026-09-09** — Andrei decided against it ("renuntam la ea, nu isi are rostu"). `backend/providers/` and `backend/services/marketplace-sync.js` are gone. `routes/ebay.js` (the mandatory eBay account-deletion compliance webhook) survived that pass, but **Andrei removed it too on 2026-09-22**, explicitly accepting the risk that eBay could revoke the developer app's API access for no longer answering that required call — see `server.js`'s comment near the route-mounting block. If any of this ever needs re-reading about, check git history around those dates rather than assuming any of it still exists.
 

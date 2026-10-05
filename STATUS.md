@@ -1,7 +1,7 @@
 # CNote-Website — Status
 
 Current-state snapshot — separate from INDEX.md (which is the complete file map). Updated whenever
-the project's state changes meaningfully, not on every commit. Last updated 2026-10-04 (Instagram
+the project's state changes meaningfully, not on every commit. Last updated 2026-10-05 (brand cleanup + generations; before that 2026-10-04 Instagram
 notebook template; previous: 2026-09-23 Care Guide SCPH-39003 pass), grounded in `git log` (most recent commit `b509ede8`, 2026-09-22) and CLAUDE.md's
 own notes.
 
@@ -37,6 +37,12 @@ own notes.
 - Backend hardening: Postgres pool size/timeout configuration and a boot-time hotfix so a schema-init
   DB error no longer kills the process (`0c989b15`, `65d86e6c`).
 - Pre-launch SEO/social audit: fixed social-share (`og:`) tags and canonical-URL gaps (`5a07f7c5`).
+- Brand + data cleanup (2026-10-05): the name "Cnote Bakery" removed from everything user-facing —
+  site is "CNote" only (titles/meta, i18n in all 6 languages, legal terms, emails, 2FA issuer,
+  README/LICENSE). Console generations corrected to the standard classification for 7 consoles
+  (Atari 2600/Odyssey²/Intellivision → Gen 2, Famicom/SG-1000 → Gen 3, 3DO/Jaguar → Gen 5): live DB
+  rows updated directly (already live), JSON seed + `consoles-data.js` + Evolution page regrouped in
+  the repo (needs merge + deploy).
 - Instagram post template (2026-10-04): `frontend/html/tools/notebook-template.html` — a plain HTML
   copy of the landing-page notebook only; Andrei edits text + picture (in the file or by clicking in
   the browser), screenshots it, then does the pixel-art pass. The notebook-with-pixel-art look is the

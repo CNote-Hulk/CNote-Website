@@ -249,7 +249,7 @@
             "architecture": "TIA"
         },
         "name": "Atari 2600",
-        "generation": 1,
+        "generation": 2,
         "memory": {
             "type": "RAM",
             "bus": "8-bit",
@@ -286,7 +286,7 @@
         ],
         "release": 1978,
         "id": "magnavox-odyssey-2",
-        "generation": 1,
+        "generation": 2,
         "memory": {
             "capacity": "128 bytes",
             "bandwidth": "N/A",
@@ -373,7 +373,7 @@
             "frequency": "N/A"
         },
         "name": "Intellivision",
-        "generation": 1,
+        "generation": 2,
         "memory": {
             "capacity": "1456 bytes",
             "type": "RAM",
@@ -660,7 +660,7 @@
     },
     {
         "name": "Nintendo Famicom",
-        "generation": 2,
+        "generation": 3,
         "memory": {
             "bus": "8-bit",
             "type": "RAM",
@@ -753,7 +753,7 @@
             "bus": "8-bit",
             "type": "RAM + VRAM"
         },
-        "generation": 2,
+        "generation": 3,
         "disadvantages": [
             "Technisch gesehen war er dem Famicom bei Markteinführung unterlegen.",
             "Begrenzter offizieller Vertrieb außerhalb Japans",
@@ -1587,7 +1587,7 @@
             "bus": "32-bit",
             "type": "DRAM + VRAM + SRAM"
         },
-        "generation": 4,
+        "generation": 5,
         "name": "3DO Interactive",
         "release": 1993,
         "id": "3do",
@@ -1667,7 +1667,7 @@
             "type": "DRAM",
             "bandwidth": "N/A"
         },
-        "generation": 4,
+        "generation": 5,
         "dimensions": {
             "width_mm": 384,
             "height_mm": 37,

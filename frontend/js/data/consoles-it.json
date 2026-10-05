@@ -254,7 +254,7 @@
             "architecture": "TIA"
         },
         "manufacturer": "Atari",
-        "generation": 1,
+        "generation": 2,
         "history": "<strong>Contesto Storico</strong><br><br>A metà degli anni '70, il mercato delle console domestiche era dominato da dispositivi dedicati a un singolo gioco. Magnavox Odyssey e Atari Home Pong avevano dimostrato che esisteva una domanda per i giochi casalinghi, ma il modello hardware dedicato era limitante — l'acquirente comprava un dispositivo per un solo gioco. L'industria dei giochi arcade evolveva rapidamente, con nuovi titoli che apparivano costantemente, ma i consumatori domestici non avevano accesso a questa varietà. Atari voleva creare una piattaforma software versatile, non un dispositivo statico.<br><br><strong>Sviluppo della Console</strong><br><br>Atari 2600, inizialmente chiamato Video Computer System (VCS), fu progettato attorno al concetto di cartucce intercambiabili — un'idea semplice ma rivoluzionaria: l'hardware rimane lo stesso e i giochi cambiano. Il processore MOS 6507 a 1,19 MHz e il chip grafico TIA offrivano capacità modeste ma sufficienti per i porting arcade. Con soli 128 byte di RAM, i programmatori dovevano innovare costantemente: River Raid di Carol Shaw introduceva la generazione procedurale dei livelli, e Enduro aggiungeva effetti meteo e cicli giorno-notte. Le cartucce crebbero da un iniziale 2 KB a 32 KB alla fine del ciclo di vita.<br><br><strong>Lancio</strong><br><br>Atari 2600 fu lanciato nell'ottobre 1977 al prezzo di 199,99 USD — equivalente a circa 1.064 USD nei valori odierni — posizionato come prodotto premium. Il titolo incluso nella confezione era Combat. Il vero catalizzatore commerciale arrivò nel 1980 con il porting di Space Invaders, il primo killer app del sistema: le vendite di console triplicarono quell'anno. Nel novembre 1982, la console fu ufficialmente rinominata Atari 2600 per differenziarla dal successore pianificato, l'Atari 5200.<br><br><strong>Impatto sul Mercato</strong><br><br>Con vendite stimate di oltre 30 milioni di unità in un ciclo di vita di 15 anni (1977–1992), Atari 2600 ha definito la seconda generazione di console. La libreria di 523 titoli ufficiali offriva una varietà notevole. Pac-Man vendette 7–8 milioni di copie, nonostante le critiche per la qualità inferiore rispetto alla versione arcade. Nel 1982, Activision divenne il primo grande sviluppatore indipendente, stabilendo un precedente che trasformò l'industria. Carol Shaw, con River Raid, fu riconosciuta come la prima importante game designer donna. Il crollo nordamericano dei videogiochi del 1983 — parzialmente innescato dai mediocri adattamenti di Pac-Man e E.T. — erose temporaneamente la fiducia dei consumatori nella regione, ma la console sopravvisse fino al 1992.<br><br><strong>Eredità</strong><br><br>Atari 2600 stabilì paradigmi fondamentali del settore: piattaforme software, ecosistemi di sviluppatori terzi e cicli di vita estesi. I suoi joystick standard erano compatibili con i computer MSX, Commodore 64, Amiga e Sega Master System — una standardizzazione notevolmente precoce. Atari 2600+ (2023), una replica moderna lanciata dall'attuale Atari Inc., dimostra la continua rilevanza della piattaforma grazie alla sua capacità di eseguire le cartucce originali 2600 e 7800.",
         "dimensions": {
             "width_mm": 346.1,
@@ -327,7 +327,7 @@
             "units": "Custom",
             "capabilities": "128 byte"
         },
-        "generation": 1,
+        "generation": 2,
         "manufacturer": "Magnavox",
         "dimensions": {
             "width_mm": 304,
@@ -356,7 +356,7 @@
             "upscaling": "N/A"
         },
         "manufacturer": "Mattel",
-        "generation": 1,
+        "generation": 2,
         "gpu": {
             "units": "8 sprites hardware",
             "tflops": "N/A",
@@ -686,7 +686,7 @@
             "capabilities": "64 sprite"
         },
         "manufacturer": "Nintendo",
-        "generation": 2,
+        "generation": 3,
         "advantages": [
             "Integratore di piattaforme per il mercato giapponese",
             "Controller D-pad rivoluzionario e resistente",
@@ -744,7 +744,7 @@
             "hdr": "N/A"
         },
         "manufacturer": "Sega",
-        "generation": 2,
+        "generation": 3,
         "gpu": {
             "capabilities": "256×192, 16 culori, 32 sprite-uri",
             "units": "Custom",
@@ -1594,7 +1594,7 @@
             "upscaling": "N/A",
             "hdr": "N/A"
         },
-        "generation": 4,
+        "generation": 5,
         "manufacturer": "Panasonic",
         "gpu": {
             "capabilities": "640×480 interpolato, 320×240 nativo, grafica 3D con texture",
@@ -1631,7 +1631,7 @@
             "hdr": "N/A",
             "upscaling": "N/A"
         },
-        "generation": 4,
+        "generation": 5,
         "manufacturer": "Atari",
         "gpu": {
             "frequency": "26.591 MHz",

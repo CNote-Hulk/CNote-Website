@@ -1,10 +1,10 @@
-# Cnote Bakery — Console Notebook
+# CNote — Console Notebook
 
-**Cnote Bakery (Console Notebook)** is a web platform dedicated to the ecosystem of video game consoles.
+**CNote (Console Notebook)** is a web platform dedicated to the ecosystem of video game consoles.
 
 The project aims to create a central hub where console enthusiasts, collectors, technicians and gamers can explore console history, compare hardware specifications, learn repair techniques and interact with a community passionate about gaming hardware.
 
-Cnote Bakery focuses especially on the retro gaming world and aims to preserve and share knowledge about classic video game consoles.
+CNote focuses especially on the retro gaming world and aims to preserve and share knowledge about classic video game consoles.
 
 ---
 

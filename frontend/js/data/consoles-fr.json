@@ -220,7 +220,7 @@
             "tflops": "N/A",
             "capabilities": "Sprite/terrain de jeu"
         },
-        "generation": 1,
+        "generation": 2,
         "manufacturer": "Atari",
         "history": "<strong>Contexte Historique</strong><br><br>Au milieu des années 1970, le marché des consoles domestiques était dominé par des appareils dédiés à un seul jeu. La Magnavox Odyssey et l'Atari Home Pong avaient prouvé qu'il existait une demande pour les jeux à domicile, mais le modèle matériel dédié était limitant — l'acheteur acquérait un appareil pour un seul jeu. L'industrie des jeux d'arcade évoluait rapidement, avec de nouveaux titres apparaissant constamment, mais les consommateurs domestiques n'avaient pas accès à cette variété. Atari souhaitait créer une plateforme logicielle polyvalente, et non un appareil statique.<br><br><strong>Développement de la Console</strong><br><br>L'Atari 2600, initialement nommé Video Computer System (VCS), a été conçu autour du concept de cartouches interchangeables — une idée simple mais révolutionnaire : le matériel reste le même, et les jeux changent. Le processeur MOS 6507 à 1,19 MHz et la puce graphique TIA offraient des capacités modestes mais suffisantes pour les portages d'arcade. Avec seulement 128 octets de RAM, les programmeurs devaient constamment innover : River Raid de Carol Shaw introduisait la génération procédurale de niveaux, et Enduro ajoutait des effets météorologiques et des cycles jour-nuit. Les cartouches sont passées d'un initial 2 Ko à 32 Ko en fin de cycle de vie.<br><br><strong>Lancement</strong><br><br>L'Atari 2600 fut lancé en octobre 1977 au prix de 199,99 USD — soit l'équivalent d'environ 1 064 USD en valeurs actuelles — positionné comme un produit haut de gamme. Le titre inclus dans le pack était Combat. Le véritable catalyseur commercial arriva en 1980 avec le portage de Space Invaders, le premier killer app du système : les ventes de consoles triplèrent cette année-là. En novembre 1982, la console fut officiellement renommée Atari 2600 pour la différencier du successeur prévu, l'Atari 5200.<br><br><strong>Impact sur le Marché</strong><br><br>Avec des ventes estimées à plus de 30 millions d'unités sur un cycle de vie de 15 ans (1977–1992), l'Atari 2600 a défini la deuxième génération de consoles. La bibliothèque de 523 titres officiels offrait une variété remarquable. Pac-Man s'est vendu à 7–8 millions d'exemplaires, malgré les critiques sur sa qualité inférieure par rapport à la version arcade. En 1982, Activision est devenu le premier grand développeur indépendant, établissant un précédent qui a transformé l'industrie. Carol Shaw, avec River Raid, a été reconnue comme la première grande conceptrice de jeux vidéo. Le krach nord-américain des jeux vidéo de 1983 — en partie déclenché par les mauvaises adaptations de Pac-Man et E.T. — a temporairement érodé la confiance des consommateurs dans la région, mais la console a survécu jusqu'en 1992.<br><br><strong>Héritage</strong><br><br>L'Atari 2600 a établi des paradigmes fondamentaux de l'industrie : plateformes logicielles, écosystèmes de développeurs tiers et cycles de vie prolongés. Ses joysticks standard étaient compatibles avec les ordinateurs MSX, Commodore 64, Amiga et Sega Master System — une standardisation remarquablement précoce. L'Atari 2600+ (2023), une réplique moderne lancée par l'actuel Atari Inc., démontre la pertinence continue de la plateforme grâce à sa capacité à exécuter les cartouches originales 2600 et 7800.",
         "cpu": {
@@ -326,7 +326,7 @@
             "units": "Custom",
             "tflops": "N/A"
         },
-        "generation": 1,
+        "generation": 2,
         "manufacturer": "Magnavox",
         "history": "<strong>Contexte Historique</strong><br><br>À la fin des années 1970, l'Atari 2600 dominait le marché des consoles domestiques grâce à son système de cartouches interchangeables et à sa bibliothèque en constante expansion. Magnavox, le pionnier absolu des consoles domestiques avec l'Odyssey original de 1972, avait perdu du terrain face à Atari. La maison mère Philips cherchait un moyen de réintégrer le marché avec un produit différencié offrant plus qu'Atari — une fusion entre une console de jeux et un ordinateur personnel.<br><br><strong>Développement de la Console</strong><br><br>L'Odyssey 2 a été conçu autour de deux idées distinctives : un clavier à membrane QWERTY alphanumérique intégré directement dans la console et un ensemble étendu de périphériques. Le processeur Intel 8048 à 5,37 MHz et la puce vidéo Intel 8244 offraient 160×200 pixels, 16 couleurs et 4 sprites monochromes. Le clavier permettait de saisir des noms pour les scores et de faire de la programmation simple via la cartouche Computer Intro!. Le module de synthèse vocale Voice ajoutait de la parole et de la musique aux jeux compatibles, sans être obligatoire. En Europe, le module d'échecs C7010 contenait son propre processeur secondaire NSC800 — une approche innovante mais coûteuse.<br><br><strong>Lancement</strong><br><br>L'Odyssey 2 fut lancé en septembre 1978 en Amérique du Nord au prix de 179 USD. En Europe, la console apparut en décembre 1978 sous le nom Philips Videopac G7000. Le Japon reçut la console en septembre 1982 au prix élevé de 49 800 yens, en faisant une rareté pour les collectionneurs. Le Brésil et le Pérou reçurent des versions localisées en portugais. Magnavox était réputé pour ajouter un point d'exclamation à la fin des titres — K.C. Munchkin!, Killer Bees!, Pick-axe Pete! — une stratégie marketing devenue iconique.<br><br><strong>Impact sur le Marché</strong><br><br>Avec environ 2 millions d'unités vendues, l'Odyssey 2 se classait troisième dans les ventes d'avant 1983, derrière l'Atari 2600 et l'Intellivision. Environ 50 jeux furent publiés en Amérique du Nord, et Ed Averett en programma 24 à lui seul. K.C. Munchkin! — l'équivalent Pac-Man pour l'Odyssey 2 — fut retiré du marché à la suite d'un procès remporté par Atari en appel. Le succès de la console variait considérablement selon les régions : au Brésil et en Europe, où elle bénéficiait d'un soutien plus constant, elle s'est nettement mieux comportée qu'en Amérique du Nord. La production cessa officiellement le 20 mars 1984.<br><br><strong>Héritage</strong><br><br>La Magnavox Odyssey 2 reste une console visionnaire qui a anticipé la convergence entre console et ordinateur d'au moins une décennie. Le clavier intégré, la synthèse vocale et les jeux hybrides Master Strategy — qui combinaient le plateau physique avec l'expérience numérique — étaient des idées en avance sur leur temps. Sa bibliothèque dégage une identité visuelle distinctive et inimitable. Les limitations graphiques, basées sur des caractères prédéfinis dans le BIOS, l'ont empêchée de rivaliser visuellement avec Atari, mais les innovations en synthèse vocale restent des points de référence dans l'évolution du matériel vidéo.",
         "dimensions": {
@@ -356,7 +356,7 @@
             "resolution": "159×96",
             "refresh": "60 Hz"
         },
-        "generation": 1,
+        "generation": 2,
         "manufacturer": "Mattel",
         "gpu": {
             "units": "8 sprites hardware",
@@ -689,7 +689,7 @@
         ],
         "image": "assets/images/consoles/famicom.webp",
         "manufacturer": "Nintendo",
-        "generation": 2,
+        "generation": 3,
         "gpu": {
             "capabilities": "64 sprites",
             "units": "Custom",
@@ -779,7 +779,7 @@
             "architecture": "Texas Instruments TMS9918A"
         },
         "manufacturer": "Sega",
-        "generation": 2,
+        "generation": 3,
         "dimensions": {
             "width_mm": 290,
             "height_mm": 50,
@@ -1584,7 +1584,7 @@
             "architecture": "Two video co-processors",
             "frequency": "N/A"
         },
-        "generation": 4,
+        "generation": 5,
         "manufacturer": "Panasonic",
         "output_video": {
             "resolution": "640×480",
@@ -1649,7 +1649,7 @@
             "capabilities": "Bus de données 64 bits vers mémoire externe"
         },
         "manufacturer": "Atari",
-        "generation": 4,
+        "generation": 5,
         "output_video": {
             "hdr": "N/A",
             "upscaling": "N/A",

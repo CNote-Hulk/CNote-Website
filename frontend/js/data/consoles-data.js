@@ -228,7 +228,7 @@ window.CONSOLES_DATA = [
         "id":  "atari-2600",
         "name":  "Atari 2600",
         "manufacturer":  "Atari",
-        "generation":  1,
+        "generation":  2,
         "release":  1977,
         "models":  [
                        {
@@ -318,7 +318,7 @@ window.CONSOLES_DATA = [
         "id":  "magnavox-odyssey-2",
         "name":  "Magnavox Odyssey 2",
         "manufacturer":  "Magnavox",
-        "generation":  1,
+        "generation":  2,
         "release":  1978,
         "models":  [
                        {
@@ -399,7 +399,7 @@ window.CONSOLES_DATA = [
         "id":  "intellivision",
         "name":  "Intellivision",
         "manufacturer":  "Mattel",
-        "generation":  1,
+        "generation":  2,
         "release":  1979,
         "models":  [
                        {
@@ -749,7 +749,7 @@ window.CONSOLES_DATA = [
         "id":  "famicom",
         "name":  "Nintendo Famicom",
         "manufacturer":  "Nintendo",
-        "generation":  2,
+        "generation":  3,
         "release":  1983,
         "models":  [
                        {
@@ -823,7 +823,7 @@ window.CONSOLES_DATA = [
         "id":  "sega-sg-1000",
         "name":  "Sega SG-1000",
         "manufacturer":  "Sega",
-        "generation":  2,
+        "generation":  3,
         "release":  1983,
         "models":  [
                        {
@@ -1762,7 +1762,7 @@ window.CONSOLES_DATA = [
         "id":  "3do",
         "name":  "3DO Interactive",
         "manufacturer":  "Panasonic",
-        "generation":  4,
+        "generation":  5,
         "release":  1993,
         "models":  [
                        {
@@ -1843,7 +1843,7 @@ window.CONSOLES_DATA = [
         "id":  "atari-jaguar",
         "name":  "Atari Jaguar",
         "manufacturer":  "Atari",
-        "generation":  4,
+        "generation":  5,
         "release":  1993,
         "models":  [
                        {

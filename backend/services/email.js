@@ -27,7 +27,7 @@ function escapeHtml(str) {
 
 /**
  * wrapTemplate
- * @description Wraps email content in the branded Cnote Bakery HTML template.
+ * @description Wraps email content in the branded CNote HTML template.
  */
 function wrapTemplate(title, content) {
     return `<!DOCTYPE html>
@@ -88,7 +88,7 @@ async function sendVerificationEmail(to, token, baseUrl) {
         const { data, error } = await resend.emails.send({
             from: FROM,
             to,
-            subject: 'Verify your email address — Cnote Bakery',
+            subject: 'Verify your email address — CNote',
             html
         });
         if (error) {
@@ -111,7 +111,7 @@ async function sendPasswordResetEmail(to, token, baseUrl) {
     const resetLink = String(baseUrl || BASE_URL()).replace(/\/$/, '') + '/html/pages/reset-password.html?token=' + encodeURIComponent(token);
     const html = wrapTemplate('Password Reset', `
               <p style="color:#c8b99a;font-size:15px;line-height:1.7;margin:0 0 24px;">
-                We received a password reset request for your Cnote Bakery account.
+                We received a password reset request for your CNote account.
                 If you made this request, click the button below.
               </p>
               <a href="${resetLink}" style="display:inline-block;background:#e8d5b7;color:#0a0a14;font-weight:700;font-size:14px;padding:14px 32px;border-radius:8px;text-decoration:none;letter-spacing:0.5px;">
@@ -125,7 +125,7 @@ async function sendPasswordResetEmail(to, token, baseUrl) {
         const { data, error } = await resend.emails.send({
             from: FROM,
             to,
-            subject: 'Password reset — Cnote Bakery',
+            subject: 'Password reset — CNote',
             html
         });
         if (error) {
@@ -163,7 +163,7 @@ async function sendTwoFactorEmail(to, code) {
         const { data, error } = await resend.emails.send({
             from: FROM,
             to,
-            subject: 'Your verification code — Cnote Bakery',
+            subject: 'Your verification code — CNote',
             html
         });
         if (error) {
@@ -221,7 +221,7 @@ async function sendContactEmail(from, name, subject, message) {
         const { error: adminErr } = await resend.emails.send({
             from: FROM,
             to: CONTACT_TO(),
-            subject: `Cnote Bakery Contact: ${subject}`,
+            subject: `CNote Contact: ${subject}`,
             html: adminHtml
         });
         if (adminErr) {
@@ -232,7 +232,7 @@ async function sendContactEmail(from, name, subject, message) {
         const { error: confirmErr } = await resend.emails.send({
             from: FROM,
             to: from,
-            subject: 'We received your message — Cnote Bakery',
+            subject: 'We received your message — CNote',
             html: confirmationHtml
         });
         if (confirmErr) {
@@ -289,7 +289,7 @@ async function sendRepairRequestNotification({ username, console: consoleName, s
         const { data, error } = await resend.emails.send({
             from: FROM,
             to: CONTACT_TO(),
-            subject: `New Repair Request #${Number(requestId)} — ${safeUser} — Cnote Bakery`,
+            subject: `New Repair Request #${Number(requestId)} — ${safeUser} — CNote`,
             html
         });
         if (error) {
@@ -342,7 +342,7 @@ async function sendRepairReplyNotification({ to, username, console: consoleName,
         const { data, error } = await resend.emails.send({
             from: FROM,
             to,
-            subject: `Repair Request #${Number(requestId)} Updated — Cnote Bakery`,
+            subject: `Repair Request #${Number(requestId)} Updated — CNote`,
             html
         });
         if (error) {
@@ -381,7 +381,7 @@ async function sendFriendRequestNotification({ to, receiverUsername, senderUsern
     const { data, error } = await resend.emails.send({
       from: FROM,
       to,
-      subject: `${senderUsername || 'Someone'} sent you a friend request — Cnote Bakery`,
+      subject: `${senderUsername || 'Someone'} sent you a friend request — CNote`,
       html
     });
     if (error) {
@@ -420,7 +420,7 @@ async function sendFriendAcceptedNotification({ to, username, accepterUsername, 
     const { data, error } = await resend.emails.send({
       from: FROM,
       to,
-      subject: `${accepterUsername || 'Someone'} accepted your friend request — Cnote Bakery`,
+      subject: `${accepterUsername || 'Someone'} accepted your friend request — CNote`,
       html
     });
     if (error) {

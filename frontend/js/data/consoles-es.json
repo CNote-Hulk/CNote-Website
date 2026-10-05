@@ -238,7 +238,7 @@
             "Gráficos primitivos comparados con los originales de las máquinas recreativas",
             "Paleta de colores y capacidades de sprites limitadas"
         ],
-        "generation": 1,
+        "generation": 2,
         "memory": {
             "capacity": "128 bytes",
             "bandwidth": "N/A",
@@ -290,7 +290,7 @@
             "architecture": "Intel 8244/8245",
             "capabilities": "4 sprites 8x8, 16 culori, caractere bitmap"
         },
-        "generation": 1,
+        "generation": 2,
         "memory": {
             "capacity": "128 bytes",
             "bus": "8-bit",
@@ -335,7 +335,7 @@
     },
     {
         "name": "Intellivision",
-        "generation": 1,
+        "generation": 2,
         "memory": {
             "bandwidth": "N/A",
             "type": "RAM",
@@ -663,7 +663,7 @@
             "units": "Custom"
         },
         "name": "Nintendo Famicom",
-        "generation": 2,
+        "generation": 3,
         "memory": {
             "bandwidth": "N/A",
             "type": "RAM",
@@ -721,7 +721,7 @@
     },
     {
         "name": "Sega SG-1000",
-        "generation": 2,
+        "generation": 3,
         "memory": {
             "capacity": "1 KB RAM + 16 KB VRAM",
             "bandwidth": "N/A",
@@ -1563,7 +1563,7 @@
             "units": "9-16 milioane pixeli/sec",
             "frequency": "N/A"
         },
-        "generation": 4,
+        "generation": 5,
         "memory": {
             "capacity": "2 MB DRAM, 1 MB VRAM, 32 KB SRAM",
             "bandwidth": "N/A",
@@ -1633,7 +1633,7 @@
             "bus": "64-bit",
             "capacity": "2 MB"
         },
-        "generation": 4,
+        "generation": 5,
         "name": "Atari Jaguar",
         "disadvantages": [
             "Arquitectura multichip extremadamente compleja para la programación.",
