@@ -37,6 +37,12 @@ own notes.
 - Backend hardening: Postgres pool size/timeout configuration and a boot-time hotfix so a schema-init
   DB error no longer kills the process (`0c989b15`, `65d86e6c`).
 - Pre-launch SEO/social audit: fixed social-share (`og:`) tags and canonical-URL gaps (`5a07f7c5`).
+- Pixel-art emoji (2026-10-05, stage 1 of 3): the site's emoji now render as retro pixel icons
+  (Pixelarticons, MIT) site-wide via `pixel-emoji.js`; user-written text keeps native emoji. Next:
+  stage 2 = pixel versions of the 6 chat quick reactions are already covered by the same map
+  (👍❤️😂😮😢🔥 → thumbs-up/heart/laugh/meh/frown/fire); stage 3 = 41 custom pixel badges for
+  levels/achievements (currently generic Pixelarticons icons) — undecided who draws them. The Android
+  app still shows native emoji.
 - Login/DB stability fix (2026-10-05): "logged out on every reload" + 500s on achievements/articles/
   marketplace. Root causes: pool `max` 20 above the Supabase Session pooler's limit of 15
   (EMAXCONNSESSION), 13–14 parallel queries per achievements call, the auth middleware turning a DB

@@ -14,6 +14,7 @@ import { AuthModule } from './modules/auth.js?v=20261005';
 import { I18nModule } from './modules/i18n.js?v=20261005';
 import { initAchievementSocket } from './modules/achievement-socket.js';
 import { NotificationsModule } from './modules/notifications.js';
+import { initPixelEmoji } from './modules/pixel-emoji.js?v=20261005';
 
 /**
  * App Class - Orchestrates all modules
@@ -38,6 +39,14 @@ class App {
     initializeModules() {
         console.log('🚀 Initializing Console Notebook App...');
         this.initGlobalNavbarOffset();
+
+        // Retro pixel-art icons in place of the site's emoji (2026-10-05) — isolated so a
+        // failure here can never stop the rest of the app from initializing.
+        try {
+            initPixelEmoji();
+        } catch (e) {
+            console.error('Pixel emoji init failed:', e);
+        }
         
         try {
             NavigationModule.init();
