@@ -6,7 +6,7 @@
          User account, profile, security, notifications, appearance
          =========================== -->
     <meta charset="UTF-8">
-    <script>!function(){var t=localStorage.getItem("cnote-theme");if(t===null)t="dark";if(t==="system")t=matchMedia("(prefers-color-scheme: light)").matches?"light":"dark";document.documentElement.dataset.theme=t;var a=localStorage.getItem("cnote-accent-color");if(a&&localStorage.getItem("cn_session")){var r=parseInt(a.slice(1,3),16),g=parseInt(a.slice(3,5),16),b=parseInt(a.slice(5,7),16),s=document.documentElement.style;s.setProperty("--accent-color",a);s.setProperty("--accent-light","#"+[r,g,b].map(function(c){return Math.min(255,Math.floor(c+(255-c)*.2)).toString(16).padStart(2,"0")}).join(""));s.setProperty("--accent-rgb",r+", "+g+", "+b);s.setProperty("--accent-color-rgb",r+", "+g+", "+b);s.setProperty("--glow-accent","0 0 20px rgba("+r+", "+g+", "+b+", .15)")}}()</script>
+    <script>!function(){if(localStorage.getItem("cnote-pixel-art")==="off")document.documentElement.classList.add("no-pixel");var t=localStorage.getItem("cnote-theme");if(t===null)t="dark";if(t==="system")t=matchMedia("(prefers-color-scheme: light)").matches?"light":"dark";document.documentElement.dataset.theme=t;var a=localStorage.getItem("cnote-accent-color");if(a&&localStorage.getItem("cn_session")){var r=parseInt(a.slice(1,3),16),g=parseInt(a.slice(3,5),16),b=parseInt(a.slice(5,7),16),s=document.documentElement.style;s.setProperty("--accent-color",a);s.setProperty("--accent-light","#"+[r,g,b].map(function(c){return Math.min(255,Math.floor(c+(255-c)*.2)).toString(16).padStart(2,"0")}).join(""));s.setProperty("--accent-rgb",r+", "+g+", "+b);s.setProperty("--accent-color-rgb",r+", "+g+", "+b);s.setProperty("--glow-accent","0 0 20px rgba("+r+", "+g+", "+b+", .15)")}}()</script>
     <script>try{var _s=JSON.parse(localStorage.getItem("cn_session"));if(!_s||!_s.id)window.location.replace("index.html");}catch(e){window.location.replace("index.html");}</script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Settings — Console Notebook">
@@ -26,7 +26,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../../css/main.css?v=20261005">
+    <link rel="stylesheet" href="../../css/main.css?v=20261005b">
     <link rel="stylesheet" href="../../css/components/date-picker.css?v=2">
     <link rel="stylesheet" href="../../css/components/report-modal.css?v=4">
     <link rel="stylesheet" href="../../css/components/levels.css?v=2">
@@ -58,7 +58,7 @@
                             <div class="profile-name" id="profile-name">—</div>
                         </div>
                         <span class="admin-badge" id="profile-admin-badge" hidden title="Administrator">
-                            <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges"><path d="M5 20H8V22H3V16H5V20ZM21 22H16V20H19V16H21V22ZM10 20H8V18H10V20ZM16 20H14V18H16V20ZM14 18H10V16H14V18ZM7 16H5V13H7V16ZM19 16H17V13H19V16ZM5 13H3V11H5V13ZM21 13H19V11H21V13ZM9 9H3V11H1V7H9V9ZM23 11H21V9H15V7H23V11ZM11 7H9V3H11V7ZM15 7H13V3H15V7ZM13 3H11V1H13V3Z"/></svg>
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges" data-px="4"><path d="M5 20H8V22H3V16H5V20ZM21 22H16V20H19V16H21V22ZM10 20H8V18H10V20ZM16 20H14V18H16V20ZM14 18H10V16H14V18ZM7 16H5V13H7V16ZM19 16H17V13H19V16ZM5 13H3V11H5V13ZM21 13H19V11H21V13ZM9 9H3V11H1V7H9V9ZM23 11H21V9H15V7H23V11ZM11 7H9V3H11V7ZM15 7H13V3H15V7ZM13 3H11V1H13V3Z"/></svg>
                             Admin
                         </span>
                         <div class="profile-online-dot"></div>
@@ -79,43 +79,43 @@
                 <div class="sidebar-section">
                     <h3 data-i18n="settings_nav_title">SETTINGS</h3>
                     <button class="profile-tab sidebar-link active" data-tab="account" type="button">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges"><path d="M9 2h6v2H9zm0 8h6v2H9zm6-6h2v6h-2zM7 4h2v6H7zM4 18h2v4H4zm14 0h2v4h-2zM8 14h8v2H8zm-2 2h2v2H6zm10 0h2v2h-2z"/></svg>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges" data-px="2"><path d="M9 2h6v2H9zm0 8h6v2H9zm6-6h2v6h-2zM7 4h2v6H7zM4 18h2v4H4zm14 0h2v4h-2zM8 14h8v2H8zm-2 2h2v2H6zm10 0h2v2h-2z"/></svg>
                         <span data-i18n="settings_tab_account">Account</span>
                     </button>
                     <button class="profile-tab sidebar-link" data-tab="profil" type="button">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges"><path d="M4 16H6V18H8V20H10V22H2V14H4V16ZM12 20H10V18H12V20ZM14 18H12V16H14V18ZM10 16H8V14H10V16ZM16 16H14V14H16V16ZM6 14H4V12H6V14ZM12 14H10V12H12V14ZM18 14H16V12H18V14ZM8 12H6V10H8V12ZM14 12H12V10H14V12ZM20 12H18V10H20V12ZM10 10H8V8H10V10ZM18 10H16V8H18V10ZM22 10H20V8H22V10ZM12 8H10V6H12V8ZM16 8H14V6H16V8ZM20 8H18V6H20V8ZM14 6H12V4H14V6ZM18 6H16V4H18V6ZM16 4H14V2H16V4Z"/></svg>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges" data-px="45"><path d="M4 16H6V18H8V20H10V22H2V14H4V16ZM12 20H10V18H12V20ZM14 18H12V16H14V18ZM10 16H8V14H10V16ZM16 16H14V14H16V16ZM6 14H4V12H6V14ZM12 14H10V12H12V14ZM18 14H16V12H18V14ZM8 12H6V10H8V12ZM14 12H12V10H14V12ZM20 12H18V10H20V12ZM10 10H8V8H10V10ZM18 10H16V8H18V10ZM22 10H20V8H22V10ZM12 8H10V6H12V8ZM16 8H14V6H16V8ZM20 8H18V6H20V8ZM14 6H12V4H14V6ZM18 6H16V4H18V6ZM16 4H14V2H16V4Z"/></svg>
                         <span data-i18n="settings_tab_profile">Profile</span>
                     </button>
                     <button class="profile-tab sidebar-link" data-tab="privacy" type="button">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges"><path d="M16 20H8v-2h8v2Zm-8-2H4v-2h4v2Zm12 0h-4v-2h4v2ZM4 16H2v-2h2v2Zm10-6h-2v2h2v-2h2v4h-2v2h-4v-2H8v-4h2V8h4v2Zm8 6h-2v-2h2v2ZM2 14H0v-4h2v4Zm22 0h-2v-4h2v4ZM4 10H2V8h2v2Zm18 0h-2V8h2v2ZM8 8H4V6h4v2Zm12 0h-4V6h4v2Zm-4-2H8V4h8v2Z"/></svg>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges" data-px="46"><path d="M16 20H8v-2h8v2Zm-8-2H4v-2h4v2Zm12 0h-4v-2h4v2ZM4 16H2v-2h2v2Zm10-6h-2v2h2v-2h2v4h-2v2h-4v-2H8v-4h2V8h4v2Zm8 6h-2v-2h2v2ZM2 14H0v-4h2v4Zm22 0h-2v-4h2v4ZM4 10H2V8h2v2Zm18 0h-2V8h2v2ZM8 8H4V6h4v2Zm12 0h-4V6h4v2Zm-4-2H8V4h8v2Z"/></svg>
                         <span data-i18n="settings_tab_privacy">Privacy</span>
                     </button>
                     <button class="profile-tab sidebar-link" data-tab="security" type="button">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges"><path d="M4 2h16v2H4zM2 4h2v10H2zm18 0h2v10h-2zM4 14h2v2H4zm2 2h2v2H6zm4 4h4v2h-4zm10-6h-2v2h2zm-2 2h-2v2h2zm-2 2h-2v2h2zm-6 0H8v2h2z"/></svg>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges" data-px="47"><path d="M4 2h16v2H4zM2 4h2v10H2zm18 0h2v10h-2zM4 14h2v2H4zm2 2h2v2H6zm4 4h4v2h-4zm10-6h-2v2h2zm-2 2h-2v2h2zm-2 2h-2v2h2zm-6 0H8v2h2z"/></svg>
                         <span data-i18n="settings_tab_security">Security</span>
                     </button>
                     <button class="profile-tab sidebar-link" data-tab="notifications" type="button">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges"><path d="M9 2h6v2H9zM7 4h2v2H7zm8 0h2v2h-2zM5 6h2v7H5zm12 0h2v7h-2zM3 13h2v4H3zm16 0h2v4h-2z M3 15h18v2H3zm5 3h2v2H8zm6 0h2v2h-2zm-4 2h4v2h-4z"/></svg>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges" data-px="1"><path d="M9 2h6v2H9zM7 4h2v2H7zm8 0h2v2h-2zM5 6h2v7H5zm12 0h2v7h-2zM3 13h2v4H3zm16 0h2v4h-2z M3 15h18v2H3zm5 3h2v2H8zm6 0h2v2h-2zm-4 2h4v2h-4z"/></svg>
                         <span data-i18n="settings_tab_notifications">Notifications</span>
                     </button>
                     <button class="profile-tab sidebar-link" data-tab="appearance" type="button">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges"><path d="M5 2h6v2H5zm10 0h4v2h-4zM5 10h6v2H5zm10 0h4v2h-4zm4-6h2v6h-2zm-8 0h2v6h-2zM3 4h2v6H3zM0 18h2v4H0zm14 0h2v4h-2zm8 0h2v4h-2zM4 14h8v2H4zm12 0h4v2h-4zM2 16h2v2H2zm10 0h2v2h-2zm8 0h2v2h-2z"/></svg>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges" data-px="48"><path d="M5 2h6v2H5zm10 0h4v2h-4zM5 10h6v2H5zm10 0h4v2h-4zm4-6h2v6h-2zm-8 0h2v6h-2zM3 4h2v6H3zM0 18h2v4H0zm14 0h2v4h-2zm8 0h2v4h-2zM4 14h8v2H4zm12 0h4v2h-4zM2 16h2v2H2zm10 0h2v2h-2zm8 0h2v2h-2z"/></svg>
                         <span data-i18n="settings_tab_appearance">Appearance</span>
                     </button>
                     <button class="profile-tab sidebar-link" data-tab="reports" type="button">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges"><path d="M4 2h2v20H4z M4 4h16v2H4zm12 2h2v2h-2zm-2 2h2v2h-2zm2 2h2v2h-2zM4 12h16v2H4z"/></svg>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges" data-px="49"><path d="M4 2h2v20H4z M4 4h16v2H4zm12 2h2v2h-2zm-2 2h2v2h-2zm2 2h2v2h-2zM4 12h16v2H4z"/></svg>
                         <span data-i18n="settings_tab_reports">Rapoartele mele</span>
                     </button>
                     <button class="profile-tab sidebar-link admin-only-tab" data-tab="admin-users" type="button" hidden>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges"><path d="M5 2h6v2H5zm10 0h4v2h-4zM5 10h6v2H5zm10 0h4v2h-4zm4-6h2v6h-2zm-8 0h2v6h-2zM3 4h2v6H3zM0 18h2v4H0zm14 0h2v4h-2zm8 0h2v4h-2zM4 14h8v2H4zm12 0h4v2h-4zM2 16h2v2H2zm10 0h2v2h-2zm8 0h2v2h-2z"/></svg>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges" data-px="11"><path d="M5 2h6v2H5zm10 0h4v2h-4zM5 10h6v2H5zm10 0h4v2h-4zm4-6h2v6h-2zm-8 0h2v6h-2zM3 4h2v6H3zM0 18h2v4H0zm14 0h2v4h-2zm8 0h2v4h-2zM4 14h8v2H4zm12 0h4v2h-4zM2 16h2v2H2zm10 0h2v2h-2zm8 0h2v2h-2z"/></svg>
                         <span data-i18n="admin_users_tab">Admin Users</span>
                     </button>
                     <button class="profile-tab sidebar-link admin-only-tab" data-tab="admin-reports" type="button" hidden>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges"><path d="M4 2h16v2H4zM2 4h2v10H2zm18 0h2v10h-2zM4 14h2v2H4zm2 2h2v2H6zm4 4h4v2h-4zm10-6h-2v2h2zm-2 2h-2v2h2zm-2 2h-2v2h2zm-6 0H8v2h2z"/></svg>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges" data-px="47"><path d="M4 2h16v2H4zM2 4h2v10H2zm18 0h2v10h-2zM4 14h2v2H4zm2 2h2v2H6zm4 4h4v2h-4zm10-6h-2v2h2zm-2 2h-2v2h2zm-2 2h-2v2h2zm-6 0H8v2h2z"/></svg>
                         <span>Admin Reports</span>
                     </button>
                     <button class="profile-tab sidebar-link admin-only-tab" data-tab="admin-analytics" type="button" hidden>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges"><path d="M4 2h16v2H4zm0 18h16v2H4zM2 4h2v16H2zm18 0h2v16h-2zM7 11h2v6H7zm4-4h2v10h-2zm4 6h2v4h-2z"/></svg>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges" data-px="32"><path d="M4 2h16v2H4zm0 18h16v2H4zM2 4h2v16H2zm18 0h2v16h-2zM7 11h2v6H7zm4-4h2v10h-2zm4 6h2v4h-2z"/></svg>
                         <span data-i18n="admin_analytics_tab">Admin Analytics</span>
                     </button>
                 </div>
@@ -124,7 +124,7 @@
 
                 <!-- Back to Dashboard -->
                 <a href="home.html" class="sidebar-link">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges"><path d="M20 11v2H4v-2zM8 13v2H6v-2zm2 2v2H8v-2zm2 2v2h-2v-2zm-4-6V9H6v2z M10 15V7H8v8zm2 2V5h-2v12z"/></svg>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges" data-px="50"><path d="M20 11v2H4v-2zM8 13v2H6v-2zm2 2v2H8v-2zm2 2v2h-2v-2zm-4-6V9H6v2z M10 15V7H8v8zm2 2V5h-2v12z"/></svg>
                     <span data-i18n="settings_back_home">Back to Dashboard</span>
                 </a>
 
@@ -258,7 +258,7 @@
                                     <img id="settings-avatar-img" alt="Profile picture" hidden>
                                     <span id="settings-avatar-fallback">👤</span>
                                     <span class="settings-avatar-overlay">
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges"><path d="M4 5h4v2H4zm4-2h8v2H8zm8 2h4v2h-4zM2 7h2v12H2zm2 12h16v2H4zM20 7h2v12h-2zM10 8h4v2h-4zm0 6h4v2h-4zm-2-4h2v4H8zm6 0h2v4h-2z"/></svg>
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges" data-px="51"><path d="M4 5h4v2H4zm4-2h8v2H8zm8 2h4v2h-4zM2 7h2v12H2zm2 12h16v2H4zM20 7h2v12h-2zM10 8h4v2h-4zm0 6h4v2h-4zm-2-4h2v4H8zm6 0h2v4h-2z"/></svg>
                                     </span>
                                 </button>
                             </div>
@@ -324,28 +324,28 @@
                             <div class="social-links-grid">
                                 <div class="auth-field">
                                     <label for="social-discord">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges"><path d="M9 21H5v-2h4v2Zm10 0h-4v-2h4v2ZM5 19H3v-2h2v2Zm12-2h-2v2h-2v-2h-2v2H9v-2H7v-2h10v2Zm4 2h-2v-2h2v2ZM3 17H1V7h2v10Zm20 0h-2V7h2v10Zm-12-4H8v-3h3v3Zm5 0h-3v-3h3v3ZM5 7H3V5h2v2Zm10 0H9V5h6v2Zm6 0h-2V5h2v2ZM9 5H5V3h4v2Zm10 0h-4V3h4v2Z"/></svg>
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges" data-px="52"><path d="M9 21H5v-2h4v2Zm10 0h-4v-2h4v2ZM5 19H3v-2h2v2Zm12-2h-2v2h-2v-2h-2v2H9v-2H7v-2h10v2Zm4 2h-2v-2h2v2ZM3 17H1V7h2v10Zm20 0h-2V7h2v10Zm-12-4H8v-3h3v3Zm5 0h-3v-3h3v3ZM5 7H3V5h2v2Zm10 0H9V5h6v2Zm6 0h-2V5h2v2ZM9 5H5V3h4v2Zm10 0h-4V3h4v2Z"/></svg>
                                         <span data-i18n="settings_social_discord">Discord</span>
                                     </label>
                                     <input type="text" id="social-discord" placeholder="username#1234" maxlength="100" data-i18n="settings_social_discord_placeholder" data-i18n-attr="placeholder">
                                 </div>
                                 <div class="auth-field">
                                     <label for="social-twitter">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges"><path d="M6 20H4v-2h2v2Zm14-2h2v2h-6v-2h2v-2h2v2ZM8 18H6v-2h2v2Zm8 0h-2v-2h2v2Zm-6-2H8v-2h2v2Zm4 0h-2v-2h2v2Zm4 0h-2v-2h2v2Zm-6-2h-2v-2h2v2Zm4 0h-2v-2h2v2Zm-6-2H8v-2h2v2Zm4 0h-2v-2h2v2Zm-6-2H6V8h2v2Zm4 0h-2V8h2v2Zm4 0h-2V8h2v2ZM8 6H6v2H4V6H2V4h6v2Zm2 2H8V6h2v2Zm8 0h-2V6h2v2Zm2-2h-2V4h2v2Z"/></svg>
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges" data-px="53"><path d="M6 20H4v-2h2v2Zm14-2h2v2h-6v-2h2v-2h2v2ZM8 18H6v-2h2v2Zm8 0h-2v-2h2v2Zm-6-2H8v-2h2v2Zm4 0h-2v-2h2v2Zm4 0h-2v-2h2v2Zm-6-2h-2v-2h2v2Zm4 0h-2v-2h2v2Zm-6-2H8v-2h2v2Zm4 0h-2v-2h2v2Zm-6-2H6V8h2v2Zm4 0h-2V8h2v2Zm4 0h-2V8h2v2ZM8 6H6v2H4V6H2V4h6v2Zm2 2H8V6h2v2Zm8 0h-2V6h2v2Zm2-2h-2V4h2v2Z"/></svg>
                                         <span data-i18n="settings_social_twitter">X (Twitter)</span>
                                     </label>
                                     <input type="text" id="social-twitter" placeholder="@username" maxlength="100" data-i18n="settings_social_twitter_placeholder" data-i18n-attr="placeholder">
                                 </div>
                                 <div class="auth-field">
                                     <label for="social-youtube">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges"><path d="M20 20H4v-2h16v2ZM4 18H2V6h2v12Zm18 0h-2V6h2v12ZM12 9h-2v6h2v2H8V7h4v2Zm3 6h-3v-2h3v2Zm2-2h-2v-2h2v2Zm-2-2h-3V9h3v2Zm5-5H4V4h16v2Z"/></svg>
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges" data-px="54"><path d="M20 20H4v-2h16v2ZM4 18H2V6h2v12Zm18 0h-2V6h2v12ZM12 9h-2v6h2v2H8V7h4v2Zm3 6h-3v-2h3v2Zm2-2h-2v-2h2v2Zm-2-2h-3V9h3v2Zm5-5H4V4h16v2Z"/></svg>
                                         <span data-i18n="settings_social_youtube">YouTube</span>
                                     </label>
                                     <input type="text" id="social-youtube" placeholder="Channel URL" maxlength="200" data-i18n="settings_social_youtube_placeholder" data-i18n-attr="placeholder">
                                 </div>
                                 <div class="auth-field">
                                     <label for="social-instagram">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges"><path d="M18 22H6v-2h12v2ZM6 20H4v-2h2v2Zm14 0h-2v-2h2v2ZM4 18H2V6h2v12Zm18 0h-2V6h2v12Zm-8-2h-4v-2h4v2Zm-4-2H8v-4h2v4Zm6 0h-2v-4h2v4Zm-2-4h-4V8h4v2Zm4-2h-2V6h2v2ZM6 6H4V4h2v2Zm14 0h-2V4h2v2Zm-2-2H6V2h12v2Z"/></svg>
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges" data-px="55"><path d="M18 22H6v-2h12v2ZM6 20H4v-2h2v2Zm14 0h-2v-2h2v2ZM4 18H2V6h2v12Zm18 0h-2V6h2v12Zm-8-2h-4v-2h4v2Zm-4-2H8v-4h2v4Zm6 0h-2v-4h2v4Zm-2-4h-4V8h4v2Zm4-2h-2V6h2v2ZM6 6H4V4h2v2Zm14 0h-2V4h2v2Zm-2-2H6V2h12v2Z"/></svg>
                                         <span data-i18n="settings_social_instagram">Instagram</span>
                                     </label>
                                     <input type="text" id="social-instagram" placeholder="@username" maxlength="100" data-i18n="settings_social_instagram_placeholder" data-i18n-attr="placeholder">
@@ -523,6 +523,23 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Pixel art row (2026-10-05) — per device, see pixel-emoji.js's setPixelArt() -->
+                    <div class="settings-row">
+                        <div class="settings-row__meta">
+                            <div class="settings-row__title" data-i18n="settings_pixel_title">Pixel art</div>
+                            <div class="settings-row__desc" data-i18n="settings_pixel_desc">Show the site's icons and emoji in retro pixel-art style. Turn it off for the classic look.</div>
+                        </div>
+                        <div class="settings-row__body">
+                            <div class="notif-toggles">
+                                <label class="notif-toggle" for="pixel-art-toggle">
+                                    <span class="notif-toggle__label" data-i18n="settings_pixel_toggle">Pixel-art icons</span>
+                                    <input type="checkbox" id="pixel-art-toggle" class="notif-toggle__input" checked>
+                                    <span class="notif-toggle__switch"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- ═══ MY REPORTS PANEL (DSA Art. 16) ═══ -->
@@ -606,11 +623,11 @@
             </div>
             <div class="avatar-lightbox__actions">
                 <button type="button" class="avatar-lb-btn avatar-lb-btn--change btn primary" id="avatar-lb-change">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges"><path d="M4 16H6V18H8V20H10V22H2V14H4V16ZM12 20H10V18H12V20ZM14 18H12V16H14V18ZM10 16H8V14H10V16ZM16 16H14V14H16V16ZM6 14H4V12H6V14ZM12 14H10V12H12V14ZM18 14H16V12H18V14ZM8 12H6V10H8V12ZM14 12H12V10H14V12ZM20 12H18V10H20V12ZM10 10H8V8H10V10ZM18 10H16V8H18V10ZM22 10H20V8H22V10ZM12 8H10V6H12V8ZM16 8H14V6H16V8ZM20 8H18V6H20V8ZM14 6H12V4H14V6ZM18 6H16V4H18V6ZM16 4H14V2H16V4Z"/></svg>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges" data-px="3"><path d="M4 16H6V18H8V20H10V22H2V14H4V16ZM12 20H10V18H12V20ZM14 18H12V16H14V18ZM10 16H8V14H10V16ZM16 16H14V14H16V16ZM6 14H4V12H6V14ZM12 14H10V12H12V14ZM18 14H16V12H18V14ZM8 12H6V10H8V12ZM14 12H12V10H14V12ZM20 12H18V10H20V12ZM10 10H8V8H10V10ZM18 10H16V8H18V10ZM22 10H20V8H22V10ZM12 8H10V6H12V8ZM16 8H14V6H16V8ZM20 8H18V6H20V8ZM14 6H12V4H14V6ZM18 6H16V4H18V6ZM16 4H14V2H16V4Z"/></svg>
                     <span data-i18n="settings_avatar_change">Change</span>
                 </button>
                 <button type="button" class="avatar-lb-btn avatar-lb-btn--remove" id="avatar-lb-remove">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges"><path d="M18 22H6V20H18V22ZM9 6H15V4H17V6H22V8H20V20H18V8H6V20H4V8H2V6H7V4H9V6ZM15 4H9V2H15V4Z"/></svg>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges" data-px="56"><path d="M18 22H6V20H18V22ZM9 6H15V4H17V6H22V8H20V20H18V8H6V20H4V8H2V6H7V4H9V6ZM15 4H9V2H15V4Z"/></svg>
                     <span data-i18n="settings_avatar_remove">Remove</span>
                 </button>
             </div>
@@ -634,8 +651,8 @@
     <script src="../../js/data/location-data.js"></script>
     <script src="../../js/data/city-name-overrides.js"></script>
     <script src="../../js/modules/gamification-data.js?v=2"></script>
-    <script type="module" src="../../js/main.js?v=20261005d"></script>
-    <script type="module" src="../../js/pages/profile.js?v=3"></script>
+    <script type="module" src="../../js/main.js?v=20261005e"></script>
+    <script type="module" src="../../js/pages/profile.js?v=20261005"></script>
     <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
     <script src="../../js/fallback/search-profile.js"></script>
 
@@ -674,23 +691,23 @@
         </div>
 
         <button type="button" class="mbn-item" data-mbn-tab="account">
-            <svg viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges"><path d="M9 2h6v2H9zm0 8h6v2H9zm6-6h2v6h-2zM7 4h2v6H7zM4 18h2v4H4zm14 0h2v4h-2zM8 14h8v2H8zm-2 2h2v2H6zm10 0h2v2h-2z"/></svg>
+            <svg viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges" data-px="57"><path d="M9 2h6v2H9zm0 8h6v2H9zm6-6h2v6h-2zM7 4h2v6H7zM4 18h2v4H4zm14 0h2v4h-2zM8 14h8v2H8zm-2 2h2v2H6zm10 0h2v2h-2z"/></svg>
             <span data-i18n="settings_tab_account">Account</span>
         </button>
         <button type="button" class="mbn-item" data-mbn-tab="profil">
-            <svg viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges"><path d="M9 2h6v2H9zm0 8h6v2H9zm6-6h2v6h-2zM7 4h2v6H7zM4 18h2v4H4zm14 0h2v4h-2zM8 14h8v2H8zm-2 2h2v2H6zm10 0h2v2h-2z"/></svg>
+            <svg viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges" data-px="2"><path d="M9 2h6v2H9zm0 8h6v2H9zm6-6h2v6h-2zM7 4h2v6H7zM4 18h2v4H4zm14 0h2v4h-2zM8 14h8v2H8zm-2 2h2v2H6zm10 0h2v2h-2z"/></svg>
             <span data-i18n="settings_tab_profile">Profile</span>
         </button>
         <button type="button" class="mbn-item" data-mbn-tab="security">
-            <svg viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges"><path d="M5 8h14v2H5zm0 12h14v2H5zM3 10h2v10H3zm16 0h2v10h-2zM7 4h2v4H7zm2-2h6v2H9zm6 2h2v4h-2z"/></svg>
+            <svg viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges" data-px="58"><path d="M5 8h14v2H5zm0 12h14v2H5zM3 10h2v10H3zm16 0h2v10h-2zM7 4h2v4H7zm2-2h6v2H9zm6 2h2v4h-2z"/></svg>
             <span data-i18n="settings_tab_security">Security</span>
         </button>
         <button type="button" class="mbn-item" data-mbn-tab="notifications">
-            <svg viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges"><path d="M9 2h6v2H9zM7 4h2v2H7zm8 0h2v2h-2zM5 6h2v7H5zm12 0h2v7h-2zM3 13h2v4H3zm16 0h2v4h-2z M3 15h18v2H3zm5 3h2v2H8zm6 0h2v2h-2zm-4 2h4v2h-4z"/></svg>
+            <svg viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges" data-px="1"><path d="M9 2h6v2H9zM7 4h2v2H7zm8 0h2v2h-2zM5 6h2v7H5zm12 0h2v7h-2zM3 13h2v4H3zm16 0h2v4h-2z M3 15h18v2H3zm5 3h2v2H8zm6 0h2v2h-2zm-4 2h4v2h-4z"/></svg>
             <span data-i18n="settings_tab_notifications">Notifications</span>
         </button>
         <button type="button" class="mbn-item mbn-more-btn" id="mbn-more-btn" aria-expanded="false">
-            <svg viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges"><path d="M3 9h2v2H3zm8 0h2v2h-2zm8 0h2v2h-2zM1 11h2v2H1zm8 0h2v2H9zm8 0h2v2h-2zM3 13h2v2H3zm8 0h2v2h-2zm8 0h2v2h-2zM5 11h2v2H5zm8 0h2v2h-2zm8 0h2v2h-2z"/></svg>
+            <svg viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges" data-px="28"><path d="M3 9h2v2H3zm8 0h2v2h-2zm8 0h2v2h-2zM1 11h2v2H1zm8 0h2v2H9zm8 0h2v2h-2zM3 13h2v2H3zm8 0h2v2h-2zm8 0h2v2h-2zM5 11h2v2H5zm8 0h2v2h-2zm8 0h2v2h-2z"/></svg>
             <span data-i18n="mbn_more">More</span>
         </button>
     </nav>

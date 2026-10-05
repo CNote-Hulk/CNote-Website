@@ -1,5 +1,5 @@
 import { MOD_OPTIONS, flashTypesForModel, loadModels, invalidateModelsCache } from '../data/console-models.js?v=20260909d';
-import { I18nModule } from '../modules/i18n.js?v=20261005';
+import { I18nModule } from '../modules/i18n.js?v=20261005b';
 import { AuthModule } from '../modules/auth.js?v=20261005';
 import { API_BASE_URL } from '../config.js';
 
@@ -225,7 +225,7 @@ function initModelAdminEditButton() {
     btn.type = 'button';
     btn.id = 'model-edit-btn';
     btn.className = 'model-edit-trigger';
-    btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor" shape-rendering="crispEdges"><path d="M4 16H6V18H8V20H10V22H2V14H4V16ZM12 20H10V18H12V20ZM14 18H12V16H14V18ZM10 16H8V14H10V16ZM16 16H14V14H16V16ZM6 14H4V12H6V14ZM12 14H10V12H12V14ZM18 14H16V12H18V14ZM8 12H6V10H8V12ZM14 12H12V10H14V12ZM20 12H18V10H20V12ZM10 10H8V8H10V10ZM18 10H16V8H18V10ZM22 10H20V8H22V10ZM12 8H10V6H12V8ZM16 8H14V6H16V8ZM20 8H18V6H20V8ZM14 6H12V4H14V6ZM18 6H16V4H18V6ZM16 4H14V2H16V4Z"/></svg><span>${I18nModule.t('model_edit_btn')}</span>`;
+    btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor" shape-rendering="crispEdges" data-px="89"><path d="M4 16H6V18H8V20H10V22H2V14H4V16ZM12 20H10V18H12V20ZM14 18H12V16H14V18ZM10 16H8V14H10V16ZM16 16H14V14H16V16ZM6 14H4V12H6V14ZM12 14H10V12H12V14ZM18 14H16V12H18V14ZM8 12H6V10H8V12ZM14 12H12V10H14V12ZM20 12H18V10H20V12ZM10 10H8V8H10V10ZM18 10H16V8H18V10ZM22 10H20V8H22V10ZM12 8H10V6H12V8ZM16 8H14V6H16V8ZM20 8H18V6H20V8ZM14 6H12V4H14V6ZM18 6H16V4H18V6ZM16 4H14V2H16V4Z"/></svg><span>${I18nModule.t('model_edit_btn')}</span>`;
     btn.addEventListener('click', openModelEditor);
     anchor.after(btn);
 }

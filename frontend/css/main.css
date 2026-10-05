@@ -49,3 +49,21 @@
 @import url('./pages/terms.css');
 @import url('./pages/notfound.css');
 @import url('./pages/leaderboard.css');
+
+/* ── Pixel art switched off (Settings → Appearance; 2026-10-05) ─────────────
+   html.no-pixel is set by every page's inline <head> script. pixel-emoji.js
+   turns each tagged pixel icon (svg[data-px]) back into its original line
+   icon; until it has (data-px-orig), keep it hidden so there's no flash. The
+   CSS-drawn arrows/check get their original line versions back here. */
+html.no-pixel svg[data-px]:not([data-px-orig]) { visibility: hidden; }
+/* Pixel icons never smaller than 16px — below that the 24-px grid turns to mush
+   (Andrei: "vezi să nu iasă nici prea mici"). Only in pixel mode: the original
+   line icons keep their original sizes. */
+html:not(.no-pixel) svg[data-px] { min-width: 16px; min-height: 16px; }
+/* the console spec "?" bubble: the pixel circle-info is its own circle, drop the 14px round backdrop */
+html:not(.no-pixel) .spec-help { width: 16px; height: 16px; background: none; }
+html.no-pixel .hub-market-select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); }
+html.no-pixel .hub-form-select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); }
+html.no-pixel[data-theme="light"] .hub-form-select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23555' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); }
+html.no-pixel .contact-form .contact-select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='rgba(255,255,255,0.4)' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); }
+html.no-pixel .auth-features li::before { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23F5F0E8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E"); }

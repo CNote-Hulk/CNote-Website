@@ -6,7 +6,7 @@
 import { AuthModule } from '/js/modules/auth.js?v=20261005';
 import { API_BASE_URL } from '/js/config.js';
 import { AchievementsModule } from '/js/modules/achievements.js';
-import { I18nModule } from '/js/modules/i18n.js?v=20261005';
+import { I18nModule } from '/js/modules/i18n.js?v=20261005b';
 import { shareOrCopy } from '/js/utils/share.js';
 import { confirmModal, promptModal } from '/js/utils/confirm-modal.js';
 import { NO_IMAGE_PLACEHOLDER } from '/js/utils/no-image-placeholder.js';
@@ -696,7 +696,7 @@ const t = key => I18nModule.t(key);
                             <div class="user-listing-card__condition">${condLabels[l.condition] || l.condition || ''}</div>
                             <div class="user-listing-card__title">${escapeHtml(l.title)}</div>
                             <div class="user-listing-card__price">${Number(l.price).toFixed(0)} RON</div>
-                            ${l.seller_is_official ? `<span class="user-official-badge"><svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges"><path d="M10 18H8v-2h2v2Zm-2-2H6v-2h2v2Zm4-2v2h-2v-2h2Zm-6 0H4v-2h2v2Zm8 0h-2v-2h2v2Zm2-2h-2v-2h2v2Zm2-2h-2V8h2v2Zm2-2h-2V6h2v2Z"/></svg>${t('marketplace_official_badge')}</span>` : ''}
+                            ${l.seller_is_official ? `<span class="user-official-badge"><svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges" data-px="77"><path d="M10 18H8v-2h2v2Zm-2-2H6v-2h2v2Zm4-2v2h-2v-2h2Zm-6 0H4v-2h2v2Zm8 0h-2v-2h2v2Zm2-2h-2v-2h2v2Zm2-2h-2V8h2v2Zm2-2h-2V6h2v2Z"/></svg>${t('marketplace_official_badge')}</span>` : ''}
                         </div>
                     </a>`;
                 }).join('');
@@ -766,11 +766,11 @@ const t = key => I18nModule.t(key);
             if (isOwn) {
                 actions.innerHTML = `
                     <a href="/html/pages/profil.html#profil" class="avatar-lb-btn avatar-lb-btn--change">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges"><path d="M4 16H6V18H8V20H10V22H2V14H4V16ZM12 20H10V18H12V20ZM14 18H12V16H14V18ZM10 16H8V14H10V16ZM16 16H14V14H16V16ZM6 14H4V12H6V14ZM12 14H10V12H12V14ZM18 14H16V12H18V14ZM8 12H6V10H8V12ZM14 12H12V10H14V12ZM20 12H18V10H20V12ZM10 10H8V8H10V10ZM18 10H16V8H18V10ZM22 10H20V8H22V10ZM12 8H10V6H12V8ZM16 8H14V6H16V8ZM20 8H18V6H20V8ZM14 6H12V4H14V6ZM18 6H16V4H18V6ZM16 4H14V2H16V4Z"/></svg>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges" data-px="3"><path d="M4 16H6V18H8V20H10V22H2V14H4V16ZM12 20H10V18H12V20ZM14 18H12V16H14V18ZM10 16H8V14H10V16ZM16 16H14V14H16V16ZM6 14H4V12H6V14ZM12 14H10V12H12V14ZM18 14H16V12H18V14ZM8 12H6V10H8V12ZM14 12H12V10H14V12ZM20 12H18V10H20V12ZM10 10H8V8H10V10ZM18 10H16V8H18V10ZM22 10H20V8H22V10ZM12 8H10V6H12V8ZM16 8H14V6H16V8ZM20 8H18V6H20V8ZM14 6H12V4H14V6ZM18 6H16V4H18V6ZM16 4H14V2H16V4Z"/></svg>
                         Change
                     </a>
                     <button type="button" class="avatar-lb-btn avatar-lb-btn--remove" id="avatar-remove-btn">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges"><path d="M18 22H6V20H18V22ZM9 6H15V4H17V6H22V8H20V20H18V8H6V20H4V8H2V6H7V4H9V6ZM15 4H9V2H15V4Z"/></svg>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges" data-px="56"><path d="M18 22H6V20H18V22ZM9 6H15V4H17V6H22V8H20V20H18V8H6V20H4V8H2V6H7V4H9V6ZM15 4H9V2H15V4Z"/></svg>
                         Remove
                     </button>
                 `;

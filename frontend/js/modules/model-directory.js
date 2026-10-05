@@ -5,7 +5,7 @@
 // Used by both console-care.js and console-modding.js so the two guide pages
 // share one directory implementation instead of duplicating it.
 
-import { I18nModule } from './i18n.js?v=20261005';
+import { I18nModule } from './i18n.js?v=20261005b';
 import { AuthModule } from './auth.js?v=20261005';
 import { API_BASE_URL } from '../config.js';
 import { loadModels, invalidateModelsCache } from '../data/console-models.js?v=20260909d';
@@ -205,7 +205,7 @@ export async function initModelDirectory({
         btn.type = 'button';
         btn.id = 'model-directory-add-btn';
         btn.className = 'model-directory-add-trigger';
-        btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor" shape-rendering="crispEdges"><path d="M13 11h7v2h-7v7h-2v-7H4v-2h7V4h2v7Z"/></svg><span>${I18nModule.t('model_add_btn')}</span>`;
+        btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor" shape-rendering="crispEdges" data-px="67"><path d="M13 11h7v2h-7v7h-2v-7H4v-2h7V4h2v7Z"/></svg><span>${I18nModule.t('model_add_btn')}</span>`;
         btn.addEventListener('click', openAddModelForm);
         anchor.after(btn);
     }

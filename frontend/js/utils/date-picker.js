@@ -56,7 +56,7 @@ export function createDatePicker(container, opts = {}) {
 
     container.innerHTML = `
         <button type="button" class="cn-datepicker__trigger" aria-haspopup="true" aria-expanded="false">
-            <svg width="15" height="15" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor" shape-rendering="crispEdges"><path d="M5 4h14v2H5zm0 16h14v2H5zM3 10h2v10H3zm0-4h2v2H3zm16 0h2v2h-2zm0 4h2v10h-2zM3 8h18v2H3zm12-6h2v2h-2zM7 2h2v2H7z"/></svg>
+            <svg width="15" height="15" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor" shape-rendering="crispEdges" data-px="83"><path d="M5 4h14v2H5zm0 16h14v2H5zM3 10h2v10H3zm0-4h2v2H3zm16 0h2v2h-2zm0 4h2v10h-2zM3 8h18v2H3zm12-6h2v2h-2zM7 2h2v2H7z"/></svg>
             <span class="cn-datepicker__trigger-text ${!selectedISO ? 'cn-datepicker__trigger-text--placeholder' : ''}">
                 ${selectedISO ? formatDisplay(selectedISO) : placeholder}
             </span>
@@ -65,11 +65,11 @@ export function createDatePicker(container, opts = {}) {
         <div class="cn-datepicker__panel" role="dialog" aria-label="Date picker">
             <div class="cn-datepicker__header">
                 <button type="button" class="cn-datepicker__nav cn-datepicker__prev" aria-label="Previous month">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges"><path d="M8 13v-2h2v2H8Zm2-2V9h2v2h-2Zm0 4v-2h2v2h-2Zm2-6V7h2v2h-2Zm0 8v-2h2v2h-2Zm2-10V5h2v2h-2Zm0 12v-2h2v2h-2Z"/></svg>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges" data-px="65"><path d="M8 13v-2h2v2H8Zm2-2V9h2v2h-2Zm0 4v-2h2v2h-2Zm2-6V7h2v2h-2Zm0 8v-2h2v2h-2Zm2-10V5h2v2h-2Zm0 12v-2h2v2h-2Z"/></svg>
                 </button>
                 <button type="button" class="cn-datepicker__month-label"></button>
                 <button type="button" class="cn-datepicker__nav cn-datepicker__next" aria-label="Next month">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges"><path d="M16 13v-2h-2v2h2Zm-2-2V9h-2v2h2Zm0 4v-2h-2v2h2Zm-2-6V7h-2v2h2Zm0 8v-2h-2v2h2ZM10 7V5H8v2h2Zm0 12v-2H8v2h2Z"/></svg>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges" data-px="84"><path d="M16 13v-2h-2v2h2Zm-2-2V9h-2v2h2Zm0 4v-2h-2v2h2Zm-2-6V7h-2v2h2Zm0 8v-2h-2v2h2ZM10 7V5H8v2h2Zm0 12v-2H8v2h2Z"/></svg>
                 </button>
             </div>
             <div class="cn-datepicker__body"></div>

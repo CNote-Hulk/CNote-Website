@@ -5,7 +5,7 @@
  */
 
 import { loadConsoles } from '../data/data-loader.js';
-import { I18nModule }   from '../modules/i18n.js?v=20261005';
+import { I18nModule }   from '../modules/i18n.js?v=20261005b';
 
 const selectA = document.getElementById('console-a-select');
 const selectB = document.getElementById('console-b-select');
@@ -54,7 +54,7 @@ const FIXED_TIPS = {
     'VRR':         'Variable Refresh Rate — the display dynamically syncs its refresh rate to the GPU\'s output, eliminating screen tearing and stutter.',
 };
 
-const HELP_SVG = `<svg viewBox="0 0 24 24" width="12" height="12" aria-hidden="true" fill="currentColor" shape-rendering="crispEdges"><path d="M18 22H6V20H18V22ZM6 20H4V18H6V20ZM20 20H18V18H20V20ZM4 18H2V6H4V18ZM22 18H20V6H22V18ZM13 17H11V11H13V17ZM13 9H11V7H13V9ZM6 6H4V4H6V6ZM20 6H18V4H20V6ZM18 4H6V2H18V4Z"/></svg>`;
+const HELP_SVG = `<svg viewBox="0 0 24 24" width="12" height="12" aria-hidden="true" fill="currentColor" shape-rendering="crispEdges" data-px="81"><path d="M18 22H6V20H18V22ZM6 20H4V18H6V20ZM20 20H18V18H20V20ZM4 18H2V6H4V18ZM22 18H20V6H22V18ZM13 17H11V11H13V17ZM13 9H11V7H13V9ZM6 6H4V4H6V6ZM20 6H18V4H20V6ZM18 4H6V2H18V4Z"/></svg>`;
 
 function tipLabel(label, tipKey) {
     const tip = SPEC_TIPS[tipKey];

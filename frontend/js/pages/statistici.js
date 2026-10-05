@@ -6,7 +6,7 @@
  */
 import { AuthModule } from '../modules/auth.js?v=20261005';
 import { AchievementsModule } from '../modules/achievements.js';
-import { I18nModule } from '../modules/i18n.js?v=20261005';
+import { I18nModule } from '../modules/i18n.js?v=20261005b';
 import { shareOrCopy } from '../utils/share.js';
 
 

@@ -5,7 +5,7 @@
  */
 
 import { AuthModule } from './auth.js?v=20261005';
-import { I18nModule } from './i18n.js?v=20261005';
+import { I18nModule } from './i18n.js?v=20261005b';
 
 const THEME_KEY = 'cnote-theme';
 const ACCENT_KEY = 'cnote-accent-color';
@@ -88,7 +88,7 @@ export const ProfileDropdownModule = {
         return `
             <div class="profile-dropdown__divider"></div>
             <div class="profile-dropdown__item">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges"><path d="M6 2h12v2H6zm0 18h12v2H6zM4 4h2v2H4zm5 0h2v2H9zm0 14h2v2H9zm4 0h2v2h-2zM7 6h2v12H7zm8 0h2v12h-2zm-2-2h2v2h-2zm7 0h-2v2h2zM2 6h2v12H2zm20 0h-2v12h2zM4 18h2v2H4zm16 0h-2v2h2z M3 11h18v2H3z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges" data-px="71"><path d="M6 2h12v2H6zm0 18h12v2H6zM4 4h2v2H4zm5 0h2v2H9zm0 14h2v2H9zm4 0h2v2h-2zM7 6h2v12H7zm8 0h2v12h-2zm-2-2h2v2h-2zm7 0h-2v2h2zM2 6h2v12H2zm20 0h-2v12h2zM4 18h2v2H4zm16 0h-2v2h2z M3 11h18v2H3z"/></svg>
                 <span data-i18n="profile_language"></span>
                 <select class="profile-dropdown__lang-select" aria-label="Language selector">
                     <option value="en" data-i18n="lang_en">English</option>
@@ -108,17 +108,17 @@ export const ProfileDropdownModule = {
         return `
             <div class="profile-dropdown__divider"></div>
             <div class="profile-dropdown__item profile-dropdown__theme-row">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges"><path d="M13 22h-2v-3h2v3Zm-6-3H5v-2h2v2Zm12 0h-2v-2h2v2Zm-4-2H9v-2h6v2Zm-6-2H7V9h2v6Zm8 0h-2V9h2v6ZM5 13H2v-2h3v2Zm17 0h-3v-2h3v2Zm-7-4H9V7h6v2ZM7 7H5V5h2v2Zm12 0h-2V5h2v2Zm-6-2h-2V2h2v3Z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges" data-px="72"><path d="M13 22h-2v-3h2v3Zm-6-3H5v-2h2v2Zm12 0h-2v-2h2v2Zm-4-2H9v-2h6v2Zm-6-2H7V9h2v6Zm8 0h-2V9h2v6ZM5 13H2v-2h3v2Zm17 0h-3v-2h3v2Zm-7-4H9V7h6v2ZM7 7H5V5h2v2Zm12 0h-2V5h2v2Zm-6-2h-2V2h2v3Z"/></svg>
                 <span data-i18n="profile_theme">Theme</span>
                 <div class="profile-dropdown__theme-btns">
                     <button class="profile-dropdown__theme-btn${active('dark')}" data-theme="dark" title="Dark">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges"><path d="M18 22H8v-2h10v2ZM8 20H6v-2h2v2Zm12 0h-2v-2h2v2ZM6 18H4v-2h2v2Zm16 0h-2v-4h-2v-2h2v-2h2v8ZM4 16H2V6h2v10Zm14 0h-6v-2h6v2Zm-6-2h-2v-2h2v2Zm-2-2H8V6h2v6ZM6 6H4V4h2v2Zm8-2h-2v2h-2V4H6V2h8v2Z"/></svg>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges" data-px="73"><path d="M18 22H8v-2h10v2ZM8 20H6v-2h2v2Zm12 0h-2v-2h2v2ZM6 18H4v-2h2v2Zm16 0h-2v-4h-2v-2h2v-2h2v8ZM4 16H2V6h2v10Zm14 0h-6v-2h6v2Zm-6-2h-2v-2h2v2Zm-2-2H8V6h2v6ZM6 6H4V4h2v2Zm8-2h-2v2h-2V4H6V2h8v2Z"/></svg>
                     </button>
                     <button class="profile-dropdown__theme-btn${active('light')}" data-theme="light" title="Light">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges"><path d="M13 22h-2v-3h2v3Zm-6-3H5v-2h2v2Zm12 0h-2v-2h2v2Zm-4-2H9v-2h6v2Zm-6-2H7V9h2v6Zm8 0h-2V9h2v6ZM5 13H2v-2h3v2Zm17 0h-3v-2h3v2Zm-7-4H9V7h6v2ZM7 7H5V5h2v2Zm12 0h-2V5h2v2Zm-6-2h-2V2h2v3Z"/></svg>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges" data-px="72"><path d="M13 22h-2v-3h2v3Zm-6-3H5v-2h2v2Zm12 0h-2v-2h2v2Zm-4-2H9v-2h6v2Zm-6-2H7V9h2v6Zm8 0h-2V9h2v6ZM5 13H2v-2h3v2Zm17 0h-3v-2h3v2Zm-7-4H9V7h6v2ZM7 7H5V5h2v2Zm12 0h-2V5h2v2Zm-6-2h-2V2h2v3Z"/></svg>
                     </button>
                     <button class="profile-dropdown__theme-btn${active('system')}" data-theme="system" title="${I18nModule.t('profile_theme_system') || 'Set as system'}">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges"><path d="M4 2h16v2H4zm0 14h16v2H4zM2 4h2v12H2zm18 0h2v12h-2zm-9 14h2v2h-2zm-3 2h8v2H8z"/></svg>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges" data-px="74"><path d="M4 2h16v2H4zm0 14h16v2H4zM2 4h2v12H2zm18 0h2v12h-2zm-9 14h2v2h-2zm-3 2h8v2H8z"/></svg>
                     </button>
                 </div>
             </div>`;
@@ -149,7 +149,7 @@ export const ProfileDropdownModule = {
         const avatarMarkup = avatar
             ? `<img src="${avatar}" alt="User avatar" class="profile-dropdown__avatar-img">`
             : `<span class="profile-dropdown__avatar-fallback" aria-hidden="true">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges"><path d="M9 2h6v2H9zm0 8h6v2H9zm6-6h2v6h-2zM7 4h2v6H7zM4 18h2v4H4zm14 0h2v4h-2zM8 14h8v2H8zm-2 2h2v2H6zm10 0h2v2h-2z"/></svg>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges" data-px="2"><path d="M9 2h6v2H9zm0 8h6v2H9zm6-6h2v6h-2zM7 4h2v6H7zM4 18h2v4H4zm14 0h2v4h-2zM8 14h8v2H8zm-2 2h2v2H6zm10 0h2v2h-2z"/></svg>
                </span>`;
 
         const storedLevel = (() => { try { return JSON.parse(localStorage.getItem('cn_user_level') || 'null'); } catch { return null; } })();
@@ -200,7 +200,7 @@ export const ProfileDropdownModule = {
     _buildLoggedOut(dd) {
         dd.innerHTML = `
             <a href="${this._resolvePagePath('login.html')}" class="profile-dropdown__item">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges"><path d="M2 11h14v2H2zm10-2h2v2h-2z M10 7h2v10h-2zm2 6h2v2h-2zM6 2h12v2H6zm0 18h12v2H6zM4 4h2v5H4zm0 11h2v5H4zM18 4h2v16h-2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges" data-px="75"><path d="M2 11h14v2H2zm10-2h2v2h-2z M10 7h2v10h-2zm2 6h2v2h-2zM6 2h12v2H6zm0 18h12v2H6zM4 4h2v5H4zm0 11h2v5H4zM18 4h2v16h-2z"/></svg>
                 <span data-i18n="profile_login">Log in</span>
             </a>
             ${this._langSelectorHTML()}

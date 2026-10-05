@@ -8,9 +8,11 @@ import { AchievementsModule } from '../../js/modules/achievements.js';
 import { SearchModule } from '../../js/modules/search.js';
 import { API_BASE_URL } from '../../js/config.js';
 import { confirmModal, promptModal } from '../../js/utils/confirm-modal.js';
-import { I18nModule } from '../../js/modules/i18n.js?v=20261005';
+import { I18nModule } from '../../js/modules/i18n.js?v=20261005b';
 import { createDatePicker } from '../../js/utils/date-picker.js';
 import { openAvatarCropper } from '../../js/modules/avatar-cropper.js';
+// Same URL as main.js's import on purpose — one module instance, one shared on/off state.
+import { isPixelArtOn, setPixelArt } from '../../js/modules/pixel-emoji.js?v=20261005d';
 
 /** Shortcut pentru traduceri */
 const t = key => I18nModule.t(key);
@@ -1357,6 +1359,13 @@ function initSettings() {
 
     loadSessions();
     loadTrustedDevices();
+
+    // ═══ APPEARANCE TAB — Pixel art on/off (2026-10-05, per device) ═══
+    const pixelToggle = document.getElementById('pixel-art-toggle');
+    if (pixelToggle) {
+        pixelToggle.checked = isPixelArtOn();
+        pixelToggle.addEventListener('change', () => { setPixelArt(pixelToggle.checked); });
+    }
 
     // ═══ APPEARANCE TAB — Theme selector ═══
     // Dark is the default for a visitor who never touched the toggle. "System" is stored

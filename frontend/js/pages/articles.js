@@ -3,7 +3,7 @@
  * admin-only "Write article" modal that creates a new one.
  */
 import { AuthModule } from '../modules/auth.js?v=20261005';
-import { I18nModule } from '../modules/i18n.js?v=20261005';
+import { I18nModule } from '../modules/i18n.js?v=20261005b';
 import { API_BASE_URL } from '../config.js';
 
 const PAGE_SIZE = 12;

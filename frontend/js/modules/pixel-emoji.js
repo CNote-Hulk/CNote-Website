@@ -8,7 +8,8 @@
 
    - Icons: Pixelarticons by Gerrit Halfmann (MIT, see pixelarticons.LICENSE.txt
      next to this file), 24×24 grid. Sized like a normal emoji: 1.2em rounded
-     to a multiple of 4px (16px next to 14px text, 20px next to 16px text…),
+     to a multiple of 4px, never under 16px (16px next to 14px text, 20px next
+     to 16px text…),
      drawn with crisp edges. (Until 2026-10-05 evening they were forced to
      24px minimum for perfect pixels, which made them look too big next to
      small text — Andrei: "arată prea mari".)
@@ -17,12 +18,31 @@
      retro palette color instead.
    - NOT touched: anything users typed (chat/DM text, forum posts and replies,
      comments, listings — see SKIP_SELECTOR), form fields, <option>s, code.
-   - Emoji not in EMOJI (and plain text symbols like → ← ★ ☆) stay as they are.
+   - Emoji not in EMOJI stay as they are. Plain symbols (← → ↑ ➜ ▶ ⏸ ⏹ ⧉ ⏳ × +)
+     become icons only when they are the whole text of their element — an
+     icon-only button like the chat's back/attach/play/send buttons — never
+     inside a sentence ("Browse FAQ →" keeps its arrow).
+   - Pixel art can be switched off per device (Settings → Appearance,
+     localStorage 'cnote-pixel-art' = 'off', see setPixelArt()). Off means: no
+     emoji swap, and every UI icon tagged data-px="N" (the site's inline SVG
+     icons, which are pixel art in the HTML/JS source itself) is turned back
+     into its original line icon from pixel-icons-orig.js. Every page's inline
+     <head> theme script adds html.no-pixel early, and main.css hides tagged
+     icons until they've been restored, so there's no flash of pixel icons.
    - Data-carrying emoji are safe: reactions keep their value in data-emoji,
      and no site code reads an emoji back out of the DOM's text.
    ───────────────────────────────────────── */
 
 const ICONS = {
+"arrow-left": "M20 11v2H4v-2zM8 13v2H6v-2zm2 2v2H8v-2zm2 2v2h-2v-2zm-4-6V9H6v2z M10 15V7H8v8zm2 2V5h-2v12z",
+"arrow-right": "M4 11v2h16v-2zm12 2v2h2v-2zm-2 2v2h2v-2zm-2 2v2h2v-2zm4-6V9h2v2z M14 15V7h2v8zm-2 2V5h2v12z",
+"arrow-up": "M11 20h2V4h-2zm2-12h2V6h-2zm2 2h2V8h-2zm2 2h2v-2h-2zm-6-4H9V6h2z M15 10H7V8h8zm2 2H5v-2h12z",
+"forward": "M2 11h2v6H2zm2 6h2v2H4zm2-2h4v2H6zm0-8h4v2H6zm4 8h2v6h-2zm0-12h2v6h-2zm2 16h2v2h-2zm2-2h2v2h-2zm2-2h2v2h-2zm2-2h2v2h-2zm2-2h2v2h-2zm-2-2h2v2h-2zm-2-2h2v2h-2zm-2-2h2v2h-2zm-2-2h2v2h-2zM4 9h2v2H4z",
+"play": "M15 11h-2V9h2zm0 4h-2v-2h2zm-2 2h-2v-2h2zm0-8h-2V7h2zm-2-2H9V5h2zM9 21H7V3h2zm6-8h2v-2h-2zm-6 4h2v2H9z",
+"pause": "M10 20H4V4h6v16Zm8-16v16h-6V4h6Zm-4 2v12h2V6h-2ZM6 18h2V6H6v12Z",
+"stop": "M20 20H4V4H20V20ZM6 18H18V6H6V18ZM14 14H10V10H14V14Z",
+"copy": "M8 6h12v2H8zM4 2h12v2H4zm2 6h2v12H6zM2 4h2v12H2zm6 16h12v2H8zM20 8h2v12h-2zm-4-4h2v2h-2zM4 16h2v2H4z",
+"hourglass": "M16 22H8v-2h8v2Zm-8-2H6v-4h2v4Zm10 0h-2v-4h2v4Zm-8-4H8v-2h2v2Zm6 0h-2v-2h2v2Zm-6-6h4v4h-4v-4Zm0 0H8V8h2v2Zm6 0h-2V8h2v2ZM8 8H6V4h2v4Zm10 0h-2V4h2v4Zm-2-4H8V2h8v2Z",
 "close": "M7 19H5V17H7V19ZM19 19H17V17H19V19ZM9 15V17H7V15H9ZM17 17H15V15H17V17ZM11 15H9V13H11V15ZM15 15H13V13H15V15ZM13 13H11V11H13V13ZM11 11H9V9H11V11ZM15 11H13V9H15V11ZM9 9H7V7H9V9ZM17 9H15V7H17V9ZM7 7H5V5H7V7ZM19 7H17V5H19V7Z",
 "checkbox-on": "M4 2h16v2H4zm0 18h16v2H4zM2 4h2v16H2zm18 0h2v16h-2zM7 12h2v2H7zm2 2h2v2H9zm2-2h2v2h-2zm2-2h2v2h-2zm2-2h2v2h-2z",
 "warning-diamond": "M2 10h2v2H2zm0 4h2v-2H2zm20-4h-2v2h2zm0 4h-2v-2h2zM4 8h2v2H4zm0 8h2v-2H4zm16-8h-2v2h2zm0 8h-2v-2h2zM6 6h2v2H6zm0 12h2v-2H6zM18 6h-2v2h2zm0 12h-2v-2h2zM8 4h2v2H8zm0 16h2v-2H8zm8-16h-2v2h2zm0 16h-2v-2h2zM10 2h2v2h-2zm0 20h2v-2h-2zm4-20h-2v2h2zm0 20h-2v-2h2zm-3-5h2v-2h-2zm0-4h2V7h-2z",
@@ -731,20 +751,27 @@ function injectStyles() {
     style.id = 'px-emoji-styles';
     style.textContent = `
         .px-emoji {
-            display: inline-block; width: 1.2em; height: 1.2em;
+            display: inline-block; width: max(16px, 1.2em); height: max(16px, 1.2em);
             vertical-align: -0.2em; flex-shrink: 0;
             fill: currentColor; shape-rendering: crispEdges;
         }
         @supports (width: round(nearest, 30px, 4px)) {
-            .px-emoji { width: max(12px, round(nearest, 1.2em, 4px)); height: max(12px, round(nearest, 1.2em, 4px)); }
+            .px-emoji { width: max(16px, round(nearest, 1.2em, 4px)); height: max(16px, round(nearest, 1.2em, 4px)); }
         }
         ${Object.entries(COLORS).map(([k, v]) => `.px-emoji--${k} { fill: ${v}; }`).join('\n')}
     `;
     document.head.appendChild(style);
 }
 
-function makeIcon(emoji) {
-    const [name, color] = EMOJI[emoji];
+// Symbols that become an icon only when they're the whole text of their element.
+const SYMBOLS = {
+    '←': ['arrow-left', ''], '→': ['arrow-right', ''], '↑': ['arrow-up', ''], '➜': ['forward', ''],
+    '▶': ['play', ''], '⏸': ['pause', ''], '⏹': ['stop', ''], '⧉': ['copy', ''], '⏳': ['hourglass', ''],
+    '×': ['close', ''], '+': ['plus', ''],
+};
+
+function makeIcon(emoji, entry = EMOJI[emoji]) {
+    const [name, color] = entry;
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     svg.setAttribute('viewBox', '0 0 24 24');
     svg.setAttribute('class', 'px-emoji' + (color ? ' px-emoji--' + color : ''));
@@ -763,6 +790,11 @@ function shouldSkip(textNode) {
 
 function replaceInTextNode(node) {
     const text = node.nodeValue;
+    const sym = text && text.trim().replace(/\uFE0F/g, '');
+    if (sym && SYMBOLS[sym] && node.parentElement && node.parentElement.textContent.trim() === text.trim() && !shouldSkip(node)) {
+        node.parentNode.replaceChild(makeIcon(sym, SYMBOLS[sym]), node);
+        return;
+    }
     EMOJI_RE.lastIndex = 0;
     if (!text || !EMOJI_RE.test(text) || shouldSkip(node)) return;
     EMOJI_RE.lastIndex = 0;
@@ -787,20 +819,95 @@ function scan(root) {
     nodes.forEach(replaceInTextNode);
 }
 
+// ── On/off switch ────────────────────────────────────────────────
+const STORE_KEY = 'cnote-pixel-art';
+export function isPixelArtOn() {
+    try { return localStorage.getItem(STORE_KEY) !== 'off'; } catch { return true; }
+}
+
+let ORIG = null;                      // data-px id → [original <svg> attributes, original inner markup]
+const pixelMarkup = new WeakMap();    // restored <svg> → its pixel inner markup, for switching back on
+const SVG_ATTRS = ['viewBox', 'fill', 'stroke', 'stroke-width', 'stroke-linecap', 'stroke-linejoin'];
+
+async function loadOrig() {
+    if (!ORIG) ({ ORIG } = await import('./pixel-icons-orig.js?v=20261005'));
+}
+
+function unpixelSvg(svg) {
+    if (svg.hasAttribute('data-px-orig')) return;
+    const o = ORIG && ORIG[svg.getAttribute('data-px')];
+    if (o) {
+        pixelMarkup.set(svg, svg.innerHTML);
+        const [attrs, inner] = o;
+        SVG_ATTRS.forEach(a => (a in attrs ? svg.setAttribute(a, attrs[a]) : svg.removeAttribute(a)));
+        svg.removeAttribute('shape-rendering');
+        svg.innerHTML = inner;
+    }
+    svg.setAttribute('data-px-orig', '');
+}
+
+function repixelSvg(svg) {
+    const inner = pixelMarkup.get(svg);
+    if (inner != null) {
+        SVG_ATTRS.forEach(a => svg.removeAttribute(a));
+        svg.setAttribute('viewBox', '0 0 24 24');
+        svg.setAttribute('fill', 'currentColor');
+        svg.setAttribute('shape-rendering', 'crispEdges');
+        svg.innerHTML = inner;
+    }
+    svg.removeAttribute('data-px-orig');
+}
+
+function unpixelTree(root) {
+    if (root.nodeType !== Node.ELEMENT_NODE && root.nodeType !== Node.DOCUMENT_FRAGMENT_NODE) return;
+    if (root.matches && root.matches('svg[data-px]')) unpixelSvg(root);
+    root.querySelectorAll('svg[data-px]').forEach(unpixelSvg);
+}
+
+function unEmoji(svg) {
+    svg.replaceWith(document.createTextNode(svg.getAttribute('aria-label') || ''));
+}
+
+/** Settings → Appearance → Pixel art. Applies immediately, no reload. */
+export async function setPixelArt(on) {
+    try { on ? localStorage.removeItem(STORE_KEY) : localStorage.setItem(STORE_KEY, 'off'); } catch { /* private mode */ }
+    document.documentElement.classList.toggle('no-pixel', !on);
+    if (on) {
+        document.querySelectorAll('svg[data-px-orig]').forEach(repixelSvg);
+        scan(document.body);
+    } else {
+        await loadOrig();
+        document.querySelectorAll('svg.px-emoji').forEach(unEmoji);
+        unpixelTree(document.body);
+    }
+}
+
 let pending = new Set();
 let scheduled = false;
 function flush() {
     scheduled = false;
     const batch = pending;
     pending = new Set();
-    batch.forEach(n => { if (n.isConnected) scan(n); });
+    const on = isPixelArtOn();
+    batch.forEach(n => {
+        if (!n.isConnected) return;
+        if (on) scan(n);
+        else if (ORIG) unpixelTree(n);
+    });
 }
 
 export function initPixelEmoji() {
     if (window.__pxEmojiInit) return;
     window.__pxEmojiInit = true;
     injectStyles();
-    scan(document.body);
+    if (isPixelArtOn()) scan(document.body);
+    else {
+        document.documentElement.classList.add('no-pixel');
+        loadOrig().then(() => unpixelTree(document.body)).catch(() => {
+            // couldn't load the originals: show the pixel icons rather than nothing
+            document.querySelectorAll('svg[data-px]').forEach(s => s.setAttribute('data-px-orig', ''));
+        });
+    }
     new MutationObserver(mutations => {
         for (const m of mutations) {
             if (m.type === 'characterData') pending.add(m.target);

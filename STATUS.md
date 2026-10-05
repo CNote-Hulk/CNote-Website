@@ -45,6 +45,11 @@ own notes.
   replaced by their Pixelarticons equivalents, plus the CSS select arrows/checkmark; pixel emoji were
   resized to emoji size (1.2em, were ≥24px and looked too big). Left as-is: progress rings, dashed
   connector lines, Google logo, KaTeX.
+  Then the same day: chat icons too (back/attach/send/play/pause/stop, context-menu actions — they
+  were text symbols, now pixel icons when icon-only), pixel icons never under 16px, and a
+  **Settings → Appearance → Pixel art** on/off switch (per device; off restores the original line icons
+  and native emoji). Andrei plans to build a bigger idea on top of this switch — ask what it is before
+  changing how it works (e.g. syncing it to the account or the Android app).
 - Pixel-art emoji (2026-10-05, stage 1 of 3): the site's emoji now render as retro pixel icons
   (Pixelarticons, MIT) site-wide via `pixel-emoji.js`; user-written text keeps native emoji. Next:
   stage 2 = pixel versions of the 6 chat quick reactions are already covered by the same map

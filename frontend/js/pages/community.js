@@ -4,7 +4,7 @@
  * Vanilla ES module — no frameworks.
  */
 import { AuthModule } from '../modules/auth.js?v=20261005';
-import { I18nModule } from '../modules/i18n.js?v=20261005';
+import { I18nModule } from '../modules/i18n.js?v=20261005b';
 import { API_BASE_URL } from '../config.js';
 import { confirmModal } from '../utils/confirm-modal.js';
 import { shareOrCopy } from '../utils/share.js';
@@ -233,7 +233,7 @@ function createCustomSelect(sel) {
 
     const arrowSpan = document.createElement('span');
     arrowSpan.className = 'hub-csel__arrow';
-    arrowSpan.innerHTML = `<svg width="10" height="6" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor" shape-rendering="crispEdges"><path d="M13 16h-2v-2h2v2Zm-2-2H9v-2h2v2Zm4 0h-2v-2h2v2Zm-6-2H7v-2h2v2Zm8 0h-2v-2h2v2ZM7 10H5V8h2v2Zm12 0h-2V8h2v2Z"/></svg>`;
+    arrowSpan.innerHTML = `<svg width="10" height="6" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor" shape-rendering="crispEdges" data-px="92"><path d="M13 16h-2v-2h2v2Zm-2-2H9v-2h2v2Zm4 0h-2v-2h2v2Zm-6-2H7v-2h2v2Zm8 0h-2v-2h2v2ZM7 10H5V8h2v2Zm12 0h-2V8h2v2Z"/></svg>`;
 
     trigger.appendChild(valueSpan);
     trigger.appendChild(arrowSpan);
@@ -1339,7 +1339,7 @@ async function loadListings() {
                         <div class="hub-listing-info__meta">
                             <span class="hub-condition hub-condition--${l.condition}">${CONDITIONS[l.condition] ? esc(t(CONDITIONS[l.condition])) : esc(l.condition)}</span>
                             <span class="hub-listing-info__seller">${esc(l.seller_name)}${l.location ? ' · ' + esc(cityLabel(l.location)) : ''}</span>
-                            ${l.seller_is_official ? `<span class="hub-official-badge"><svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges"><path d="M10 18H8v-2h2v2Zm-2-2H6v-2h2v2Zm4-2v2h-2v-2h2Zm-6 0H4v-2h2v2Zm8 0h-2v-2h2v2Zm2-2h-2v-2h2v2Zm2-2h-2V8h2v2Zm2-2h-2V6h2v2Z"/></svg>${I18nModule.t('marketplace_official_badge')}</span>` : ''}
+                            ${l.seller_is_official ? `<span class="hub-official-badge"><svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges" data-px="77"><path d="M10 18H8v-2h2v2Zm-2-2H6v-2h2v2Zm4-2v2h-2v-2h2Zm-6 0H4v-2h2v2Zm8 0h-2v-2h2v2Zm2-2h-2v-2h2v2Zm2-2h-2V8h2v2Zm2-2h-2V6h2v2Z"/></svg>${I18nModule.t('marketplace_official_badge')}</span>` : ''}
                         </div>
                     </div>
                 </button>`;
@@ -1497,7 +1497,7 @@ async function openListingDetail(id) {
                         <div class="hub-detail-seller-info">
                             <div class="hub-detail-seller-avatar">${avatarHtml(l.seller_name, l.seller_avatar, 48)}</div>
                             <div class="hub-detail-seller-meta">
-                                <div class="hub-detail-seller-name">${esc(l.seller_name)}${l.seller_is_official ? `<span class="hub-official-badge"><svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges"><path d="M10 18H8v-2h2v2Zm-2-2H6v-2h2v2Zm4-2v2h-2v-2h2Zm-6 0H4v-2h2v2Zm8 0h-2v-2h2v2Zm2-2h-2v-2h2v2Zm2-2h-2V8h2v2Zm2-2h-2V6h2v2Z"/></svg>${I18nModule.t('marketplace_official_badge')}</span>` : ''}</div>
+                                <div class="hub-detail-seller-name">${esc(l.seller_name)}${l.seller_is_official ? `<span class="hub-official-badge"><svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges" data-px="77"><path d="M10 18H8v-2h2v2Zm-2-2H6v-2h2v2Zm4-2v2h-2v-2h2Zm-6 0H4v-2h2v2Zm8 0h-2v-2h2v2Zm2-2h-2v-2h2v2Zm2-2h-2V8h2v2Zm2-2h-2V6h2v2Z"/></svg>${I18nModule.t('marketplace_official_badge')}</span>` : ''}</div>
                                 <div class="hub-detail-seller-sub" id="seller-rating-summary">Seller</div>
                             </div>
                         </div>
@@ -1709,7 +1709,7 @@ async function loadSimilarListings(listingId, container) {
                         <div class="hub-listing-info__meta">
                             <span class="hub-condition hub-condition--${l.condition}">${CONDITIONS[l.condition] ? esc(t(CONDITIONS[l.condition])) : esc(l.condition)}</span>
                             <span class="hub-listing-info__seller">${esc(l.seller_name)}${l.location ? ' · ' + esc(cityLabel(l.location)) : ''}</span>
-                            ${l.seller_is_official ? `<span class="hub-official-badge"><svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges"><path d="M10 18H8v-2h2v2Zm-2-2H6v-2h2v2Zm4-2v2h-2v-2h2Zm-6 0H4v-2h2v2Zm8 0h-2v-2h2v2Zm2-2h-2v-2h2v2Zm2-2h-2V8h2v2Zm2-2h-2V6h2v2Z"/></svg>${I18nModule.t('marketplace_official_badge')}</span>` : ''}
+                            ${l.seller_is_official ? `<span class="hub-official-badge"><svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges" data-px="77"><path d="M10 18H8v-2h2v2Zm-2-2H6v-2h2v2Zm4-2v2h-2v-2h2Zm-6 0H4v-2h2v2Zm8 0h-2v-2h2v2Zm2-2h-2v-2h2v2Zm2-2h-2V8h2v2Zm2-2h-2V6h2v2Z"/></svg>${I18nModule.t('marketplace_official_badge')}</span>` : ''}
                         </div>
                     </div>
                 </button>`;

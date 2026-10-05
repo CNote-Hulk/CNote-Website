@@ -1009,6 +1009,9 @@ const MESSAGES = {
         settings_accent_title: 'Accent Color',
         settings_accent_desc: 'Customize the accent color used across the site.',
         settings_accent_reset: 'Reset to default',
+        settings_pixel_title: 'Pixel art',
+        settings_pixel_desc: 'Show the site\'s icons and emoji in retro pixel-art style. Turn it off for the classic look.',
+        settings_pixel_toggle: 'Pixel-art icons',
 
         // ── Settings Page — profil.html ──
         settings_nav_title: 'SETTINGS',
@@ -3021,6 +3024,9 @@ const MESSAGES = {
         settings_accent_title: 'Culoare de accent',
         settings_accent_desc: 'Personalizează culoarea de accent folosită pe site.',
         settings_accent_reset: 'Resetează la implicit',
+        settings_pixel_title: 'Pixel art',
+        settings_pixel_desc: 'Afișează iconițele și emoji-urile site-ului în stil retro pixel art. Dezactivează pentru aspectul clasic.',
+        settings_pixel_toggle: 'Iconițe pixel art',
 
         // ── Pagina de setări — profil.html ──
         settings_nav_title: 'SETĂRI',
@@ -5042,6 +5048,9 @@ const MESSAGES = {
         settings_accent_title: 'Color de acento',
         settings_accent_desc: 'Personaliza el color de acento usado en el sitio.',
         settings_accent_reset: 'Restablecer al predeterminado',
+        settings_pixel_title: 'Pixel art',
+        settings_pixel_desc: 'Muestra los iconos y emojis del sitio en estilo retro pixel art. Desactívalo para el aspecto clásico.',
+        settings_pixel_toggle: 'Iconos pixel art',
 
         // ── Página de ajustes — profil.html ──
         settings_nav_title: 'AJUSTES',
@@ -7063,6 +7072,9 @@ const MESSAGES = {
         settings_accent_title: "Couleur d'accent",
         settings_accent_desc: "Personnalisez la couleur d'accent utilisée sur le site.",
         settings_accent_reset: 'Réinitialiser par défaut',
+        settings_pixel_title: 'Pixel art',
+        settings_pixel_desc: 'Affiche les icônes et les emojis du site en style rétro pixel art. Désactive-le pour l\'apparence classique.',
+        settings_pixel_toggle: 'Icônes pixel art',
 
         // ── Page de paramètres — profil.html ──
         settings_nav_title: 'PARAMÈTRES',
@@ -9084,6 +9096,9 @@ const MESSAGES = {
         settings_accent_title: 'Colore accento',
         settings_accent_desc: 'Personalizza il colore accento usato nel sito.',
         settings_accent_reset: 'Ripristina predefinito',
+        settings_pixel_title: 'Pixel art',
+        settings_pixel_desc: 'Mostra le icone e le emoji del sito in stile retro pixel art. Disattivalo per l\'aspetto classico.',
+        settings_pixel_toggle: 'Icone pixel art',
 
         // ── Pagina impostazioni — profil.html ──
         settings_nav_title: 'IMPOSTAZIONI',
@@ -11114,6 +11129,9 @@ const MESSAGES = {
         settings_accent_title: 'Akzentfarbe',
         settings_accent_desc: 'Passe die auf der Website verwendete Akzentfarbe an.',
         settings_accent_reset: 'Auf Standard zurücksetzen',
+        settings_pixel_title: 'Pixel-Art',
+        settings_pixel_desc: 'Zeigt die Symbole und Emojis der Seite im Retro-Pixel-Art-Stil. Ausschalten für den klassischen Look.',
+        settings_pixel_toggle: 'Pixel-Art-Symbole',
 
         // ── Einstellungsseite — profil.html ──
         settings_nav_title: 'EINSTELLUNGEN',
