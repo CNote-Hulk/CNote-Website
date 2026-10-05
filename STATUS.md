@@ -37,6 +37,9 @@ own notes.
 - Backend hardening: Postgres pool size/timeout configuration and a boot-time hotfix so a schema-init
   DB error no longer kills the process (`0c989b15`, `65d86e6c`).
 - Pre-launch SEO/social audit: fixed social-share (`og:`) tags and canonical-URL gaps (`5a07f7c5`).
+- Pixel-art landing page prototype (2026-10-05): `/html/pages/index-pixel.html` — the full home page
+  redone in retro pixel style, separate from the real `index.html` so Andrei can judge it live. Next:
+  decide which parts (if any) move into the real site / which other pages get the same treatment.
 - Pixel-art emoji (2026-10-05, stage 1 of 3): the site's emoji now render as retro pixel icons
   (Pixelarticons, MIT) site-wide via `pixel-emoji.js`; user-written text keeps native emoji. Next:
   stage 2 = pixel versions of the 6 chat quick reactions are already covered by the same map
