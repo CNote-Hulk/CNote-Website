@@ -106,3 +106,47 @@ test('authOptional: valid JWT attaches req.user', async () => {
         assert.equal(body.userId, FAKE_USER.id);
     });
 });
+
+// (2026-10-05) Regression: a database error while looking up the user behind a
+// VALID JWT used to be swallowed by the JWT try/catch, fall through to the
+// session-token lookup, and come back as 401 — which the frontend treats as
+// "logged out". A DB failure must be a 503, and must never trigger the
+// session-table fallback.
+test('authRequired: valid JWT + DB error is a 503, not a 401, and skips the session fallback', async () => {
+    const seen = [];
+    mockPool.query = async (sql) => {
+        seen.push(sql);
+        throw new Error('(EMAXCONNSESSION) max clients reached in session mode');
+    };
+    const token = jwt.sign({ userId: FAKE_USER.id }, JWT_SECRET);
+    await withServer(async (base) => {
+        const res = await fetch(`${base}/protected`, { headers: { Authorization: `Bearer ${token}` } });
+        assert.equal(res.status, 503);
+        const body = await res.json();
+        assert.equal(body.retryable, true);
+    });
+    assert.equal(seen.length, 1);
+    assert.doesNotMatch(seen[0], /user_sessions/);
+});
+
+test('authRequired: DB error on the session-token path is a 503, not a 401', async () => {
+    mockPool.query = async () => { throw new Error('connection timeout'); };
+    await withServer(async (base) => {
+        const res = await fetch(`${base}/protected`, { headers: { Authorization: 'Bearer not-a-jwt-session-token' } });
+        assert.equal(res.status, 503);
+    });
+});
+
+test('authOptional: valid JWT + DB error continues anonymously without the session fallback', async () => {
+    const seen = [];
+    mockPool.query = async (sql) => { seen.push(sql); throw new Error('pool exhausted'); };
+    const token = jwt.sign({ userId: FAKE_USER.id }, JWT_SECRET);
+    await withServer(async (base) => {
+        const res = await fetch(`${base}/optional`, { headers: { Authorization: `Bearer ${token}` } });
+        assert.equal(res.status, 200);
+        const body = await res.json();
+        assert.equal(body.userId, null);
+    });
+    assert.equal(seen.length, 1);
+    assert.doesNotMatch(seen[0], /user_sessions/);
+});

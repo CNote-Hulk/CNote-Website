@@ -3,7 +3,7 @@
  * Used on the evolution/encyclopedia page (evolutie.html)
  */
 
-import { AuthModule } from '../modules/auth.js';
+import { AuthModule } from '../modules/auth.js?v=20261005';
 import { API_BASE_URL } from '../config.js';
 
 /** Extract console slug from card link href (e.g. "playstation-5") */

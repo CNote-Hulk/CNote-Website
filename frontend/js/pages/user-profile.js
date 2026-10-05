@@ -3,7 +3,7 @@
  * Displays another user's profile: progress, achievements,
  * favorites, owned consoles, and friend request controls.
  */
-import { AuthModule } from '/js/modules/auth.js';
+import { AuthModule } from '/js/modules/auth.js?v=20261005';
 import { API_BASE_URL } from '/js/config.js';
 import { AchievementsModule } from '/js/modules/achievements.js';
 import { I18nModule } from '/js/modules/i18n.js?v=20261005';

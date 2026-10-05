@@ -1,5 +1,5 @@
 import { I18nModule } from './i18n.js?v=20261005';
-import { AuthModule } from './auth.js';
+import { AuthModule } from './auth.js?v=20261005';
 import { AchievementsModule } from './achievements.js';
 import { API_BASE_URL } from '../config.js';
 import { NO_IMAGE_PLACEHOLDER } from '../utils/no-image-placeholder.js';
@@ -112,7 +112,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 },
                 credentials: 'include'
             });
-            if (res.status === 401 || res.status === 403) {
+            // Only 401 = session gone; 403/5xx must not log the user out (see AuthModule._api).
+            if (res.status === 401) {
                 localStorage.removeItem('cn_session');
                 localStorage.removeItem('cn_token');
                 localStorage.removeItem('cn_session_token');

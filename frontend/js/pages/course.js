@@ -1,4 +1,4 @@
-import { AuthModule } from '../modules/auth.js';
+import { AuthModule } from '../modules/auth.js?v=20261005';
 import { API_BASE_URL } from '../config.js';
 
 const params = new URLSearchParams(window.location.search);

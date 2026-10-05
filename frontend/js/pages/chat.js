@@ -3,7 +3,7 @@
  * Real-time global chat with polling, message rendering (DM-style bubbles —
  * see renderMessage()), and cooldown-based rate limiting.
  */
-import { AuthModule } from '../modules/auth.js';
+import { AuthModule } from '../modules/auth.js?v=20261005';
 import { API_BASE_URL } from '../config.js';
 import { I18nModule } from '../modules/i18n.js?v=20261005';
 import { alertModal } from '../utils/confirm-modal.js';

@@ -3,7 +3,7 @@
  * Handles server login, local login, Google OAuth, 2FA verification,
  * email fallback, resend verification, and URL error display.
  */
-import { AuthModule } from '../modules/auth.js';
+import { AuthModule } from '../modules/auth.js?v=20261005';
 
 // ─── Handle Google OAuth redirect ────────────────
 const googleData = AuthModule.handleGoogleRedirect();

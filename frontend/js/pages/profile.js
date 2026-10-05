@@ -2,7 +2,7 @@
  * Settings Page (profil.html)
  * Account settings, profile/privacy, security, notifications, appearance.
  */
-import { AuthModule } from '../../js/modules/auth.js';
+import { AuthModule } from '../../js/modules/auth.js?v=20261005';
 import { ProgressModule } from '../../js/modules/progress.js';
 import { AchievementsModule } from '../../js/modules/achievements.js';
 import { SearchModule } from '../../js/modules/search.js';

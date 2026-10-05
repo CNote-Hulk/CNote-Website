@@ -1,5 +1,5 @@
 import { API_BASE_URL } from '../config.js';
-import { AuthModule } from './auth.js';
+import { AuthModule } from './auth.js?v=20261005';
 
 let _open = false;
 let _dropdown = null;

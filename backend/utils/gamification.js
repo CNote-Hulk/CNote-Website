@@ -281,6 +281,63 @@ async function _unlockNewAchievements(pool, userId, metrics, storedIds) {
 }
 
 /**
+ * All the per-user counters that achievement conditions are checked against,
+ * fetched in ONE query (one pooled connection) instead of 14 parallel ones.
+ *
+ * (2026-10-05) The three callers (GET /api/achievements, GET
+ * /api/achievements/user/:username and checkAchievements, which runs after
+ * every awardXP) each used to fire 13-14 pool.query() calls through
+ * Promise.all. Against Supabase's Session pooler (pool_size 15) a single
+ * profile view therefore grabbed almost every connection the database
+ * allows, and two concurrent users were enough to hit EMAXCONNSESSION —
+ * 500s on achievements, articles, marketplace, and on /api/me during a page
+ * reload (which the frontend then treated as "logged out").
+ *
+ * @returns {Promise<object|null>} metrics keyed by achievement condition
+ *          type, or null when the user doesn't exist
+ */
+async function getAchievementMetrics(pool, userId) {
+    const { rows } = await pool.query(
+        `SELECT u.id, u.created_at, u.avatar, u.bio,
+            (SELECT COUNT(*)::int FROM user_console_visits WHERE user_id = u.id)                           AS consoles_visited,
+            (SELECT COUNT(*)::int FROM friends WHERE user1_id = u.id OR user2_id = u.id)                  AS friends_count,
+            (SELECT COUNT(*)::int FROM user_favorites WHERE user_id = u.id)                               AS consoles_favorited,
+            (SELECT COUNT(*)::int FROM user_owned_consoles WHERE user_id = u.id)                          AS consoles_owned,
+            (SELECT COUNT(*)::int FROM user_lessons WHERE user_id = u.id AND completed = true)            AS lessons_completed,
+            (SELECT COUNT(*)::int FROM user_course_progress WHERE user_id = u.id AND completed_at IS NOT NULL) AS courses_completed,
+            (SELECT COUNT(*)::int FROM user_lessons WHERE user_id = u.id AND quiz_score = 100)            AS perfect_quizzes,
+            (SELECT COUNT(*)::int FROM forum_threads WHERE user_id = u.id)                                AS forum_posts,
+            (SELECT COUNT(*)::int FROM direct_messages WHERE sender_id = u.id)                            AS dms_sent,
+            (SELECT COALESCE(SUM(upvotes), 0) FROM forum_threads WHERE user_id = u.id) +
+            (SELECT COALESCE(SUM(upvotes), 0) FROM forum_replies WHERE user_id = u.id)                    AS upvotes_received,
+            (SELECT COUNT(*)::int FROM listings WHERE user_id = u.id)                                     AS listings_created,
+            (SELECT COUNT(*)::int FROM marketplace_accounts WHERE user_id = u.id AND provider = 'ebay')   AS ebay_accounts
+         FROM users u
+         WHERE u.id = $1`,
+        [userId]
+    );
+    if (!rows.length) return null;
+    const r = rows[0];
+    return {
+        lessons_completed:  r.lessons_completed,
+        courses_completed:  r.courses_completed,
+        perfect_quizzes:    r.perfect_quizzes,
+        consoles_visited:   r.consoles_visited,
+        consoles_favorited: r.consoles_favorited,
+        consoles_owned:     r.consoles_owned,
+        forum_posts:        r.forum_posts,
+        friends_count:      r.friends_count,
+        dms_sent:           r.dms_sent,
+        upvotes_received:   parseInt(r.upvotes_received, 10) || 0,
+        listings_created:   r.listings_created,
+        ebay_connected:     r.ebay_accounts > 0 ? 1 : 0,
+        days_member:        Math.floor((Date.now() - new Date(r.created_at)) / 86400000),
+        profile_complete:   (r.avatar && r.bio) ? 1 : 0,
+        user_id_value:      r.id,
+    };
+}
+
+/**
  * Check and unlock newly earned achievements for a user.
  * Persists to DB and emits via Socket.io if io is provided.
  * Called automatically by awardXP — no need to call this directly.
@@ -289,48 +346,9 @@ async function _unlockNewAchievements(pool, userId, metrics, storedIds) {
  */
 async function checkAchievements(pool, io, userId) {
     try {
-        const [
-            visitedRes, friendsRes, favRes, ownedRes, userRes,
-            lessonsRes, courseRes, perfectRes, postsRes, dmsRes,
-            upvotesRes, listingsRes, ebayRes, storedRes,
-        ] = await Promise.all([
-            pool.query('SELECT COUNT(*)::int AS count FROM user_console_visits WHERE user_id = $1', [userId]),
-            pool.query('SELECT COUNT(*)::int AS count FROM friends WHERE user1_id = $1 OR user2_id = $1', [userId]),
-            pool.query('SELECT COUNT(*)::int AS count FROM user_favorites WHERE user_id = $1', [userId]),
-            pool.query('SELECT COUNT(*)::int AS count FROM user_owned_consoles WHERE user_id = $1', [userId]),
-            pool.query('SELECT id, created_at, avatar, bio FROM users WHERE id = $1', [userId]),
-            pool.query('SELECT COUNT(*)::int AS count FROM user_lessons WHERE user_id = $1 AND completed = true', [userId]),
-            pool.query('SELECT COUNT(*)::int AS count FROM user_course_progress WHERE user_id = $1 AND completed_at IS NOT NULL', [userId]),
-            pool.query('SELECT COUNT(*)::int AS count FROM user_lessons WHERE user_id = $1 AND quiz_score = 100', [userId]),
-            pool.query('SELECT COUNT(*)::int AS count FROM forum_threads WHERE user_id = $1', [userId]),
-            pool.query('SELECT COUNT(*)::int AS count FROM direct_messages WHERE sender_id = $1', [userId]),
-            pool.query(
-                `SELECT (SELECT COALESCE(SUM(upvotes),0) FROM forum_threads WHERE user_id=$1) +
-                        (SELECT COALESCE(SUM(upvotes),0) FROM forum_replies WHERE user_id=$1) AS count`,
-                [userId]
-            ),
-            pool.query('SELECT COUNT(*)::int AS count FROM listings WHERE user_id = $1', [userId]),
-            pool.query(`SELECT COUNT(*)::int AS count FROM marketplace_accounts WHERE user_id = $1 AND provider = 'ebay'`, [userId]),
-            pool.query('SELECT badge_id FROM user_achievements WHERE user_id = $1', [userId]),
-        ]);
-
-        const metrics = {
-            lessons_completed:  lessonsRes.rows[0].count,
-            courses_completed:  courseRes.rows[0].count,
-            perfect_quizzes:    perfectRes.rows[0].count,
-            consoles_visited:   visitedRes.rows[0].count,
-            consoles_favorited: favRes.rows[0].count,
-            consoles_owned:     ownedRes.rows[0].count,
-            forum_posts:        postsRes.rows[0].count,
-            friends_count:      friendsRes.rows[0].count,
-            dms_sent:           dmsRes.rows[0].count,
-            upvotes_received:   parseInt(upvotesRes.rows[0].count, 10) || 0,
-            listings_created:   listingsRes.rows[0].count,
-            ebay_connected:     ebayRes.rows[0].count > 0 ? 1 : 0,
-            days_member:        Math.floor((Date.now() - new Date(userRes.rows[0].created_at)) / 86400000),
-            profile_complete:   (userRes.rows[0].avatar && userRes.rows[0].bio) ? 1 : 0,
-            user_id_value:      userRes.rows[0].id,
-        };
+        const metrics = await getAchievementMetrics(pool, userId);
+        if (!metrics) return [];
+        const storedRes = await pool.query('SELECT badge_id FROM user_achievements WHERE user_id = $1', [userId]);
 
         const storedIds = new Set(storedRes.rows.map(r => r.badge_id));
 
@@ -391,4 +409,4 @@ async function checkAchievements(pool, io, userId) {
     }
 }
 
-module.exports = { LEVELS, XP_ACTIONS, ACHIEVEMENTS, getLevelFromXP, awardXP, checkAchievements };
+module.exports = { LEVELS, XP_ACTIONS, ACHIEVEMENTS, getLevelFromXP, awardXP, checkAchievements, getAchievementMetrics };

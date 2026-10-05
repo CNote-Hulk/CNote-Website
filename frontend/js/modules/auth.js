@@ -111,7 +111,12 @@ export const AuthModule = {
         }
         const res = await fetch(this._apiBase + path, opts);
         if (!res.ok) {
-            if (res.status === 401 || res.status === 403) {
+            // Only 401 means "your session is gone". 403 is "not allowed to do
+            // this" (admin-only route, wrong current password, muted, not your
+            // listing) and 5xx is a server hiccup — neither may log the user out.
+            // (2026-10-05: clearing on 403 too logged people out on things like
+            // a mistyped current password.)
+            if (res.status === 401) {
                 localStorage.removeItem(this.SESSION_KEY);
                 localStorage.removeItem(this.TOKEN_KEY);
                 localStorage.removeItem(this.SERVER_SESSION_TOKEN_KEY);
@@ -228,17 +233,19 @@ return { success: false, error: 'Could not contact the server.' };
     async refreshSession() {
         try {
             const data = await this._api('GET', '/profile');
-            if (data.success && data.user) {
+            if (data && data.success && data.user) {
                 this._setSession(data.user);
                 return data.user;
             }
-            // Session invalid on server — clear local cache
-            localStorage.removeItem(this.SESSION_KEY);
-            localStorage.removeItem(this.TOKEN_KEY);
-            localStorage.removeItem(this.SERVER_SESSION_TOKEN_KEY);
-            return null;
+            // (2026-10-05) Don't clear the session here on any failure: if the
+            // server answered 401 the session really is invalid and _api()
+            // already cleared it; any other failure (500/503 when the DB is
+            // busy, network blip) is temporary, so keep the cached user logged
+            // in. Clearing on every failure is what logged people out on
+            // reload whenever the database was briefly unreachable.
+            return this.getCurrentUser();
         } catch {
-            return null;
+            return this.getCurrentUser();
         }
     },
 

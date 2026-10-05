@@ -37,6 +37,11 @@ own notes.
 - Backend hardening: Postgres pool size/timeout configuration and a boot-time hotfix so a schema-init
   DB error no longer kills the process (`0c989b15`, `65d86e6c`).
 - Pre-launch SEO/social audit: fixed social-share (`og:`) tags and canonical-URL gaps (`5a07f7c5`).
+- Login/DB stability fix (2026-10-05): "logged out on every reload" + 500s on achievements/articles/
+  marketplace. Root causes: pool `max` 20 above the Supabase Session pooler's limit of 15
+  (EMAXCONNSESSION), 13–14 parallel queries per achievements call, the auth middleware turning a DB
+  error on a valid JWT into a 401, and the frontend logging out on any failure / on 403. All four
+  fixed, 6 regression tests added (58/58).
 - Brand + data cleanup (2026-10-05): the name "Cnote Bakery" removed from everything user-facing —
   site is "CNote" only (titles/meta, i18n in all 6 languages, legal terms, emails, 2FA issuer,
   README/LICENSE). Console generations corrected to the standard classification for 7 consoles

@@ -1,7 +1,7 @@
 /**
  * Leaderboard page — fetches and renders the public XP ranking.
  */
-import { AuthModule } from '../modules/auth.js';
+import { AuthModule } from '../modules/auth.js?v=20261005';
 import { I18nModule } from '../modules/i18n.js?v=20261005';
 
 const PAGE_SIZE = 50;

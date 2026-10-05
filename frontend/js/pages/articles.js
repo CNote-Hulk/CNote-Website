@@ -2,7 +2,7 @@
  * Articles list page — public grid of admin-written articles, with an
  * admin-only "Write article" modal that creates a new one.
  */
-import { AuthModule } from '../modules/auth.js';
+import { AuthModule } from '../modules/auth.js?v=20261005';
 import { I18nModule } from '../modules/i18n.js?v=20261005';
 import { API_BASE_URL } from '../config.js';
 

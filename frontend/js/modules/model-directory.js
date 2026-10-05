@@ -6,7 +6,7 @@
 // share one directory implementation instead of duplicating it.
 
 import { I18nModule } from './i18n.js?v=20261005';
-import { AuthModule } from './auth.js';
+import { AuthModule } from './auth.js?v=20261005';
 import { API_BASE_URL } from '../config.js';
 import { loadModels, invalidateModelsCache } from '../data/console-models.js?v=20260909d';
 

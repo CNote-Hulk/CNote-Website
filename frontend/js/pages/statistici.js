@@ -4,7 +4,7 @@
  * achievements, console visits, friends, favorites, owned consoles.
  * Quiz / lesson / course stats are in working — shown as 🚧.
  */
-import { AuthModule } from '../modules/auth.js';
+import { AuthModule } from '../modules/auth.js?v=20261005';
 import { AchievementsModule } from '../modules/achievements.js';
 import { I18nModule } from '../modules/i18n.js?v=20261005';
 import { shareOrCopy } from '../utils/share.js';

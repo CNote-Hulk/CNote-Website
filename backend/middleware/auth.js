@@ -51,11 +51,30 @@ async function authRequired(req, res, next) {
 
     const JWT_SECRET = req.app.get('JWT_SECRET');
 
+    // Strategy 1: verify JWT from Authorization header.
+    // (2026-10-05) Only a failed *verification* may fall through to the
+    // session-token lookup below. The user lookup used to sit in the same
+    // try with an empty catch, so a transient DB error (e.g. EMAXCONNSESSION
+    // when the Supabase pooler was full) on a perfectly valid JWT fell through
+    // to Strategy 2, found no session row for the JWT, and answered 401
+    // "Sesiune invalida" — which the frontend treats as "logged out" and wipes
+    // the local session. That was the "logged out on every reload" bug.
+    let decoded = null;
     try {
-        // Strategy 1: verify JWT from Authorization header
-        const decoded = jwt.verify(token, JWT_SECRET);
-        const userResult = await pool.query('SELECT * FROM users WHERE id = $1', [decoded.userId]);
-        const user = userResult.rows[0];
+        decoded = jwt.verify(token, JWT_SECRET);
+    } catch {
+        decoded = null;
+    }
+
+    if (decoded) {
+        let user;
+        try {
+            const userResult = await pool.query('SELECT * FROM users WHERE id = $1', [decoded.userId]);
+            user = userResult.rows[0];
+        } catch (dbErr) {
+            console.error('Auth user DB error:', dbErr);
+            return res.status(503).json({ success: false, error: 'Service temporarily unavailable. Please try again.', retryable: true });
+        }
         if (!user) {
             return res.status(401).json({ success: false, error: 'Utilizator inexistent.' });
         }
@@ -100,7 +119,6 @@ async function authRequired(req, res, next) {
             muted_until: user.muted_until
         };
         return next();
-    } catch (jwtErr) {
     }
 
     // Strategy 2: fall back to session token lookup in DB
@@ -125,8 +143,9 @@ async function authRequired(req, res, next) {
         WHERE s.session_token = $1 AND s.is_active = true
         `, [hashSessionToken(token)]);
     } catch (dbErr) {
+        // A DB failure is not an invalid session — 503, never 401, so the client keeps its login.
         console.error('Auth session DB error:', dbErr);
-        return res.status(500).json({ success: false, error: 'Internal error.' });
+        return res.status(503).json({ success: false, error: 'Service temporarily unavailable. Please try again.', retryable: true });
     }
 
     const session = sessionResult.rows[0];
@@ -138,8 +157,11 @@ async function authRequired(req, res, next) {
     }
     if (session.is_banned) liftExpiredBan(session.user_id);
 
-    // DB: update last_activity timestamp for this session
-    await pool.query('UPDATE user_sessions SET last_activity = NOW() WHERE id = $1', [session.session_id]);
+    // DB: update last_activity timestamp for this session. Fire-and-forget:
+    // it's bookkeeping, and an unhandled rejection here (async middleware,
+    // Express 4) would leave the request hanging instead of answering.
+    pool.query('UPDATE user_sessions SET last_activity = NOW() WHERE id = $1', [session.session_id])
+        .catch(err => console.error('Session last_activity update failed:', err.message));
 
     req.user = {
         id: session.user_id,
@@ -227,14 +249,25 @@ async function authOptional(req, res, next) {
 
     const JWT_SECRET = req.app.get('JWT_SECRET');
 
+    // Same split as authRequired: a valid JWT never falls through to the
+    // session-token lookup; on a DB error the request just continues anonymous.
+    let decoded = null;
     try {
-        const decoded = jwt.verify(token, JWT_SECRET);
-        const userResult = await pool.query('SELECT * FROM users WHERE id = $1', [decoded.userId]);
-        if (userResult.rows[0]) {
-            req.user = { id: userResult.rows[0].id, username: userResult.rows[0].username };
+        decoded = jwt.verify(token, JWT_SECRET);
+    } catch {
+        decoded = null;
+    }
+    if (decoded) {
+        try {
+            const userResult = await pool.query('SELECT id, username FROM users WHERE id = $1', [decoded.userId]);
+            if (userResult.rows[0]) {
+                req.user = { id: userResult.rows[0].id, username: userResult.rows[0].username };
+            }
+        } catch (dbErr) {
+            console.error('authOptional user DB error:', dbErr.message);
         }
         return next();
-    } catch {}
+    }
 
     try {
         const sessionResult = await pool.query(`

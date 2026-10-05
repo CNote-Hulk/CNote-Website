@@ -4,7 +4,7 @@
  * with language selector and theme switcher in both.
  */
 
-import { AuthModule } from './auth.js';
+import { AuthModule } from './auth.js?v=20261005';
 import { I18nModule } from './i18n.js?v=20261005';
 
 const THEME_KEY = 'cnote-theme';

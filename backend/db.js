@@ -24,7 +24,16 @@ const pool = new Pool({
 	// in Supabase's connection settings — Transaction mode releases the
 	// backend connection after each query instead of holding it for the
 	// session, which is a much better fit for a stateless web backend.
-	max: 20,
+	// (2026-10-05) max:20 was itself a bug: Supabase's Session pooler caps
+	// clients at pool_size 15, so once Node opened its 16th connection the
+	// pooler refused it with EMAXCONNSESSION ("max clients reached in session
+	// mode") — instant 500s instead of a short queue. Kept below 15 (with
+	// headroom for the backup job / dashboard sessions); a request that finds
+	// all 12 busy now waits in pg's queue (up to connectionTimeoutMillis)
+	// instead of failing. The 14-query Promise.all fan-out in achievements /
+	// checkAchievements, the main source of bursts, is now one query
+	// (utils/gamification.js getAchievementMetrics).
+	max: 12,
 	idleTimeoutMillis: 30000,
 	connectionTimeoutMillis: 8000
 });
