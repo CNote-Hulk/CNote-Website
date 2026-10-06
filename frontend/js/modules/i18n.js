@@ -951,6 +951,7 @@ const MESSAGES = {
 
         // Settings page
         settings_title: 'Settings',
+        settings_view_public_profile: 'View my public profile',
         settings_back_home: 'Back to Dashboard',
         settings_tab_account: 'Account',
         settings_tab_profile: 'Profile',
@@ -2975,6 +2976,7 @@ const MESSAGES = {
 
         // Settings page
         settings_title: 'Setări',
+        settings_view_public_profile: 'Vezi profilul meu public',
         settings_back_home: 'Înapoi la tabloul de bord',
         settings_tab_account: 'Cont',
         settings_tab_profile: 'Profil',
@@ -4999,6 +5001,7 @@ const MESSAGES = {
 
         // Settings page
         settings_title: 'Configuración',
+        settings_view_public_profile: 'Ver mi perfil público',
         settings_back_home: 'Volver al panel',
         settings_tab_account: 'Cuenta',
         settings_tab_profile: 'Perfil',
@@ -7023,6 +7026,7 @@ const MESSAGES = {
 
         // Settings page
         settings_title: 'Paramètres',
+        settings_view_public_profile: 'Voir mon profil public',
         settings_back_home: 'Retour au tableau de bord',
         settings_tab_account: 'Compte',
         settings_tab_profile: 'Profil',
@@ -9047,6 +9051,7 @@ const MESSAGES = {
 
         // Settings page
         settings_title: 'Impostazioni',
+        settings_view_public_profile: 'Vedi il mio profilo pubblico',
         settings_back_home: 'Torna alla dashboard',
         settings_tab_account: 'Account',
         settings_tab_profile: 'Profilo',
@@ -11071,6 +11076,7 @@ const MESSAGES = {
 
         // Settings page
         settings_title: 'Einstellungen',
+        settings_view_public_profile: 'Mein öffentliches Profil ansehen',
         settings_back_home: 'Zurück zum Startbildschirm',
         settings_tab_account: 'Konto',
         settings_tab_profile: 'Profil',

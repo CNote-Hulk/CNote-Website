@@ -75,6 +75,17 @@
 
                 <div class="sidebar-profile-divider"></div>
 
+                <!-- This page is Settings, not your profile - the sidebar shows your avatar,
+                     name and level, so without this link people read it as their profile and
+                     have no way to reach the real one. href is filled in by profile.js once
+                     the username is known. -->
+                <a href="user-profile.html" class="sidebar-link" id="view-public-profile">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges" data-px="14"><path d="M9 2h6v2H9zm0 8h6v2H9zm6-6h2v6h-2zM7 4h2v6H7zM4 18h2v4H4zm14 0h2v4h-2zM8 14h8v2H8zm-2 2h2v2H6zm10 0h2v2h-2z"/></svg>
+                    <span data-i18n="settings_view_public_profile">View my public profile</span>
+                </a>
+
+                <div class="sidebar-profile-divider"></div>
+
                 <!-- Settings Navigation -->
                 <div class="sidebar-section">
                     <h3 data-i18n="settings_nav_title">SETTINGS</h3>
