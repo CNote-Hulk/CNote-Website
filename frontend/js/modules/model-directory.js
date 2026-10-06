@@ -100,6 +100,8 @@ export async function initModelDirectory({
 
         grid.innerHTML = '';
         groups.forEach((groupModels, consoleName) => {
+            // Alphabetical by model code (numeric-aware: SCPH-9000 after SCPH-700), not by region/insert order
+            groupModels.sort((x, y) => x.code.localeCompare(y.code, 'en', { numeric: true, sensitivity: 'base' }));
             const group = document.createElement('div');
             group.className = 'care-group';
 
