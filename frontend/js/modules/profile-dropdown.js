@@ -149,8 +149,10 @@ export const ProfileDropdownModule = {
         // everyone else sees - while the Settings item below goes to profil.html. Before,
         // both led to profil.html, so clicking your own name just opened settings and there
         // was no way to reach your own profile from here.
+        // /user/<name> is the canonical profile URL - server.js routes it to user-profile.html
+        // and it is what the address bar shows - so link the pretty form, not the query one.
         const profilePath = user.username
-            ? this._resolvePagePath('user-profile.html') + '?username=' + encodeURIComponent(user.username)
+            ? '/user/' + encodeURIComponent(user.username)
             : this._resolvePagePath('profil.html');
         const avatarMarkup = avatar
             ? `<img src="${avatar}" alt="User avatar" class="profile-dropdown__avatar-img">`

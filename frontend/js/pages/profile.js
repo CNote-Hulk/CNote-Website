@@ -136,7 +136,7 @@ function initSettings() {
     // This page is Settings; the sidebar link next to it goes to the real profile.
     const viewProfileLink = document.getElementById('view-public-profile');
     if (viewProfileLink && user.username) {
-        viewProfileLink.href = 'user-profile.html?username=' + encodeURIComponent(user.username);
+        viewProfileLink.href = '/user/' + encodeURIComponent(user.username);
     }
     document.getElementById('profile-bio').textContent = user.bio || 'No description yet.';
     const profileDateEl = document.getElementById('profile-date');
@@ -582,7 +582,7 @@ function initSettings() {
         // The username is editable here, so the profile link has to move with it.
         const viewLink = document.getElementById('view-public-profile');
         if (viewLink && username) {
-            viewLink.href = 'user-profile.html?username=' + encodeURIComponent(username);
+            viewLink.href = '/user/' + encodeURIComponent(username);
         }
 
         if (emailChanged) {
