@@ -200,7 +200,7 @@ router.get('/listings/user/:userId', async (req, res) => {
 
     try {
         const result = await pool.query(`
-            SELECT l.id, l.title, l.price, l.condition, l.category, l.location, l.country,
+            SELECT l.id, l.title, l.price, l.currency, l.condition, l.category, l.location, l.country,
                    l.images, l.sold, l.status, l.console_type, l.created_at,
                    u.id AS seller_id, u.username AS seller_name, u.avatar AS seller_avatar,
                    u.role = 'admin' AS seller_is_official
@@ -214,6 +214,7 @@ router.get('/listings/user/:userId', async (req, res) => {
             id: row.id,
             title: row.title,
             price: parseFloat(row.price),
+            currency: row.currency || 'RON',
             condition: row.condition,
             category: row.category,
             location: row.location,
