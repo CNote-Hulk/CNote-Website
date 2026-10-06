@@ -27,7 +27,9 @@ const t = key => I18nModule.t(key);
             const match = path.match(/\/user\/([^/]+)/);
             if (match) return decodeURIComponent(match[1]);
             const params = new URLSearchParams(window.location.search);
-            const q = params.get('username') || params.get('user');
+            // ?u= is the short form the help pages document and the home timeline links
+            // with; it was never read here, so those links opened a blank profile.
+            const q = params.get('username') || params.get('user') || params.get('u');
             return q ? q.trim() : null;
         }
 

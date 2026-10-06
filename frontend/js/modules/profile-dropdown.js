@@ -145,7 +145,13 @@ export const ProfileDropdownModule = {
         const email = this._escapeHtml(user.email || 'No email');
         const avatarRaw = AuthModule.normalizeAvatarUrl(user.avatar || '');
         const avatar = avatarRaw ? this._escapeHtml(avatarRaw) : '';
-        const profilePath = this._resolvePagePath('profil.html');
+        // The name/avatar block goes to the user's own PUBLIC profile - the same page
+        // everyone else sees - while the Settings item below goes to profil.html. Before,
+        // both led to profil.html, so clicking your own name just opened settings and there
+        // was no way to reach your own profile from here.
+        const profilePath = user.username
+            ? this._resolvePagePath('user-profile.html') + '?username=' + encodeURIComponent(user.username)
+            : this._resolvePagePath('profil.html');
         const avatarMarkup = avatar
             ? `<img src="${avatar}" alt="User avatar" class="profile-dropdown__avatar-img">`
             : `<span class="profile-dropdown__avatar-fallback" aria-hidden="true">
