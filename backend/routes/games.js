@@ -11,8 +11,24 @@
 const express = require('express');
 const pool = require('../db');
 const { authRequired, authOptional } = require('../middleware/auth');
+const { publicUrlForKey } = require('../utils/objectStorage');
 
 const router = express.Router();
+
+// Cover art provenance lives in the key itself rather than in a second column.
+// "libretro:<path>" is a box scan served from libretro's thumbnail host, the
+// same set RetroArch uses; anything else is one of our own R2 objects. Coverage
+// follows what emulators support, so the retro consoles are nearly complete
+// (8,500 scans for the PS2 alone) and the modern ones have almost nothing -
+// which is why the app still draws a case when this comes back null.
+const LIBRETRO = 'https://thumbnails.libretro.com';
+
+function coverUrlFor(key) {
+	if (!key) return null;
+	if (!key.startsWith('libretro:')) return publicUrlForKey(key);
+	return LIBRETRO + '/' + key.slice('libretro:'.length)
+		.split('/').map(encodeURIComponent).join('/');
+}
 
 // The Switch alone has 7,600 games, so nothing here ever returns a whole
 // console's catalogue. The app pages; the page size is capped server-side so a
@@ -46,7 +62,8 @@ router.get('/:consoleId', async (req, res) => {
 			order = 'similarity(g.title, $4) DESC, g.title';
 		}
 		const rows = await pool.query(
-			`SELECT g.id, g.wikidata_id, g.title, g.release_year, g.developer, g.publisher
+			`SELECT g.id, g.wikidata_id, g.title, g.release_year, g.developer, g.publisher,
+			        gp.cover_key
 			   FROM games g
 			   JOIN game_platforms gp ON gp.game_id = g.id
 			  WHERE ${where}
@@ -63,6 +80,7 @@ router.get('/:consoleId', async (req, res) => {
 				releaseYear: r.release_year,
 				developer: r.developer,
 				publisher: r.publisher,
+				coverUrl: coverUrlFor(r.cover_key),
 			})),
 			// Cheaper and honest: "there is another page" is all the client needs
 			// to keep scrolling, and a COUNT(*) over 7,600 rows per keystroke is
@@ -89,9 +107,14 @@ router.get('/:consoleId/mine', authOptional, async (req, res) => {
 
 	try {
 		const rows = await pool.query(
-			`SELECT g.id, g.wikidata_id, g.title, g.release_year, g.developer, g.publisher
+			`SELECT g.id, g.wikidata_id, g.title, g.release_year, g.developer, g.publisher,
+			        gp.cover_key
 			   FROM user_games ug
 			   JOIN games g ON g.id = ug.game_id
+			   -- The box for THIS console, not whichever one happened to match first: the
+			   -- same title shipped in a blue PS2 case and a green Xbox one.
+			   LEFT JOIN game_platforms gp
+			          ON gp.game_id = ug.game_id AND gp.console_id = ug.console_id
 			  WHERE ug.user_id = $1 AND ug.console_id = $2
 			  ORDER BY ug.created_at`,
 			[userId, consoleId]
@@ -105,6 +128,7 @@ router.get('/:consoleId/mine', authOptional, async (req, res) => {
 				releaseYear: r.release_year,
 				developer: r.developer,
 				publisher: r.publisher,
+				coverUrl: coverUrlFor(r.cover_key),
 			})),
 		});
 	} catch (err) {
