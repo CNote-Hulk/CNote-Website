@@ -72,6 +72,7 @@ const uploadsRoutes = require('./routes/uploads');
 const workshopRoutes = require('./routes/workshop');
 const consoleTutorialsRoutes = require('./routes/console-tutorials');
 const consoleModelsRoutes = require('./routes/console-models');
+const gamesRoutes = require('./routes/games');
 const articlesRoutes = require('./routes/articles');
 const ordersRoutes = require('./routes/orders');
 
@@ -489,6 +490,7 @@ app.use('/api/uploads', uploadsRoutes);
 app.use('/api/workshop', workshopRoutes);
 app.use('/api/console-tutorials', consoleTutorialsRoutes);
 app.use('/api/console-models', consoleModelsRoutes);
+app.use('/api/games', gamesRoutes);
 app.use('/api/articles', articlesRoutes);
 app.use('/api/orders', ordersRoutes);
 
