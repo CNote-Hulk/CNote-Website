@@ -12,7 +12,7 @@ const express = require('express');
 const path = require('path');
 const fs = require('fs');
 const pool = require('../db');
-const { authRequired } = require('../middleware/auth');
+const { authRequired, authOptional } = require('../middleware/auth');
 const { awardXP, getLevelFromXP } = require('../utils/gamification');
 const { publicUrlForKey } = require('../utils/objectStorage');
 
@@ -259,7 +259,13 @@ router.get('/owned-consoles', authRequired, async (req, res) => {
 // profile); writable only by the owner, and only from the app - the website has no editor for it.
 
 // GET /api/my-space/:consoleId — optionally ?userId= to read someone else's, read-only
-router.get('/my-space/:consoleId', async (req, res) => {
+//
+// authOptional, not nothing: the route stays public so a profile page can show someone's My Space
+// without a session, but it has to decode a token when one IS sent. Without it req.user was never
+// populated, so the app - which asks about its own space and sends no userId - got a 400 every
+// time and fell back to empty defaults. Owned consoles looked unticked and saved models looked
+// lost, while the database had both all along.
+router.get('/my-space/:consoleId', authOptional, async (req, res) => {
     const consoleId = String(req.params.consoleId || '').trim();
     const userId = parseInt(req.query.userId, 10) || (req.user && req.user.id);
     if (!consoleId) return res.status(400).json({ success: false, error: 'Console invalid.' });
