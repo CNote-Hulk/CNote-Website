@@ -405,10 +405,17 @@ router.put('/owned-consoles', authRequired, async (req, res) => {
         // re-inserting, so without carrying model_code across, editing the owned list from
         // anywhere would quietly wipe every "which model I own" the user had set in My Space.
         const existingRes = await pool.query(
-            'SELECT console_id, model_code FROM user_owned_consoles WHERE user_id = $1', [req.user.id]
+            'SELECT console_id, model_code, position FROM user_owned_consoles WHERE user_id = $1',
+            [req.user.id]
         );
         const existingIds = new Set(existingRes.rows.map(r => r.console_id));
         const existingModels = new Map(existingRes.rows.map(r => [r.console_id, r.model_code]));
+        // Same reason model_code is carried across this delete/re-insert: the ranking the user
+        // dragged into place is theirs, and ticking one more box in Settings is not a request to
+        // throw it away. Anything new goes to the end, behind everything already ranked.
+        const existingOrder = new Map(existingRes.rows.map(r => [r.console_id, r.position]));
+        let nextPosition = existingRes.rows.reduce(
+            (max, r) => Math.max(max, Number.isInteger(r.position) ? r.position + 1 : 0), 0);
 
         await pool.query('DELETE FROM user_owned_consoles WHERE user_id = $1', [req.user.id]);
 
@@ -416,9 +423,12 @@ router.put('/owned-consoles', authRequired, async (req, res) => {
         for (const consoleId of consoles) {
             const id = String(consoleId || '').trim();
             if (!id) continue;
+            const position = Number.isInteger(existingOrder.get(id))
+                ? existingOrder.get(id)
+                : nextPosition++;
             await pool.query(
-                'INSERT INTO user_owned_consoles (user_id, console_id, model_code) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING',
-                [req.user.id, id, existingModels.get(id) || null]
+                'INSERT INTO user_owned_consoles (user_id, console_id, model_code, position) VALUES ($1, $2, $3, $4) ON CONFLICT DO NOTHING',
+                [req.user.id, id, existingModels.get(id) || null, position]
             );
             if (!existingIds.has(id)) newlyAdded.push(id);
         }
