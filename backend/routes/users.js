@@ -90,8 +90,15 @@ router.get('/users/:username', async (req, res) => {
 
         const user = result.rows[0];
 
-        const favResult = await pool.query('SELECT console_id FROM user_favorites WHERE user_id = $1', [user.id]);
-        const ownedResult = await pool.query('SELECT console_id FROM user_owned_consoles WHERE user_id = $1', [user.id]);
+        // Ranked, not just listed: the order is the user's own, dragged into place, and the
+        // first entry is what the profile card shows. NULLS LAST so a row that predates the
+        // column falls in behind the ranked ones instead of jumping to the top.
+        const favResult = await pool.query(
+            'SELECT console_id FROM user_favorites WHERE user_id = $1 ORDER BY position NULLS LAST, id',
+            [user.id]);
+        const ownedResult = await pool.query(
+            'SELECT console_id FROM user_owned_consoles WHERE user_id = $1 ORDER BY position NULLS LAST, id',
+            [user.id]);
         const friendCount = await pool.query(
             'SELECT COUNT(*) AS count FROM friends WHERE user1_id = $1 OR user2_id = $1',
             [user.id]
@@ -293,6 +300,37 @@ router.get('/my-space/:consoleId', authOptional, async (req, res) => {
         console.error('My space GET error:', err);
         res.status(500).json({ success: false, error: 'Internal error.' });
     }
+});
+
+// PUT /api/my-space/order — drag-to-rank one of the two collections.
+//
+// The whole list arrives at once, unlike the per-field writes elsewhere in My Space: a reorder
+// IS the whole list, there is no smaller unit of it, and sending "console X moved to 3" would
+// still need every other row rewritten to mean anything.
+//
+// Ids are matched against what the user already has rather than inserted, so a list containing
+// something they do not own reorders nothing instead of silently granting it.
+router.put('/my-space/order', authRequired, async (req, res) => {
+	const list = String(req.body.list || '').trim();
+	const ids = Array.isArray(req.body.consoleIds) ? req.body.consoleIds : null;
+	const table = list === 'owned' ? 'user_owned_consoles'
+		: list === 'favourite' ? 'user_favorites' : null;
+	if (!table) return res.status(400).json({ success: false, error: 'Lista invalida.' });
+	if (!ids) return res.status(400).json({ success: false, error: 'Ordine invalida.' });
+
+	try {
+		const clean = ids.map(id => String(id).trim()).filter(Boolean);
+		await pool.query(
+			`UPDATE ${table} t SET position = v.pos
+			   FROM (SELECT * FROM UNNEST($2::text[], $3::int[]) AS u(console_id, pos)) v
+			  WHERE t.user_id = $1 AND t.console_id = v.console_id`,
+			[req.user.id, clean, clean.map((_, i) => i)]
+		);
+		res.json({ success: true });
+	} catch (err) {
+		console.error('My space order error:', err);
+		res.status(500).json({ success: false, error: 'Internal error.' });
+	}
 });
 
 // PUT /api/my-space/:consoleId — owned / favourite / which revision. App-only by design.
