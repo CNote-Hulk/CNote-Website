@@ -14,6 +14,7 @@ const fs = require('fs');
 const pool = require('../db');
 const { authRequired } = require('../middleware/auth');
 const { awardXP, getLevelFromXP } = require('../utils/gamification');
+const { publicUrlForKey } = require('../utils/objectStorage');
 
 const router = express.Router();
 
@@ -252,6 +253,84 @@ router.get('/owned-consoles', authRequired, async (req, res) => {
     }
 });
 
+// ── My Space ────────────────────────────────────────────
+// The per-user half of a console page: do I own it, is it a favourite, which hardware revision is
+// mine, and my own photos of it. Readable for any user (the website shows it read-only on a public
+// profile); writable only by the owner, and only from the app - the website has no editor for it.
+
+// GET /api/my-space/:consoleId — optionally ?userId= to read someone else's, read-only
+router.get('/my-space/:consoleId', async (req, res) => {
+    const consoleId = String(req.params.consoleId || '').trim();
+    const userId = parseInt(req.query.userId, 10) || (req.user && req.user.id);
+    if (!consoleId) return res.status(400).json({ success: false, error: 'Console invalid.' });
+    if (!userId) return res.status(400).json({ success: false, error: 'User necunoscut.' });
+
+    try {
+        const [owned, favourite, photos] = await Promise.all([
+            pool.query('SELECT model_code FROM user_owned_consoles WHERE user_id = $1 AND console_id = $2',
+                [userId, consoleId]),
+            pool.query('SELECT 1 FROM user_favorites WHERE user_id = $1 AND console_id = $2',
+                [userId, consoleId]),
+            pool.query('SELECT id, image_key FROM user_console_photos WHERE user_id = $1 AND console_id = $2 ORDER BY created_at',
+                [userId, consoleId]),
+        ]);
+        res.json({
+            success: true,
+            owned: owned.rowCount > 0,
+            favourite: favourite.rowCount > 0,
+            modelCode: owned.rowCount > 0 ? owned.rows[0].model_code : null,
+            photos: photos.rows.map(r => ({ id: r.id, url: publicUrlForKey(r.image_key) })),
+        });
+    } catch (err) {
+        console.error('My space GET error:', err);
+        res.status(500).json({ success: false, error: 'Internal error.' });
+    }
+});
+
+// PUT /api/my-space/:consoleId — owned / favourite / which revision. App-only by design.
+router.put('/my-space/:consoleId', authRequired, async (req, res) => {
+    const consoleId = String(req.params.consoleId || '').trim();
+    if (!consoleId) return res.status(400).json({ success: false, error: 'Console invalid.' });
+    const { owned, favourite, modelCode } = req.body;
+
+    try {
+        if (typeof owned === 'boolean') {
+            if (owned) {
+                await pool.query(
+                    'INSERT INTO user_owned_consoles (user_id, console_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
+                    [req.user.id, consoleId]
+                );
+            } else {
+                await pool.query('DELETE FROM user_owned_consoles WHERE user_id = $1 AND console_id = $2',
+                    [req.user.id, consoleId]);
+            }
+        }
+        if (typeof favourite === 'boolean') {
+            if (favourite) {
+                await pool.query(
+                    'INSERT INTO user_favorites (user_id, console_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
+                    [req.user.id, consoleId]
+                );
+            } else {
+                await pool.query('DELETE FROM user_favorites WHERE user_id = $1 AND console_id = $2',
+                    [req.user.id, consoleId]);
+            }
+        }
+        if (modelCode !== undefined) {
+            // Only meaningful on a console you own, and the row may not exist yet if this call did
+            // not also set owned - an UPDATE that matches nothing is the correct no-op here.
+            await pool.query(
+                'UPDATE user_owned_consoles SET model_code = $3 WHERE user_id = $1 AND console_id = $2',
+                [req.user.id, consoleId, modelCode ? String(modelCode).trim() : null]
+            );
+        }
+        res.json({ success: true });
+    } catch (err) {
+        console.error('My space PUT error:', err);
+        res.status(500).json({ success: false, error: 'Internal error.' });
+    }
+});
+
 // PUT /api/owned-consoles — Replace the user’s entire owned-consoles list
 router.put('/owned-consoles', authRequired, async (req, res) => {
     try {
@@ -260,9 +339,15 @@ router.put('/owned-consoles', authRequired, async (req, res) => {
             return res.status(400).json({ success: false, error: 'Format invalid.' });
         }
 
-        // Find which consoles are newly added (not already owned)
-        const existingRes = await pool.query('SELECT console_id FROM user_owned_consoles WHERE user_id = $1', [req.user.id]);
+        // Find which consoles are newly added (not already owned), and remember which hardware
+        // revision each one was marked as. This endpoint replaces the whole list by deleting and
+        // re-inserting, so without carrying model_code across, editing the owned list from
+        // anywhere would quietly wipe every "which model I own" the user had set in My Space.
+        const existingRes = await pool.query(
+            'SELECT console_id, model_code FROM user_owned_consoles WHERE user_id = $1', [req.user.id]
+        );
         const existingIds = new Set(existingRes.rows.map(r => r.console_id));
+        const existingModels = new Map(existingRes.rows.map(r => [r.console_id, r.model_code]));
 
         await pool.query('DELETE FROM user_owned_consoles WHERE user_id = $1', [req.user.id]);
 
@@ -271,8 +356,8 @@ router.put('/owned-consoles', authRequired, async (req, res) => {
             const id = String(consoleId || '').trim();
             if (!id) continue;
             await pool.query(
-                'INSERT INTO user_owned_consoles (user_id, console_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
-                [req.user.id, id]
+                'INSERT INTO user_owned_consoles (user_id, console_id, model_code) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING',
+                [req.user.id, id, existingModels.get(id) || null]
             );
             if (!existingIds.has(id)) newlyAdded.push(id);
         }
