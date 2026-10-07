@@ -266,10 +266,12 @@ router.get('/my-space/:consoleId', async (req, res) => {
     if (!userId) return res.status(400).json({ success: false, error: 'User necunoscut.' });
 
     try {
-        const [owned, favourite, photos] = await Promise.all([
-            pool.query('SELECT model_code FROM user_owned_consoles WHERE user_id = $1 AND console_id = $2',
+        const [owned, favourite, models, photos] = await Promise.all([
+            pool.query('SELECT 1 FROM user_owned_consoles WHERE user_id = $1 AND console_id = $2',
                 [userId, consoleId]),
             pool.query('SELECT 1 FROM user_favorites WHERE user_id = $1 AND console_id = $2',
+                [userId, consoleId]),
+            pool.query('SELECT model_code FROM user_owned_models WHERE user_id = $1 AND console_id = $2 ORDER BY created_at',
                 [userId, consoleId]),
             pool.query('SELECT id, image_key FROM user_console_photos WHERE user_id = $1 AND console_id = $2 ORDER BY created_at',
                 [userId, consoleId]),
@@ -278,7 +280,7 @@ router.get('/my-space/:consoleId', async (req, res) => {
             success: true,
             owned: owned.rowCount > 0,
             favourite: favourite.rowCount > 0,
-            modelCode: owned.rowCount > 0 ? owned.rows[0].model_code : null,
+            modelCodes: models.rows.map(r => r.model_code),
             photos: photos.rows.map(r => ({ id: r.id, url: publicUrlForKey(r.image_key) })),
         });
     } catch (err) {
@@ -291,7 +293,7 @@ router.get('/my-space/:consoleId', async (req, res) => {
 router.put('/my-space/:consoleId', authRequired, async (req, res) => {
     const consoleId = String(req.params.consoleId || '').trim();
     if (!consoleId) return res.status(400).json({ success: false, error: 'Console invalid.' });
-    const { owned, favourite, modelCode } = req.body;
+    const { owned, favourite, modelCode, modelOwned } = req.body;
 
     try {
         if (typeof owned === 'boolean') {
@@ -316,13 +318,28 @@ router.put('/my-space/:consoleId', authRequired, async (req, res) => {
                     [req.user.id, consoleId]);
             }
         }
-        if (modelCode !== undefined) {
-            // Only meaningful on a console you own, and the row may not exist yet if this call did
-            // not also set owned - an UPDATE that matches nothing is the correct no-op here.
-            await pool.query(
-                'UPDATE user_owned_consoles SET model_code = $3 WHERE user_id = $1 AND console_id = $2',
-                [req.user.id, consoleId, modelCode ? String(modelCode).trim() : null]
-            );
+        // One revision at a time, as a toggle: the client sends the chip that was tapped and
+        // whether it is now on, so two devices editing different revisions cannot overwrite each
+        // other the way sending the whole list would.
+        if (modelCode) {
+            const code = String(modelCode).trim();
+            if (code && modelOwned === false) {
+                await pool.query(
+                    'DELETE FROM user_owned_models WHERE user_id = $1 AND console_id = $2 AND model_code = $3',
+                    [req.user.id, consoleId, code]
+                );
+            } else if (code) {
+                await pool.query(
+                    'INSERT INTO user_owned_models (user_id, console_id, model_code) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING',
+                    [req.user.id, consoleId, code]
+                );
+            }
+        }
+        // Revisions only mean anything while you own the console; dropping ownership clears them
+        // rather than leaving orphans that reappear if you ever tick it again.
+        if (owned === false) {
+            await pool.query('DELETE FROM user_owned_models WHERE user_id = $1 AND console_id = $2',
+                [req.user.id, consoleId]);
         }
         res.json({ success: true });
     } catch (err) {
