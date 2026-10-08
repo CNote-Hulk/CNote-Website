@@ -443,31 +443,36 @@ const t = key => I18nModule.t(key);
                     }
                 } catch { /* ignore */ }
 
-                // Favorite consoles - use favorite_console_ids from new table, fallback to CSV
-                const favContainer = document.getElementById('user-favorite-consoles');
-                const favIds = profile.favorite_console_ids || [];
-                const favCsv = (profile.favorite_consoles || '').split(',').map(s => s.trim()).filter(Boolean);
-                const allFavs = [...new Set([...favIds, ...favCsv])];
+                // Both lists are RANKINGS, dragged into order in the app, and the server already
+                // returns them ordered by `position`. So the ids win outright and the CSV column is
+                // only a fallback for when there are none - merging the two (which this did) pushed
+                // unranked leftovers onto the end and quietly broke the order the user arranged.
+                const rankedList = (ids, csv) => (ids && ids.length)
+                    ? ids
+                    : String(csv || '').split(',').map(x => x.trim()).filter(Boolean);
 
-                if (allFavs.length > 0) {
-                    favContainer.innerHTML = allFavs.map(id => {
-                        const name = consoleNames[id] || id.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-                        return `<span class="profile-console-tag">${escapeHtml(name)}</span>`;
-                    }).join('');
-                }
+                const consoleLabel = id =>
+                    consoleNames[id] || id.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+
+                // Each console opens THIS user's My Space for it, not the encyclopedia entry: from
+                // someone's collection the interesting page is what they have for that console.
+                const rankedMarkup = list => list.map((id, i) => {
+                    const href = `/html/pages/consoles/${encodeURIComponent(id)}.html`
+                        + `?u=${encodeURIComponent(profile.username)}&tab=myspace`;
+                    return `<a href="${href}" class="profile-console-tag profile-console-tag--ranked">`
+                        + `<span class="profile-console-rank">${i + 1}</span>`
+                        + `${escapeHtml(consoleLabel(id))}</a>`;
+                }).join('');
+
+                // Favorite consoles
+                const favContainer = document.getElementById('user-favorite-consoles');
+                const allFavs = rankedList(profile.favorite_console_ids, profile.favorite_consoles);
+                if (allFavs.length > 0) favContainer.innerHTML = rankedMarkup(allFavs);
 
                 // Owned consoles
                 const ownedContainer = document.getElementById('user-owned-consoles');
-                const ownedIds = profile.owned_console_ids || [];
-                const ownedCsv = (profile.owned_consoles || '').split(',').map(s => s.trim()).filter(Boolean);
-                const allOwned = [...new Set([...ownedIds, ...ownedCsv])];
-
-                if (allOwned.length > 0) {
-                    ownedContainer.innerHTML = allOwned.map(id => {
-                        const name = consoleNames[id] || id.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-                        return `<span class="profile-console-tag">${escapeHtml(name)}</span>`;
-                    }).join('');
-                }
+                const allOwned = rankedList(profile.owned_console_ids, profile.owned_consoles);
+                if (allOwned.length > 0) ownedContainer.innerHTML = rankedMarkup(allOwned);
 
                 // Friend button
                 const actionsEl = document.getElementById('user-profile-actions');

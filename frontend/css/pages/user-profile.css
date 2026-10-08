@@ -1035,3 +1035,36 @@ a.user-social-link:hover {
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
 }
+
+/* ── Ranked console tags (leaderboard) ──────────────────────────────────────
+   Both lists are an order the user dragged into place in the app, so the
+   position is shown rather than merely implied, and each tag opens THAT user's
+   My Space for the console - from someone's collection the interesting page is
+   what they have for it, not the encyclopedia entry. These were already
+   styled with a :hover but were inert <span>s; they are <a>s now. */
+.up-consoles-card .profile-console-tag--ranked {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    text-decoration: none;
+}
+
+.up-consoles-card .profile-console-rank {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 17px;
+    height: 17px;
+    padding: 0 4px;
+    border-radius: 999px;
+    background: rgba(var(--up-accent-rgb), 0.18);
+    font-size: 0.65rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+/* Top of the ranking reads as the top of the ranking. */
+.up-consoles-card .profile-console-tag--ranked:first-child .profile-console-rank {
+    background: var(--up-accent);
+    color: var(--dark-bg, #14110e);
+}
