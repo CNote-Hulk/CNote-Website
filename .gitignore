@@ -69,3 +69,8 @@ coverage/
 *.db
 *.sqlite
 *.sqlite3
+
+# Backups of .env. A copy of the environment file is still the environment file -
+# this one was caught only by GitHub's push protection, which is too late to rely on.
+.env.bak*
+*.env.bak*

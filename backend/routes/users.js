@@ -260,6 +260,25 @@ router.get('/owned-consoles', authRequired, async (req, res) => {
     }
 });
 
+// `users.owned_consoles` is a comma-separated mirror of `user_owned_consoles`, kept for the older
+// readers that still fall back to it. It had drifted badly: Settings wrote ONLY the text column
+// (through PUT /api/me) while My Space, the profile and the Collection page all read ONLY the
+// table - so ticking a console in Settings changed nothing anywhere the user could see, and a
+// console added from My Space never appeared in Settings.
+//
+// Rather than teach each writer to update both, every mutation of the table calls this and the
+// text column is derived from it. A mirror that gets rebuilt cannot drift; two writers kept in
+// step by hand eventually always do.
+async function syncOwnedCsv(userId) {
+    await pool.query(
+        `UPDATE users SET owned_consoles = COALESCE((
+           SELECT string_agg(console_id, ',' ORDER BY position NULLS LAST, id)
+             FROM user_owned_consoles WHERE user_id = $1
+         ), '') WHERE id = $1`,
+        [userId]
+    );
+}
+
 // ── My Space ────────────────────────────────────────────
 // The per-user half of a console page: do I own it, is it a favourite, which hardware revision is
 // mine, and my own photos of it. Readable for any user (the website shows it read-only on a public
@@ -446,6 +465,7 @@ router.put('/my-space/:consoleId', authRequired, async (req, res) => {
             await pool.query('DELETE FROM user_owned_models WHERE user_id = $1 AND console_id = $2',
                 [req.user.id, consoleId]);
         }
+        if (typeof owned === 'boolean') await syncOwnedCsv(req.user.id);
         res.json({ success: true });
     } catch (err) {
         console.error('My space PUT error:', err);
@@ -494,6 +514,7 @@ router.put('/owned-consoles', authRequired, async (req, res) => {
             if (!existingIds.has(id)) newlyAdded.push(id);
         }
 
+        await syncOwnedCsv(req.user.id);
         res.json({ success: true });
 
         // Award XP for each newly added console (fire-and-forget)
