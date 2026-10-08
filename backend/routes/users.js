@@ -481,37 +481,51 @@ router.put('/owned-consoles', authRequired, async (req, res) => {
             return res.status(400).json({ success: false, error: 'Format invalid.' });
         }
 
-        // Find which consoles are newly added (not already owned), and remember which hardware
-        // revision each one was marked as. This endpoint replaces the whole list by deleting and
-        // re-inserting, so without carrying model_code across, editing the owned list from
-        // anywhere would quietly wipe every "which model I own" the user had set in My Space.
+        // This route had been broken since hardware revisions moved out of this table: it still
+        // selected and re-inserted `model_code`, a column the `owned_console_models_many` migration
+        // dropped when it created `user_owned_models`. Every call 500'd. Nothing noticed, because
+        // nothing called it - Settings was writing the `users.owned_consoles` text column instead.
+        //
+        // Revisions now live in their own table, which this route does not delete, so they survive
+        // the replace below on their own and need no carrying across.
         const existingRes = await pool.query(
-            'SELECT console_id, model_code, position FROM user_owned_consoles WHERE user_id = $1',
+            'SELECT console_id, position FROM user_owned_consoles WHERE user_id = $1',
             [req.user.id]
         );
         const existingIds = new Set(existingRes.rows.map(r => r.console_id));
-        const existingModels = new Map(existingRes.rows.map(r => [r.console_id, r.model_code]));
-        // Same reason model_code is carried across this delete/re-insert: the ranking the user
-        // dragged into place is theirs, and ticking one more box in Settings is not a request to
-        // throw it away. Anything new goes to the end, behind everything already ranked.
+        // The ranking the user dragged into place is theirs, and ticking one more box in Settings
+        // is not a request to throw it away. Anything new goes to the end, behind what is ranked.
         const existingOrder = new Map(existingRes.rows.map(r => [r.console_id, r.position]));
         let nextPosition = existingRes.rows.reduce(
             (max, r) => Math.max(max, Number.isInteger(r.position) ? r.position + 1 : 0), 0);
 
         await pool.query('DELETE FROM user_owned_consoles WHERE user_id = $1', [req.user.id]);
 
+        const keep = [];
         const newlyAdded = [];
         for (const consoleId of consoles) {
             const id = String(consoleId || '').trim();
-            if (!id) continue;
+            if (!id || keep.includes(id)) continue;
             const position = Number.isInteger(existingOrder.get(id))
                 ? existingOrder.get(id)
                 : nextPosition++;
             await pool.query(
-                'INSERT INTO user_owned_consoles (user_id, console_id, model_code, position) VALUES ($1, $2, $3, $4) ON CONFLICT DO NOTHING',
-                [req.user.id, id, existingModels.get(id) || null, position]
+                'INSERT INTO user_owned_consoles (user_id, console_id, position) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING',
+                [req.user.id, id, position]
             );
+            keep.push(id);
             if (!existingIds.has(id)) newlyAdded.push(id);
+        }
+
+        // Unticking a console drops its revisions with it - the same rule the My Space toggle
+        // applies. A revision of a console you no longer own is an orphan that reappears, looking
+        // like the app remembered something you deleted.
+        const dropped = [...existingIds].filter(id => !keep.includes(id));
+        if (dropped.length) {
+            await pool.query(
+                'DELETE FROM user_owned_models WHERE user_id = $1 AND console_id = ANY($2::text[])',
+                [req.user.id, dropped]
+            );
         }
 
         await syncOwnedCsv(req.user.id);
