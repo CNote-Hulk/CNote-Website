@@ -25,6 +25,7 @@
 @import url('./components/index-cards.css');
 @import url('./components/cookies.css');
 @import url('./components/avatar-crop.css');
+@import url('./components/image-viewer.css?v=20261009');
 
 /* === UTILITIES === */
 @import url('./utilities/animations.css');

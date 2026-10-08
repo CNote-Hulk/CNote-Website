@@ -1,0 +1,56 @@
+/* ── Full-screen image viewer ───────────────────────────────────────────────
+   One copy, used wherever a photo is worth looking at closely: console tutorial
+   steps and My Space photos today. Was `.tutorial-img-viewer` inside
+   console-care.css, which only console-model.html links - so a console page
+   could not have used it without a second copy of the same four rules.
+
+   A plain fixed overlay rather than a <dialog>: edge-to-edge and no UA chrome
+   to fight, same reason community.js's DM viewer is built this way. */
+
+.cn-img-viewer {
+    position: fixed;
+    inset: 0;
+    z-index: 3000;
+    background: rgba(0, 0, 0, 0.94);
+    display: flex;
+    flex-direction: column;
+}
+
+.cn-img-viewer__close {
+    position: absolute;
+    top: calc(16px + env(safe-area-inset-top, 0px));
+    right: 18px;
+    z-index: 1;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.14);
+    color: #fff;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.cn-img-viewer__stage {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    touch-action: none;
+}
+
+.cn-img-viewer__img {
+    max-width: 92%;
+    max-height: 88%;
+    user-select: none;
+    -webkit-user-drag: none;
+    will-change: transform;
+    cursor: grab;
+}
+
+/* Anything that opens it should look like it does. */
+.cn-zoomable { cursor: zoom-in; }

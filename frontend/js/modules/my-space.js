@@ -14,6 +14,7 @@
  */
 import { API_BASE_URL } from '../config.js';
 import { I18nModule } from './i18n.js?v=20261005b';
+import { openImageViewer } from './image-viewer.js?v=20261009';
 
 const t = (key, fallback) => {
     const value = I18nModule && typeof I18nModule.t === 'function' ? I18nModule.t(key) : null;
@@ -87,10 +88,12 @@ function photos(list) {
     const grid = el('div', 'myspace-photos');
     list.forEach(photo => {
         if (!photo || !photo.url) return;
-        const img = el('img', 'myspace-photo');
+        const img = el('img', 'myspace-photo cn-zoomable');
         img.src = photo.url;
         img.loading = 'lazy';
         img.alt = '';
+        // A thumbnail of someone's console is a reminder it exists, not a look at it.
+        img.addEventListener('click', () => openImageViewer(photo.url, ''));
         grid.appendChild(img);
     });
     block.appendChild(grid);

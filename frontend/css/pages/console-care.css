@@ -591,50 +591,8 @@
 /* Tutorial step photo zoom — trimmed copy of community-hub.css's
    .hub-img-viewer* (no reply/forward chrome, this page doesn't link
    community-hub.css). See console-model.js's openTutorialImageViewer(). */
-.tutorial-img-viewer {
-    position: fixed;
-    inset: 0;
-    z-index: 3000;
-    background: rgba(0, 0, 0, 0.94);
-    display: flex;
-    flex-direction: column;
-}
-
-.tutorial-img-viewer__close {
-    position: absolute;
-    top: calc(16px + env(safe-area-inset-top, 0px));
-    right: 18px;
-    z-index: 1;
-    width: 38px;
-    height: 38px;
-    border-radius: 50%;
-    border: none;
-    background: rgba(255, 255, 255, 0.14);
-    color: #fff;
-    font-size: 1.1rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-}
-
-.tutorial-img-viewer__stage {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    touch-action: none;
-}
-
-.tutorial-img-viewer__img {
-    max-width: 92%;
-    max-height: 88%;
-    user-select: none;
-    -webkit-user-drag: none;
-    will-change: transform;
-    cursor: grab;
-}
+/* The image viewer moved to css/components/image-viewer.css (2026-10-09) - it is used by My
+   Space on the console pages too, which do not link this stylesheet. */
 
 .tutorial-selectors {
     display: flex;

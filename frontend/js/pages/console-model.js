@@ -1,5 +1,6 @@
 import { MOD_OPTIONS, flashTypesForModel, loadModels, invalidateModelsCache } from '../data/console-models.js?v=20260909d';
 import { I18nModule } from '../modules/i18n.js?v=20261005b';
+import { openImageViewer } from '../modules/image-viewer.js?v=20261009';
 import { AuthModule } from '../modules/auth.js?v=20261005';
 import { API_BASE_URL } from '../config.js';
 
@@ -45,12 +46,12 @@ document.addEventListener('click', (e) => {
 // document too, same reasoning as #model-notfound-link above.
 document.addEventListener('click', (e) => {
     const img = e.target.closest?.('.tutorial-step__image[data-zoomable]');
-    if (img) openTutorialImageViewer(img.src, img.alt);
+    if (img) openImageViewer(img.src, img.alt);
 });
 document.addEventListener('keydown', (e) => {
     if (e.key !== 'Enter' && e.key !== ' ') return;
     const img = e.target.closest?.('.tutorial-step__image[data-zoomable]');
-    if (img) { e.preventDefault(); openTutorialImageViewer(img.src, img.alt); }
+    if (img) { e.preventDefault(); openImageViewer(img.src, img.alt); }
 });
 
 async function api(method, path, body) {
@@ -228,79 +229,6 @@ function initModelAdminEditButton() {
     btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor" shape-rendering="crispEdges" data-px="89"><path d="M4 16H6V18H8V20H10V22H2V14H4V16ZM12 20H10V18H12V20ZM14 18H12V16H14V18ZM10 16H8V14H10V16ZM16 16H14V14H16V16ZM6 14H4V12H6V14ZM12 14H10V12H12V14ZM18 14H16V12H18V14ZM8 12H6V10H8V12ZM14 12H12V10H14V12ZM20 12H18V10H20V12ZM10 10H8V8H10V10ZM18 10H16V8H18V10ZM22 10H20V8H22V10ZM12 8H10V6H12V8ZM16 8H14V6H16V8ZM20 8H18V6H20V8ZM14 6H12V4H14V6ZM18 6H16V4H18V6ZM16 4H14V2H16V4Z"/></svg><span>${I18nModule.t('model_edit_btn')}</span>`;
     btn.addEventListener('click', openModelEditor);
     anchor.after(btn);
-}
-
-/** Full-screen pinch-zoom/pan viewer for a tutorial step photo — trimmed copy of
- * community.js's openImageViewer() (DM image viewer) with the reply/forward
- * chrome stripped out, since a step photo has neither. Plain fixed-position
- * overlay, not a dialog — see that function's own comment for why. */
-function openTutorialImageViewer(url, alt) {
-    document.querySelector('.tutorial-img-viewer')?.remove();
-    const viewer = document.createElement('div');
-    viewer.className = 'tutorial-img-viewer';
-    viewer.innerHTML = `
-        <button type="button" class="tutorial-img-viewer__close" aria-label="${escapeHtml(I18nModule.t('dm_close_viewer'))}">✕</button>
-        <div class="tutorial-img-viewer__stage" id="tiv-stage">
-            <img class="tutorial-img-viewer__img" id="tiv-img" src="${escapeHtml(url)}" alt="${escapeHtml(alt || '')}" draggable="false">
-        </div>`;
-    document.body.appendChild(viewer);
-
-    const close = () => { document.removeEventListener('keydown', onKey); viewer.remove(); };
-    function onKey(e) { if (e.key === 'Escape') close(); }
-    document.addEventListener('keydown', onKey);
-    viewer.querySelector('.tutorial-img-viewer__close').addEventListener('click', close);
-    viewer.addEventListener('click', e => { if (e.target === viewer) close(); });
-
-    const img = viewer.querySelector('#tiv-img');
-    const stage = viewer.querySelector('#tiv-stage');
-    let scale = 1, tx = 0, ty = 0, dragging = false, lastX = 0, lastY = 0, dismissDrag = 0;
-
-    function applyTransform() { img.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`; }
-    function clampPan() {
-        const maxX = Math.max(0, (img.clientWidth * scale - stage.clientWidth) / 2);
-        const maxY = Math.max(0, (img.clientHeight * scale - stage.clientHeight) / 2);
-        tx = Math.min(maxX, Math.max(-maxX, tx));
-        ty = Math.min(maxY, Math.max(-maxY, ty));
-    }
-
-    stage.addEventListener('wheel', e => {
-        e.preventDefault();
-        scale = Math.min(4, Math.max(1, scale - e.deltaY * 0.0015));
-        if (scale === 1) { tx = 0; ty = 0; }
-        clampPan();
-        applyTransform();
-    }, { passive: false });
-
-    stage.addEventListener('dblclick', () => {
-        scale = scale > 1 ? 1 : 2;
-        tx = 0; ty = 0;
-        applyTransform();
-    });
-
-    stage.addEventListener('pointerdown', e => {
-        dragging = true; dismissDrag = 0;
-        lastX = e.clientX; lastY = e.clientY;
-        stage.setPointerCapture(e.pointerId);
-    });
-    stage.addEventListener('pointermove', e => {
-        if (!dragging) return;
-        const dx = e.clientX - lastX, dy = e.clientY - lastY;
-        lastX = e.clientX; lastY = e.clientY;
-        if (scale > 1) {
-            tx += dx; ty += dy;
-            clampPan();
-            applyTransform();
-        } else if (dy > 0 || dismissDrag > 0) {
-            dismissDrag += dy;
-            viewer.style.opacity = String(Math.max(0.4, 1 - dismissDrag / 300));
-            img.style.transform = `translateY(${dismissDrag}px)`;
-        }
-    });
-    stage.addEventListener('pointerup', () => {
-        dragging = false;
-        if (scale === 1 && dismissDrag > 120) { close(); return; }
-        if (scale === 1) { dismissDrag = 0; viewer.style.opacity = '1'; applyTransform(); }
-    });
 }
 
 // ── Shared read-view markup, used by both the disassembly tutorial and the
