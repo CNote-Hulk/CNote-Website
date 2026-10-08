@@ -1,7 +1,7 @@
 # CNote-Website — Status
 
 Current-state snapshot — separate from INDEX.md (which is the complete file map). Updated whenever
-the project's state changes meaningfully, not on every commit. Last updated 2026-10-06 (Care Guide SCPH-70004; before that 2026-10-05 brand cleanup + generations; before that 2026-10-04 Instagram
+the project's state changes meaningfully, not on every commit. Last updated 2026-10-08 (games catalogue + box art + My Space read-only on the site); before that: 2026-10-06 (Care Guide SCPH-70004; before that 2026-10-05 brand cleanup + generations; before that 2026-10-04 Instagram
 notebook template; previous: 2026-09-23 Care Guide SCPH-39003 pass), grounded in `git log` (most recent commit `b509ede8`, 2026-09-22) and CLAUDE.md's
 own notes.
 
@@ -82,6 +82,27 @@ own notes.
   `git log -- INDEX.md` for prior sweeps) and split this status snapshot out of INDEX.md per the
   updated CLAUDE.md Rules.
 
+- **Games catalogue** (2026-10-07/08) — 30,963 games and 62,757 game↔console links, seeded from
+  Wikidata (CC0) rather than from a ROM site, whose listing is a by-product of distribution with no
+  licence, no stable identifiers and no metadata past a title. `routes/games.js` serves it paged and
+  searchable; `user_games` holds each person's shelf, scoped to the console page it was added from,
+  so a cross-platform title can sit on the PS2 shelf and the Xbox shelf separately.
+- **Box art** (2026-10-08) — 46,456 of 62,757 releases (74%), from two sources because they cover
+  different eras: libretro mirrors what emulators support (8,500 scans for the PS2, **twelve** for
+  the whole Xbox 360), IGDB is the other way round. `game_platforms.cover_key` carries provenance
+  (`libretro:`/`igdb:`/an R2 key of our own) and lives per-platform, not per-game: the same title
+  shipped in a blue PS2 case and a green Xbox one, and a shelf showing the wrong box stops being a
+  shelf you can read at a glance. Covers mirror themselves into R2 on first request rather than by
+  bulk copy — several GB most of which nobody would open.
+- **My Space** (2026-10-06/08) — the per-user half of a console page: owned/favourite, which hardware
+  revision you own, your own photos, your games. Writable only from the app, by design. On the site
+  it is an About | My Space tab pair in the console hero, strictly read-only (`js/modules/my-space.js`).
+- **Two owned-consoles bugs** (2026-10-08) — Settings wrote `users.owned_consoles` (a text column)
+  while everything else read `user_owned_consoles` (the table); they had diverged, five entries
+  against six. The column is now derived from the table on every write. Fixing that exposed the
+  second: `PUT /api/owned-consoles` had been 500ing since `owned_console_models_many` dropped the
+  `model_code` column it still referenced — unnoticed because nothing called it.
+
 ## Următorii pași (Next)
 
 - Instagram: produce posts with the notebook template (needs this branch merged + deployed to be
@@ -95,6 +116,13 @@ own notes.
   no action planned unless Sony/eBay actually responds.
 
 ## Probleme deschise (Open problems)
+
+- **Box art for the modern consoles leans entirely on IGDB**, which needs a Twitch application's
+  `IGDB_CLIENT_ID`/`IGDB_CLIENT_SECRET`. Those are in `backend/.env` locally; production has its own.
+- **Wikidata still costs us titles**: 1,268 ids carry no English label and no enwiki article, so they
+  are skipped rather than named by guesswork.
+- **R2 mirroring is lazy**, so `cover_key` stays `libretro:`/`igdb:` until someone opens that cover.
+  Nothing to run — just worth watching that the share of un-mirrored keys falls over time.
 
 - **Cache-busting discipline is a recurring bug class** (see CLAUDE.md Gotchas): most JS/CSS files
   still have no `?v=` param at all; every file that gets bumped to fix a caching bug is one-off, not
