@@ -9,6 +9,7 @@ import { AchievementsModule } from '../modules/achievements.js';
 import { AuthModule } from '../modules/auth.js?v=20261005';
 import { I18nModule } from '../modules/i18n.js?v=20261005b';
 import { API_BASE_URL } from '../config.js';
+import { MySpaceModule } from '../modules/my-space.js?v=20261008';
 
 /** Remove leftover Chrome UI elements from page template */
 function cleanupConsolePageChrome() {
@@ -1160,6 +1161,9 @@ async function init() {
     renderSpecs(currentConsole);
     renderRatingWidget(consoleId);
     initFavoriteButton(consoleId);
+    // Read-only here by design: the app is the only editor of My Space. Not awaited - it makes
+    // two network calls and the page should not hold its first paint for someone else's shelf.
+    MySpaceModule.render(consoleId);
     initAdminEditButton();
     injectStructuredData(currentConsole, consoleId);
 
@@ -1193,6 +1197,7 @@ async function init() {
         initAdminEditButton();
         injectStructuredData(currentConsole, consoleId);
         loadRating(consoleId);
+        MySpaceModule.render(consoleId);
     });
 
     AchievementsModule.trackConsoleVisit(consoleId);

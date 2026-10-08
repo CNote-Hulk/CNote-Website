@@ -1211,3 +1211,117 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* ── My Space (read-only) ───────────────────────────────────────────────────
+   The app is the only editor; this is a page you look at, so nothing here has
+   a hover state that implies it can be changed. Injected after .specs-section
+   by js/modules/my-space.js rather than written into all 52 console pages. */
+.myspace-section {
+    padding: 48px 0;
+    border-top: 1px solid var(--border-color);
+}
+.myspace-title {
+    font-size: 0.78rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin: 0 0 18px;
+}
+.myspace-subtitle {
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin: 0 0 10px;
+}
+.myspace-block { margin-top: 28px; }
+.myspace-block-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+}
+.myspace-count { font-size: 0.75rem; color: var(--text-muted); }
+.myspace-note {
+    margin-top: 22px;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.myspace-badges, .myspace-pills { display: flex; flex-wrap: wrap; gap: 8px; }
+.myspace-badge, .myspace-pill {
+    display: inline-block;
+    padding: 6px 13px;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--accent-color);
+    border: 1px solid var(--accent-color);
+    background: rgba(var(--primary-rgb), 0.08);
+}
+.myspace-pill { font-weight: 500; }
+
+.myspace-photos {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 10px;
+}
+.myspace-photo {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+    border-radius: 10px;
+    display: block;
+    background: var(--card-bg);
+}
+
+/* Two across on a phone, more as the page widens - the title is most of what a
+   case carries, and below that width it stops being readable. */
+.myspace-shelf {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+    gap: 16px;
+}
+.myspace-game { min-width: 0; }
+.myspace-cover {
+    width: 100%;
+    aspect-ratio: 0.72;
+    object-fit: cover;
+    border-radius: 5px;
+    display: block;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+}
+/* No scan for this release: a plain plate carrying the title, rather than an
+   empty frame or a stand-in cover that would be a picture of nothing. */
+.myspace-cover-blank {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px;
+    text-align: center;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-light);
+    line-height: 1.35;
+    overflow: hidden;
+}
+.myspace-game-title {
+    margin: 8px 0 0;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-light);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.myspace-game-year {
+    margin: 2px 0 0;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+}
+
+@media (max-width: 600px) {
+    .myspace-shelf { grid-template-columns: repeat(2, 1fr); }
+    .myspace-photos { grid-template-columns: repeat(2, 1fr); }
+}
