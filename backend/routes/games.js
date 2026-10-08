@@ -11,7 +11,7 @@
 const express = require('express');
 const pool = require('../db');
 const { authRequired, authOptional } = require('../middleware/auth');
-const { publicUrlForKey } = require('../utils/objectStorage');
+const { publicUrlForKey, uploadBuffer } = require('../utils/objectStorage');
 
 const router = express.Router();
 
@@ -23,11 +23,20 @@ const router = express.Router();
 // which is why the app still draws a case when this comes back null.
 const LIBRETRO = 'https://thumbnails.libretro.com';
 
-function coverUrlFor(key) {
-	if (!key) return null;
-	if (!key.startsWith('libretro:')) return publicUrlForKey(key);
+function libretroUrlFor(key) {
 	return LIBRETRO + '/' + key.slice('libretro:'.length)
 		.split('/').map(encodeURIComponent).join('/');
+}
+
+// Clients are pointed at us, never at libretro directly. Hotlinking someone else's host for every
+// cover on every shelf is both fragile - their paths are ours to lose - and rude. The route below
+// mirrors each scan into R2 the first time anyone actually looks at it, so libretro is hit once per
+// cover ever and the catalogue migrates itself under real use, instead of us bulk-copying several
+// gigabytes of images most of which nobody will open.
+function coverUrlFor(key, gameId, consoleId) {
+	if (!key) return null;
+	if (!key.startsWith('libretro:')) return publicUrlForKey(key);
+	return `${process.env.BASE_URL || ''}/api/games/${encodeURIComponent(consoleId)}/cover/${gameId}`;
 }
 
 // The Switch alone has 7,600 games, so nothing here ever returns a whole
@@ -80,7 +89,7 @@ router.get('/:consoleId', async (req, res) => {
 				releaseYear: r.release_year,
 				developer: r.developer,
 				publisher: r.publisher,
-				coverUrl: coverUrlFor(r.cover_key),
+				coverUrl: coverUrlFor(r.cover_key, r.id, consoleId),
 			})),
 			// Cheaper and honest: "there is another page" is all the client needs
 			// to keep scrolling, and a COUNT(*) over 7,600 rows per keystroke is
@@ -90,6 +99,54 @@ router.get('/:consoleId', async (req, res) => {
 	} catch (err) {
 		console.error('GET /api/games/:consoleId error:', err);
 		res.status(500).json({ success: false, error: 'Failed to load games.' });
+	}
+});
+
+// GET /api/games/:consoleId/cover/:gameId — the box scan, mirrored on first use.
+//
+// Redirects rather than streams: the bytes should come off a CDN, not out of this process, on every
+// request after the first. The mirror is best effort - if R2 is unreachable or libretro has moved
+// the file, the client is sent to libretro directly and the next request simply tries again. A
+// cover that fails to mirror must never become a cover that fails to load.
+router.get('/:consoleId/cover/:gameId', async (req, res) => {
+	const consoleId = String(req.params.consoleId || '').trim();
+	const gameId = parseInt(req.params.gameId, 10);
+	if (!consoleId || !gameId) return res.status(400).json({ success: false, error: 'Invalid cover.' });
+
+	try {
+		const row = await pool.query(
+			'SELECT cover_key FROM game_platforms WHERE game_id = $1 AND console_id = $2',
+			[gameId, consoleId]
+		);
+		const key = row.rows[0] && row.rows[0].cover_key;
+		if (!key) return res.status(404).json({ success: false, error: 'No cover.' });
+		if (!key.startsWith('libretro:')) {
+			// Already ours. Cached hard: a mirrored scan never changes.
+			res.set('Cache-Control', 'public, max-age=31536000, immutable');
+			return res.redirect(302, publicUrlForKey(key));
+		}
+
+		const source = libretroUrlFor(key);
+		const upstream = await fetch(source);
+		if (!upstream.ok) return res.redirect(302, source);
+
+		const buffer = Buffer.from(await upstream.arrayBuffer());
+		const mirrored = `game-covers/${consoleId}/${gameId}.png`;
+		try {
+			await uploadBuffer(mirrored, buffer, 'image/png');
+			await pool.query(
+				'UPDATE game_platforms SET cover_key = $1 WHERE game_id = $2 AND console_id = $3',
+				[mirrored, gameId, consoleId]
+			);
+			res.set('Cache-Control', 'public, max-age=31536000, immutable');
+			return res.redirect(302, publicUrlForKey(mirrored));
+		} catch (storeErr) {
+			console.error('Cover mirror failed, serving upstream:', storeErr.message);
+			return res.redirect(302, source);
+		}
+	} catch (err) {
+		console.error('GET /api/games/:consoleId/cover/:gameId error:', err);
+		res.status(500).json({ success: false, error: 'Failed to load cover.' });
 	}
 });
 
@@ -128,7 +185,7 @@ router.get('/:consoleId/mine', authOptional, async (req, res) => {
 				releaseYear: r.release_year,
 				developer: r.developer,
 				publisher: r.publisher,
-				coverUrl: coverUrlFor(r.cover_key),
+				coverUrl: coverUrlFor(r.cover_key, r.id, consoleId),
 			})),
 		});
 	} catch (err) {

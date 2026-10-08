@@ -14,7 +14,7 @@ const fs = require('fs');
 const pool = require('../db');
 const { authRequired, authOptional } = require('../middleware/auth');
 const { awardXP, getLevelFromXP } = require('../utils/gamification');
-const { publicUrlForKey } = require('../utils/objectStorage');
+const { publicUrlForKey, deleteAttachment } = require('../utils/objectStorage');
 
 const router = express.Router();
 
@@ -300,6 +300,67 @@ router.get('/my-space/:consoleId', authOptional, async (req, res) => {
         console.error('My space GET error:', err);
         res.status(500).json({ success: false, error: 'Internal error.' });
     }
+});
+
+// POST /api/my-space/:consoleId/photos — your own photos of your own console.
+//
+// Takes the storage key, not the bytes: the client already uploaded straight to R2 through the
+// presigned-URL flow (POST /api/uploads/presign, kind "myspace"), so the file never passes through
+// this process. All that is left is recording that it belongs to this user and this console.
+router.post('/my-space/:consoleId/photos', authRequired, async (req, res) => {
+	const consoleId = String(req.params.consoleId || '').trim();
+	const key = String(req.body.key || '').trim();
+	if (!consoleId) return res.status(400).json({ success: false, error: 'Console invalid.' });
+	// Pinned to the prefix the presign route hands out, and to this user's own id inside it. Without
+	// that check a client could file any object in the bucket - someone else's avatar, a listing
+	// photo - as a photo of their console.
+	if (!key.startsWith(`my-space/photo/${req.user.id}/`)) {
+		return res.status(400).json({ success: false, error: 'Cheie invalida.' });
+	}
+
+	try {
+		// A shelf, not an album: a cap keeps one console's page from becoming an unbounded feed.
+		const count = await pool.query(
+			'SELECT COUNT(*)::int AS n FROM user_console_photos WHERE user_id = $1 AND console_id = $2',
+			[req.user.id, consoleId]
+		);
+		if (count.rows[0].n >= 12) {
+			return res.status(400).json({ success: false, error: 'Maxim 12 poze pentru o consola.' });
+		}
+		const row = await pool.query(
+			'INSERT INTO user_console_photos (user_id, console_id, image_key) VALUES ($1, $2, $3) RETURNING id, image_key',
+			[req.user.id, consoleId, key]
+		);
+		res.json({
+			success: true,
+			photo: { id: row.rows[0].id, url: publicUrlForKey(row.rows[0].image_key) },
+		});
+	} catch (err) {
+		console.error('My space photo POST error:', err);
+		res.status(500).json({ success: false, error: 'Internal error.' });
+	}
+});
+
+// DELETE /api/my-space/photos/:id — removes the row AND the object behind it.
+//
+// The WHERE clause carries user_id, so the id alone is not enough to delete someone else's photo.
+router.delete('/my-space/photos/:id', authRequired, async (req, res) => {
+	const id = parseInt(req.params.id, 10);
+	if (!id) return res.status(400).json({ success: false, error: 'Poza invalida.' });
+	try {
+		const row = await pool.query(
+			'DELETE FROM user_console_photos WHERE id = $1 AND user_id = $2 RETURNING image_key',
+			[id, req.user.id]
+		);
+		if (!row.rowCount) return res.status(404).json({ success: false, error: 'Poza nu exista.' });
+		// Best effort: the row is gone either way, and a stranded object is a smaller problem than
+		// a 500 on an operation the user already saw succeed.
+		deleteAttachment(row.rows[0].image_key).catch(() => {});
+		res.json({ success: true });
+	} catch (err) {
+		console.error('My space photo DELETE error:', err);
+		res.status(500).json({ success: false, error: 'Internal error.' });
+	}
 });
 
 // PUT /api/my-space/order — drag-to-rank one of the two collections.

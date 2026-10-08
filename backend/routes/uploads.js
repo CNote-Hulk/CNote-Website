@@ -34,7 +34,7 @@ const VOICE_TYPES = {
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;   // 8 MB
 const MAX_VOICE_BYTES = 15 * 1024 * 1024;  // 15 MB (few minutes of voice)
 
-const VALID_KINDS = ['image', 'voice', 'sticker', 'gallery', 'tutorial', 'listing', 'forum', 'article', 'console'];
+const VALID_KINDS = ['image', 'voice', 'sticker', 'gallery', 'tutorial', 'listing', 'forum', 'article', 'console', 'myspace'];
 
 // POST /api/uploads/presign — { kind: 'image'|'voice'|'gallery'|'tutorial'|'listing'|'forum'|'article'|'console', contentType, fileSize }
 router.post('/presign', authRequired, async (req, res) => {
@@ -66,6 +66,7 @@ router.post('/presign', authRequired, async (req, res) => {
 			: kind === 'forum'    ? buildAttachmentKey(req.user.id, 'image', extension, 'forum')
 			: kind === 'article'  ? buildAttachmentKey(req.user.id, 'image', extension, 'articles')
 			: kind === 'console'  ? buildAttachmentKey(req.user.id, 'image', extension, 'consoles')
+			: kind === 'myspace'  ? buildAttachmentKey(req.user.id, 'photo', extension, 'my-space')
 			: kind === 'sticker'  ? buildAttachmentKey(req.user.id, 'stickers', extension)
 			: buildAttachmentKey(req.user.id, kind === 'image' ? 'images' : 'voice', extension);
 		const uploadUrl = await getPresignedUploadUrl(key, contentType);
