@@ -94,6 +94,8 @@ own notes.
   shipped in a blue PS2 case and a green Xbox one, and a shelf showing the wrong box stops being a
   shelf you can read at a glance. Covers mirror themselves into R2 on first request rather than by
   bulk copy — several GB most of which nobody would open.
+- **Console hero image opens full-screen** (2026-10-09) — on the console page, in both the site
+  and the app. The zoom first went on My Space photos, which was the wrong picture.
 - **Shared full-screen image viewer** (2026-10-09) — `js/modules/image-viewer.js` +
   `css/components/image-viewer.css`. My Space photos now zoom; console-model.js dropped its own
   copy of the same logic rather than the site gaining a third.
