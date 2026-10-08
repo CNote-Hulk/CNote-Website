@@ -130,50 +130,110 @@ function games(list) {
     return block;
 }
 
+/**
+ * About | My Space, in the hero under the model pills.
+ *
+ * "About" is not a section of its own - it is everything the page already had. So the group is
+ * computed from the DOM at switch time (every sibling between the hero and the footer, minus our
+ * own section) rather than from a fixed list of selectors: the history block is injected
+ * asynchronously and more sections may be added later, and a hardcoded list would silently stop
+ * hiding whichever one came last.
+ */
+function buildTabs(onSwitch) {
+    const host = document.querySelector('.console-hero-text');
+    if (!host) return null;
+
+    const bar = el('div', 'console-tabs');
+    const about = el('button', 'console-tab is-active', t('myspace_about', 'About'));
+    const mine = el('button', 'console-tab', t('myspace_title', 'MY SPACE'));
+    about.type = 'button';
+    mine.type = 'button';
+
+    function select(which) {
+        about.classList.toggle('is-active', which === 'about');
+        mine.classList.toggle('is-active', which === 'myspace');
+        onSwitch(which);
+    }
+    about.addEventListener('click', () => select('about'));
+    mine.addEventListener('click', () => select('myspace'));
+
+    bar.appendChild(about);
+    bar.appendChild(mine);
+
+    // Under the hardware revisions, which is where the app puts it too.
+    const models = host.querySelector('.console-models');
+    if (models) models.insertAdjacentElement('afterend', bar);
+    else host.appendChild(bar);
+    return { bar, select };
+}
+
+function aboutSections() {
+    const hero = document.querySelector('.console-hero');
+    const out = [];
+    if (!hero) return out;
+    for (let node = hero.nextElementSibling; node; node = node.nextElementSibling) {
+        if (node.id === 'footer-placeholder') break;
+        if (node.classList.contains('myspace-section')) continue;
+        out.push(node);
+    }
+    return out;
+}
+
 export const MySpaceModule = {
     async render(consoleId) {
-        document.querySelectorAll('.myspace-section').forEach(node => node.remove());
+        document.querySelectorAll('.myspace-section, .console-tabs').forEach(n => n.remove());
 
         const anchor = document.querySelector('.specs-section');
         if (!anchor || !consoleId) return;
 
         const viewer = await resolveViewer();
+        const { wrap, container } = section(
+            viewer && !viewer.own
+                ? t('myspace_title_other', "{name}'s space").replace('{name}', viewer.name || '')
+                : t('myspace_title', 'MY SPACE')
+        );
+
         if (!viewer) {
-            // Signed out and no ?u= — there is no space to show, so say which it is rather than
-            // rendering an empty one that looks like the data failed to load.
-            const { wrap, container } = section(t('myspace_title', 'MY SPACE'));
+            // Signed out and no ?u= - say which it is, rather than rendering an empty space that
+            // looks like the data failed to load.
             container.appendChild(el('p', 'myspace-note',
                 t('myspace_sign_in', 'Sign in to see your own space for this console.')));
-            anchor.insertAdjacentElement('afterend', wrap);
-            return;
-        }
-
-        const query = viewer.userId ? `?userId=${encodeURIComponent(viewer.userId)}` : '';
-        const [spaceRes, gamesRes] = await Promise.all([
-            getJson(`${API_BASE_URL}/my-space/${encodeURIComponent(consoleId)}${query}`),
-            getJson(`${API_BASE_URL}/games/${encodeURIComponent(consoleId)}/mine${query}`),
-        ]);
-
-        const space = spaceRes && spaceRes.success ? spaceRes : { modelCodes: [], photos: [] };
-        const shelf = gamesRes && gamesRes.success ? gamesRes.games : [];
-
-        const heading = viewer.own
-            ? t('myspace_title', 'MY SPACE')
-            : t('myspace_title_other', "{name}'s space").replace('{name}', viewer.name || '');
-        const { wrap, container } = section(heading);
-
-        const parts = [badges(space), pills(space.modelCodes), photos(space.photos), games(shelf)]
-            .filter(Boolean);
-
-        if (!parts.length) {
-            container.appendChild(el('p', 'myspace-note', t('myspace_empty', 'Nothing here yet.')));
         } else {
-            parts.forEach(part => container.appendChild(part));
-            if (viewer.own) {
-                container.appendChild(el('p', 'myspace-note',
-                    t('myspace_app_only', 'My Space is edited in the Console Notebook app.')));
+            const query = viewer.userId ? `?userId=${encodeURIComponent(viewer.userId)}` : '';
+            const [spaceRes, gamesRes] = await Promise.all([
+                getJson(`${API_BASE_URL}/my-space/${encodeURIComponent(consoleId)}${query}`),
+                getJson(`${API_BASE_URL}/games/${encodeURIComponent(consoleId)}/mine${query}`),
+            ]);
+            const space = spaceRes && spaceRes.success ? spaceRes : { modelCodes: [], photos: [] };
+            const shelf = gamesRes && gamesRes.success ? gamesRes.games : [];
+
+            const parts = [badges(space), pills(space.modelCodes), photos(space.photos), games(shelf)]
+                .filter(Boolean);
+            if (!parts.length) {
+                container.appendChild(el('p', 'myspace-note', t('myspace_empty', 'Nothing here yet.')));
+            } else {
+                parts.forEach(part => container.appendChild(part));
+                if (viewer.own) {
+                    container.appendChild(el('p', 'myspace-note',
+                        t('myspace_app_only', 'My Space is edited in the Console Notebook app.')));
+                }
             }
         }
+
         anchor.insertAdjacentElement('afterend', wrap);
+
+        const tabs = buildTabs(which => {
+            const showMine = which === 'myspace';
+            wrap.hidden = !showMine;
+            aboutSections().forEach(node => { node.hidden = showMine; });
+        });
+        if (!tabs) { wrap.hidden = false; return; }
+
+        // Opened from a profile's collection or a shared link: land on My Space directly, the way
+        // the app's ?tab=1 does.
+        const params = new URLSearchParams(window.location.search);
+        const wantsMine = params.get('tab') === 'myspace' || params.get('tab') === '1'
+            || window.location.hash === '#my-space';
+        tabs.select(wantsMine ? 'myspace' : 'about');
     },
 };

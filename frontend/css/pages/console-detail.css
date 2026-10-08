@@ -1325,3 +1325,46 @@
     .myspace-shelf { grid-template-columns: repeat(2, 1fr); }
     .myspace-photos { grid-template-columns: repeat(2, 1fr); }
 }
+
+/* ── About | My Space, in the hero ──────────────────────────────────────────
+   Two words with a marker under the active one. "About" is not a section of
+   its own - it is everything the page already had, so switching hides those
+   rather than swapping a pane in. */
+.console-tabs {
+    display: flex;
+    gap: 26px;
+    margin-top: 22px;
+}
+.console-tab {
+    position: relative;
+    padding: 0 0 8px;
+    background: none;
+    border: 0;
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    transition: color 0.18s ease;
+}
+.console-tab:hover { color: var(--text-light); }
+.console-tab.is-active { color: var(--accent-color); }
+.console-tab::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 3px;
+    background: var(--accent-color);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.2s ease;
+}
+.console-tab.is-active::after { transform: scaleX(1); }
+
+/* Tabbed, so it is the page content rather than something appended under it. */
+.myspace-section[hidden] { display: none; }
+.myspace-section:not([hidden]) { border-top: 0; }
