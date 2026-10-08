@@ -10,6 +10,7 @@ import { AuthModule } from '../modules/auth.js?v=20261005';
 import { I18nModule } from '../modules/i18n.js?v=20261005b';
 import { API_BASE_URL } from '../config.js';
 import { MySpaceModule } from '../modules/my-space.js?v=20261009';
+import { openImageViewer } from '../modules/image-viewer.js?v=20261009';
 
 /** Remove leftover Chrome UI elements from page template */
 function cleanupConsolePageChrome() {
@@ -512,6 +513,15 @@ function renderHero(consola) {
     if (img) {
         img.src = resolveImagePath(consola.image);
         img.alt = consola.name;
+
+        // The hero is the one picture of the machine on the page, shown small enough to fit beside
+        // the title; opening it is how you actually look at the hardware. Bound once - renderHero
+        // runs again on a language change, and a second listener would open two viewers.
+        if (!img.dataset.zoomBound) {
+            img.dataset.zoomBound = '1';
+            img.classList.add('cn-zoomable');
+            img.addEventListener('click', () => openImageViewer(img.src, img.alt));
+        }
         
         // Set width and height to prevent layout shift
         const imageName = consola.image.split('/').pop();
