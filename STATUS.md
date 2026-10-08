@@ -94,6 +94,10 @@ own notes.
   shipped in a blue PS2 case and a green Xbox one, and a shelf showing the wrong box stops being a
   shelf you can read at a glance. Covers mirror themselves into R2 on first request rather than by
   bulk copy — several GB most of which nobody would open.
+- **Profile console lists are a ranking** (2026-10-08) — favourites and owned show their
+  position and each one links into that user's My Space for the console. The page had been merging
+  the server's ranked ids with the legacy CSV column through a `Set`, which appended unranked
+  leftovers and quietly broke the order dragged into place in the app.
 - **My Space** (2026-10-06/08) — the per-user half of a console page: owned/favourite, which hardware
   revision you own, your own photos, your games. Writable only from the app, by design. On the site
   it is an About | My Space tab pair in the console hero, strictly read-only (`js/modules/my-space.js`).
