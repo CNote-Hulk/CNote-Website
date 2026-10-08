@@ -22,10 +22,21 @@ const router = express.Router();
 // (8,500 scans for the PS2 alone) and the modern ones have almost nothing -
 // which is why the app still draws a case when this comes back null.
 const LIBRETRO = 'https://thumbnails.libretro.com';
+// IGDB covers are addressed by an opaque image id; t_cover_big is the 264x374 size, which is
+// comfortably above what a two-across shelf renders at.
+const IGDB_IMAGES = 'https://images.igdb.com/igdb/image/upload/t_cover_big';
 
-function libretroUrlFor(key) {
+// Where a not-yet-mirrored cover actually lives. Two sources because they cover different eras:
+// libretro has the retro consoles almost completely and the modern ones barely at all (twelve files
+// for the whole Xbox 360), IGDB is the other way round.
+function upstreamUrlFor(key) {
+	if (key.startsWith('igdb:')) return `${IGDB_IMAGES}/${key.slice('igdb:'.length)}.jpg`;
 	return LIBRETRO + '/' + key.slice('libretro:'.length)
 		.split('/').map(encodeURIComponent).join('/');
+}
+
+function isUpstream(key) {
+	return key.startsWith('libretro:') || key.startsWith('igdb:');
 }
 
 // Clients are pointed at us, never at libretro directly. Hotlinking someone else's host for every
@@ -35,7 +46,7 @@ function libretroUrlFor(key) {
 // gigabytes of images most of which nobody will open.
 function coverUrlFor(key, gameId, consoleId) {
 	if (!key) return null;
-	if (!key.startsWith('libretro:')) return publicUrlForKey(key);
+	if (!isUpstream(key)) return publicUrlForKey(key);
 	return `${process.env.BASE_URL || ''}/api/games/${encodeURIComponent(consoleId)}/cover/${gameId}`;
 }
 
@@ -120,20 +131,21 @@ router.get('/:consoleId/cover/:gameId', async (req, res) => {
 		);
 		const key = row.rows[0] && row.rows[0].cover_key;
 		if (!key) return res.status(404).json({ success: false, error: 'No cover.' });
-		if (!key.startsWith('libretro:')) {
+		if (!isUpstream(key)) {
 			// Already ours. Cached hard: a mirrored scan never changes.
 			res.set('Cache-Control', 'public, max-age=31536000, immutable');
 			return res.redirect(302, publicUrlForKey(key));
 		}
 
-		const source = libretroUrlFor(key);
+		const source = upstreamUrlFor(key);
 		const upstream = await fetch(source);
 		if (!upstream.ok) return res.redirect(302, source);
 
 		const buffer = Buffer.from(await upstream.arrayBuffer());
-		const mirrored = `game-covers/${consoleId}/${gameId}.png`;
+		const ext = key.startsWith('igdb:') ? 'jpg' : 'png';
+		const mirrored = `game-covers/${consoleId}/${gameId}.${ext}`;
 		try {
-			await uploadBuffer(mirrored, buffer, 'image/png');
+			await uploadBuffer(mirrored, buffer, ext === 'jpg' ? 'image/jpeg' : 'image/png');
 			await pool.query(
 				'UPDATE game_platforms SET cover_key = $1 WHERE game_id = $2 AND console_id = $3',
 				[mirrored, gameId, consoleId]
