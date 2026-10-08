@@ -1,7 +1,7 @@
 # CNote-Website — Status
 
 Current-state snapshot — separate from INDEX.md (which is the complete file map). Updated whenever
-the project's state changes meaningfully, not on every commit. Last updated 2026-10-08 (games catalogue + box art + My Space read-only on the site); before that: 2026-10-06 (Care Guide SCPH-70004; before that 2026-10-05 brand cleanup + generations; before that 2026-10-04 Instagram
+the project's state changes meaningfully, not on every commit. Last updated 2026-10-09 (shared image viewer; My Space photos zoom); before that: 2026-10-08 (games catalogue + box art + My Space read-only on the site); before that: 2026-10-06 (Care Guide SCPH-70004; before that 2026-10-05 brand cleanup + generations; before that 2026-10-04 Instagram
 notebook template; previous: 2026-09-23 Care Guide SCPH-39003 pass), grounded in `git log` (most recent commit `b509ede8`, 2026-09-22) and CLAUDE.md's
 own notes.
 
@@ -94,6 +94,9 @@ own notes.
   shipped in a blue PS2 case and a green Xbox one, and a shelf showing the wrong box stops being a
   shelf you can read at a glance. Covers mirror themselves into R2 on first request rather than by
   bulk copy — several GB most of which nobody would open.
+- **Shared full-screen image viewer** (2026-10-09) — `js/modules/image-viewer.js` +
+  `css/components/image-viewer.css`. My Space photos now zoom; console-model.js dropped its own
+  copy of the same logic rather than the site gaining a third.
 - **Profile console lists are a ranking** (2026-10-08) — favourites and owned show their
   position and each one links into that user's My Space for the console. The page had been merging
   the server's ranked ids with the legacy CSV column through a `Set`, which appended unranked
