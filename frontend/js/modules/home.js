@@ -357,22 +357,23 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 collectionGrid.innerHTML = '';
 
-                const emojis = ['🎮','🕹️','🔥','⚡','🌟','🎯'];
-
+                // The server returns this ordered by `position` - the ranking dragged into place
+                // in the app - so the index IS the rank and is shown rather than left implied.
                 user.owned_console_ids.forEach((cid, idx) => {
                     const c = allConsoles.find(x => x.id === cid);
                     if (!c) return;
 
                     const btn = document.createElement('button');
-                    btn.className = 'console-card';
+                    btn.className = 'console-card console-card--ranked';
                     btn.dataset.console = c.name;
 
-                    const emoji = emojis[idx % emojis.length];
+                    btn.innerHTML = `<span class="console-card__rank">${idx + 1}</span>`
+                        + `<span>${escapeHtml(c.name)}</span>`;
 
-                    btn.innerHTML = `${emoji} <span>${c.name}</span>`;
-
+                    // Your own My Space for it, not the encyclopedia entry: from your collection
+                    // the page worth opening is the one with your things on it.
                     btn.addEventListener('click', () => {
-                        window.location.href = `consoles/${c.id}.html`;
+                        window.location.href = `consoles/${c.id}.html?tab=myspace`;
                     });
 
                     collectionGrid.appendChild(btn);
@@ -915,14 +916,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const allConsoles = window.CONSOLES_DATA || [];
                 if (favoritesRes.success && Array.isArray(favoritesRes.favorites) && favoritesRes.favorites.length > 0) {
                     favoritesGrid.innerHTML = '';
-                    const emojis = ['❤️','🌟','⚡','🔥','🎯','🎮'];
                     favoritesRes.favorites.forEach((cid, idx) => {
                         const c = allConsoles.find(x => x.id === cid);
                         if (!c) return;
                         const btn = document.createElement('button');
-                        btn.className = 'console-card';
-                        btn.innerHTML = `${emojis[idx % emojis.length]} <span>${escapeHtml(c.name)}</span>`;
-                        btn.addEventListener('click', () => { window.location.href = `consoles/${c.id}.html`; });
+                        btn.className = 'console-card console-card--ranked';
+                        btn.innerHTML = `<span class="console-card__rank">${idx + 1}</span>`
+                            + `<span>${escapeHtml(c.name)}</span>`;
+                        btn.addEventListener('click', () => {
+                            window.location.href = `consoles/${c.id}.html?tab=myspace`;
+                        });
                         favoritesGrid.appendChild(btn);
                     });
                     // Update favorites count badge

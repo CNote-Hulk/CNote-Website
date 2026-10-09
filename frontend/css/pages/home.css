@@ -2931,3 +2931,37 @@ body.home-page::before {
         flex: 1 1 100%;
     }
 }
+
+/* ── Ranked collection / favourites cards ───────────────────────────────────
+   Both panels are an order the user dragged into place in the app, and the
+   server returns them in it, so the position is shown rather than implied and
+   the emoji it replaces told you nothing. Each card opens your own My Space
+   for the console - from your collection the page worth opening is the one
+   with your things on it, not the encyclopedia entry. */
+.console-card--ranked {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+}
+
+.console-card__rank {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 19px;
+    height: 19px;
+    padding: 0 5px;
+    border-radius: 999px;
+    background: rgba(var(--accent-rgb, 212, 179, 106), 0.18);
+    color: var(--accent-color);
+    font-size: 0.7rem;
+    font-weight: 700;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+/* Top of the ranking reads as the top of the ranking. */
+.console-card--ranked:first-child .console-card__rank {
+    background: var(--accent-color);
+    color: var(--dark-bg, #14110e);
+}

@@ -18,9 +18,12 @@ const router = express.Router();
 // GET /api/favorites — List all favorited console IDs for current user
 router.get('/', authRequired, async (req, res) => {
     try {
-        // DB: fetch all favorite console IDs ordered by newest first
+        // Ranked, not chronological. Favourites are an order the user drags into place in the
+        // app, and `position` is where it lives; ordering by created_at here made the home
+        // page show a different order from the profile, the app and the console page for the
+        // same list. NULLS LAST so a row predating the column falls in behind the ranked ones.
         const result = await pool.query(
-            'SELECT console_id, created_at FROM user_favorites WHERE user_id = $1 ORDER BY created_at DESC',
+            'SELECT console_id FROM user_favorites WHERE user_id = $1 ORDER BY position NULLS LAST, id',
             [req.user.id]
         );
         res.json({ success: true, favorites: result.rows.map(r => r.console_id) });
