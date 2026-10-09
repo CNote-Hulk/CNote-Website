@@ -1368,3 +1368,14 @@
 /* Tabbed, so it is the page content rather than something appended under it. */
 .myspace-section[hidden] { display: none; }
 .myspace-section:not([hidden]) { border-top: 0; }
+
+/* The description someone typed. pre-wrap because their line breaks are part of
+   what they wrote; the text itself is inserted with textContent, never markup. */
+.myspace-note-text {
+    margin: 0;
+    font-size: 0.88rem;
+    line-height: 1.6;
+    color: var(--text-light);
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}

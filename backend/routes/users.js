@@ -298,7 +298,7 @@ router.get('/my-space/:consoleId', authOptional, async (req, res) => {
     if (!userId) return res.status(400).json({ success: false, error: 'User necunoscut.' });
 
     try {
-        const [owned, favourite, models, photos] = await Promise.all([
+        const [owned, favourite, models, photos, note] = await Promise.all([
             pool.query('SELECT 1 FROM user_owned_consoles WHERE user_id = $1 AND console_id = $2',
                 [userId, consoleId]),
             pool.query('SELECT 1 FROM user_favorites WHERE user_id = $1 AND console_id = $2',
@@ -307,6 +307,8 @@ router.get('/my-space/:consoleId', authOptional, async (req, res) => {
                 [userId, consoleId]),
             pool.query('SELECT id, image_key FROM user_console_photos WHERE user_id = $1 AND console_id = $2 ORDER BY created_at',
                 [userId, consoleId]),
+            pool.query('SELECT note FROM user_console_notes WHERE user_id = $1 AND console_id = $2',
+                [userId, consoleId]),
         ]);
         res.json({
             success: true,
@@ -314,6 +316,7 @@ router.get('/my-space/:consoleId', authOptional, async (req, res) => {
             favourite: favourite.rowCount > 0,
             modelCodes: models.rows.map(r => r.model_code),
             photos: photos.rows.map(r => ({ id: r.id, url: publicUrlForKey(r.image_key) })),
+            note: (note.rows[0] && note.rows[0].note) || '',
         });
     } catch (err) {
         console.error('My space GET error:', err);
@@ -417,7 +420,7 @@ router.put('/my-space/order', authRequired, async (req, res) => {
 router.put('/my-space/:consoleId', authRequired, async (req, res) => {
     const consoleId = String(req.params.consoleId || '').trim();
     if (!consoleId) return res.status(400).json({ success: false, error: 'Console invalid.' });
-    const { owned, favourite, modelCode, modelOwned } = req.body;
+    const { owned, favourite, modelCode, modelOwned, note } = req.body;
 
     try {
         if (typeof owned === 'boolean') {
@@ -459,6 +462,25 @@ router.put('/my-space/:consoleId', authRequired, async (req, res) => {
                 );
             }
         }
+        // Present-or-absent, like every other field here: omitting it leaves what is stored
+        // alone, and an explicit empty string is how you clear it. Upsert rather than
+        // insert-then-update, so the first note and the hundredth take the same path.
+        if (typeof note === 'string') {
+            const trimmed = note.trim().slice(0, 2000);
+            if (trimmed) {
+                await pool.query(
+                    `INSERT INTO user_console_notes (user_id, console_id, note, updated_at)
+                     VALUES ($1, $2, $3, now())
+                     ON CONFLICT (user_id, console_id)
+                     DO UPDATE SET note = EXCLUDED.note, updated_at = now()`,
+                    [req.user.id, consoleId, trimmed]
+                );
+            } else {
+                await pool.query('DELETE FROM user_console_notes WHERE user_id = $1 AND console_id = $2',
+                    [req.user.id, consoleId]);
+            }
+        }
+
         // Revisions only mean anything while you own the console; dropping ownership clears them
         // rather than leaving orphans that reappear if you ever tick it again.
         if (owned === false) {

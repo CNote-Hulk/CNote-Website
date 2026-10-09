@@ -81,6 +81,16 @@ function pills(codes) {
     return block;
 }
 
+function note(text) {
+    if (!text) return null;
+    const block = el('div', 'myspace-block');
+    block.appendChild(el('h3', 'myspace-subtitle', t('myspace_note', 'About this unit')));
+    // textContent, and white-space:pre-wrap in the stylesheet: the line breaks someone typed are
+    // part of what they wrote, but their text is never markup.
+    block.appendChild(el('p', 'myspace-note-text', text));
+    return block;
+}
+
 function photos(list) {
     if (!list || !list.length) return null;
     const block = el('div', 'myspace-block');
@@ -210,8 +220,8 @@ export const MySpaceModule = {
             const space = spaceRes && spaceRes.success ? spaceRes : { modelCodes: [], photos: [] };
             const shelf = gamesRes && gamesRes.success ? gamesRes.games : [];
 
-            const parts = [badges(space), pills(space.modelCodes), photos(space.photos), games(shelf)]
-                .filter(Boolean);
+            const parts = [badges(space), note(space.note), pills(space.modelCodes),
+                           photos(space.photos), games(shelf)].filter(Boolean);
             if (!parts.length) {
                 container.appendChild(el('p', 'myspace-note', t('myspace_empty', 'Nothing here yet.')));
             } else {
