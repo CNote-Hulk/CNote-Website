@@ -103,3 +103,18 @@ No framework, no bundler — plain HTML pages with vanilla JS ES modules.
 ### Data flow for a typical authenticated request
 
 Frontend module (e.g. `frontend/js/modules/auth.js`) attaches `Authorization: Bearer <JWT>` from `localStorage` (`cn_token`) and `credentials: 'include'` for the cookie fallback → hits `/api/...` → `authRequired` middleware resolves `req.user` → route handler queries `pool` directly with parameterized SQL → JSON response is normalized through a per-domain `sanitizeUser`-style function before being sent back (avatar/`avatar_url` fields get scrubbed of Google CDN URLs, etc. — check `routes/auth.js`'s `sanitizeUser` before adding a new user field to make sure it's actually returned to clients).
+
+## Verificarea terminatorilor de linie
+
+Repo-ul e **mixt**: unele fișiere sunt CRLF (`i18n.js`, `console-care.css`, `routes/users.js`), altele LF (`console-detail.js`, `home.js`, `user-profile.js`), iar câteva sunt mixte în interiorul lor (`css/main.css` are 63 CRLF și 7 LF simple). O scriere Python în mod text le aplatizează pe toate la LF și transformă un diff de 5 linii în unul de 5.000.
+
+Verifică **creșterea numărului de LF simple**, nu prezența lor:
+
+```python
+before = subprocess.run(['git','show','HEAD:'+f], capture_output=True).stdout
+after  = open(f,'rb').read()
+bare = lambda b: b.replace(b'\r\n', b'').count(b'\n')
+flattened = bare(after) > bare(before)   # asta e defectul
+```
+
+Varianta „are vreun LF simplu?" dă alarmă falsă la **fiecare** fișier mixt nativ (s-a întâmplat de două ori în sesiunea din 2026-10-09), iar o verificare care latră degeaba ajunge să fie ignorată — ceea ce e mai rău decât să n-o ai deloc.
