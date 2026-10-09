@@ -117,4 +117,14 @@ bare = lambda b: b.replace(b'\r\n', b'').count(b'\n')
 flattened = bare(after) > bare(before)   # asta e defectul
 ```
 
+### Capcana care produce defectul: `$` în regex, pe fișier CRLF
+
+În Python, `$` cu `re.MULTILINE` se potrivește **înaintea lui `\n`** — deci într-un fișier CRLF `.*$` înghite și `\r`-ul, iar `m.end()` cade **între `\r` și `\n`**. O inserare acolo rupe perechea: rezultă `\r` + `\r\n` + textul tău + `\n` simplu. JS-ul tolerează asta, deci nimic nu pare stricat — dar se acumulează un `\r` rătăcit la fiecare trecere (`i18n.js` ajunsese la `'MY SPACE',\r\r\r\n` după trei editări).
+
+Nu potrivi linii cu `$` pe un fișier CRLF. Ancorează explicit pe terminator:
+
+```python
+re.finditer(r'^(\s*)cheie: .*?(?=\r?\n)', text, re.M)   # ancoră explicită, nu $
+```
+
 Varianta „are vreun LF simplu?" dă alarmă falsă la **fiecare** fișier mixt nativ (s-a întâmplat de două ori în sesiunea din 2026-10-09), iar o verificare care latră degeaba ajunge să fie ignorată — ceea ce e mai rău decât să n-o ai deloc.
