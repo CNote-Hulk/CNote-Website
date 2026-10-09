@@ -1379,3 +1379,5 @@
     white-space: pre-wrap;
     overflow-wrap: anywhere;
 }
+
+.myspace-note-text--empty { color: var(--text-muted); }

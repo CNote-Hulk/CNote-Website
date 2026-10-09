@@ -82,12 +82,14 @@ function pills(codes) {
 }
 
 function note(text) {
-    if (!text) return null;
+    // Shown even when empty: the heading is how you find out the section exists at all.
     const block = el('div', 'myspace-block');
     block.appendChild(el('h3', 'myspace-subtitle', t('myspace_note', 'About this unit')));
     // textContent, and white-space:pre-wrap in the stylesheet: the line breaks someone typed are
     // part of what they wrote, but their text is never markup.
-    block.appendChild(el('p', 'myspace-note-text', text));
+    const body = el('p', 'myspace-note-text', text || t('myspace_note_empty', 'Nothing written yet.'));
+    if (!text) body.classList.add('myspace-note-text--empty');
+    block.appendChild(body);
     return block;
 }
 
