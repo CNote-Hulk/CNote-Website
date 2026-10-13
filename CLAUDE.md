@@ -128,3 +128,79 @@ re.finditer(r'^(\s*)cheie: .*?(?=\r?\n)', text, re.M)   # ancoră explicită, nu
 ```
 
 Varianta „are vreun LF simplu?" dă alarmă falsă la **fiecare** fișier mixt nativ (s-a întâmplat de două ori în sesiunea din 2026-10-09), iar o verificare care latră degeaba ajunge să fie ignorată — ceea ce e mai rău decât să n-o ai deloc.
+
+---
+
+## Reguli comune — identice în toate proiectele (actualizat 2026-10-13)
+
+Blocul ăsta e **același text** în `CLAUDE.md`-ul fiecărui proiect (CNote-Application,
+CNote-PS2-ModdingTool, CNote-Website, Mali-Driver-Patch, Mind-Tree-Application, VSCode-S11,
+ViceCity-Debugger) și în Mind-Tree-Vault. Dacă-l schimbi într-unul, schimbă-l în toate.
+
+### Două copii: niciodată nu presupune care e mai nouă
+
+Proiectele trăiesc în două locuri — SSD-ul extern (Samsung T7, `/mnt/ssd/Projects/...` =
+`/mnt/media_rw/542A-FD0B/Projects/...`) și tableta (`/root/...` sau
+`/mnt/sdcard/Documents/...`) — și **nu** se sincronizează automat.
+
+Pe 2026-10-13, la îmbinarea celor două copii de ViceCity-Debugger, s-a văzut că divergența nu e
+simetrică: **codul** de pe tabletă era cu 3 zile înainte, dar **documentația** de pe SSD era cu 94
+de linii (`INDEX.md`) și 149 (`STATUS.md`) înainte — inclusiv o sesiune întreagă pe care tableta
+n-o avea. Ambele direcții aveau conținut unic, în același proiect, în același moment. Motivul:
+sesiunile editau documentația unde porneau (SSD) și codul unde se compilează (tabletă).
+
+Deci, înainte de orice copiere, `reset --hard` sau merge între copii:
+1. `git status --porcelain` și `git log` în **ambele** copii;
+2. compară **fișier cu fișier** (`find | sort` + `comm`), nu doar commit-urile;
+3. pentru fișierele modificate în ambele, `diff` și îmbină — niciodată suprascriere oarbă;
+4. preferă `git fetch <cealaltă cale>` + merge în loc de `cp -a` — git vede ce pierzi, `cp` nu.
+
+Un `cp -a` orb a șters deja muncă reală o dată: 2026-09-29, `bootHdd()` necomis din
+`MainActivityRuntime.kt`, recuperat din `javap -c` al unui `.class` vechi.
+
+### Recuperare de date: confirmă cu două metode independente
+
+Pe 2026-10-13, un `diff -rq` între două copii ale vaultului a **ratat complet** un fișier
+(`03 Jurnal/2026-10-12.md`, 138 de linii, necomis, existent într-un singur loc). A fost prins abia
+la a doua verificare, cu `find | sort` + `comm -23`.
+
+Când recuperezi sau migrezi date: **confirmă cu două metode independente** înainte să ștergi sau să
+suprascrii, și ține backup-urile până confirmă Andrei că e bine.
+
+### Mind-Tree-Vault: verifică integritatea înainte de push/pull
+
+Vaultul are o copie locală la `/mnt/sdcard/Documents/Mind-Tree-Vault`, pe FUSE. Pe 2026-10-13 baza
+ei de obiecte git era **coruptă**: 255 de blob-uri și 26 de arbori lipsă, `.git` ajunsese la 709 KO
+în loc de ~106 MO. Un `push` de acolo ar fi urcat istorie incompletă; un `pull` sau `reset --hard`
+ar fi șters muncă necomisă.
+
+- **Înainte de orice `push`/`pull` în copia locală**:
+  `git -C <vault> fsck --no-progress --no-dangling`. Dacă apar `missing blob` / `missing tree`,
+  **oprește-te și raportează** — nu încerca să repari pe loc.
+- Recuperarea care a mers: backup la fișierele de lucru pe stocare reală (`/root`, nu FUSE) →
+  clonă curată din GitHub → comparație fișier cu fișier (vezi regula de mai sus) → reaplici doar
+  diferențele reale de conținut → push.
+- **GitHub e sursa de adevăr** pentru vault, nu copia de pe tabletă.
+- Actualizarea Jurnalului și a notelor de proiect **prin GitHub API** nu are problema asta și
+  rămâne varianta implicită.
+
+### La finalul oricărui task
+
+- **Jurnal**: `03 Jurnal/YYYY-MM-DD.md` în `CNote-Hulk/Mind-Tree-Vault` — brut, detaliat, fără
+  prescurtare.
+- **Nota de proiect** `02 Proiecte/<Proiect>/<Proiect>.md`, ori de câte ori se schimbă ceva
+  semnificativ: stadiu curent, decizii cheie, probleme deschise.
+- **`03 Jurnal/_Index.md`** — adaugă linia zilei. Verificatorul `_Tools/vault_brief.py` o reclamă
+  altfel ca „lipsește din `03 Jurnal/_Index`".
+- **`INDEX.md`** și **`STATUS.md`** locale, dacă s-au schimbat fișiere sau stadiul proiectului.
+- **Commit ȘI push automat**, fără să întrebi (Andrei, 2026-08-21: „commit and push automatically
+  at every project, no more asking").
+
+### Push din sandbox-ul Termux/proot
+
+PAT-ul GitHub e în `~/.git-credentials` (`git config --global credential.helper store`), format
+`https://<user>:<TOKEN>@github.com`. Dacă lipsește sau push-ul eșuează pe autentificare, **cere
+unul nou lui Andrei** — nu-l genera și nu-l scrie tu.
+
+Dacă git refuză cu „dubious ownership" (repo deținut de alt uid — tipic pe `/mnt/sdcard`):
+`git config --global --add safe.directory <cale>`.
