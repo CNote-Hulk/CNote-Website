@@ -669,6 +669,28 @@ async function initializeSchema() {
 		`ALTER TABLE orders ADD COLUMN IF NOT EXISTS recipient_last_name TEXT DEFAULT ''`,
 		`ALTER TABLE orders ADD COLUMN IF NOT EXISTS recipient_email TEXT DEFAULT ''`,
 		`ALTER TABLE orders ADD COLUMN IF NOT EXISTS address_line2 TEXT DEFAULT ''`,
+
+		// (2026-10-22) Connected consoles — a PS2 running CNote under PSBBN links
+		// itself to an account with a pairing code (routes/devices.js). user_id is
+		// NULL until the owner confirms the code; only hashes of the console's
+		// secrets are stored. user_code is cleared on confirm (NULLs don't collide).
+		`CREATE TABLE IF NOT EXISTS connected_consoles (
+			id               SERIAL PRIMARY KEY,
+			user_id          INTEGER REFERENCES users(id) ON DELETE CASCADE,
+			user_code        TEXT UNIQUE,
+			device_code_hash TEXT UNIQUE,
+			token_hash       TEXT UNIQUE,
+			platform         TEXT NOT NULL DEFAULT 'ps2',
+			model            TEXT DEFAULT '',
+			romver           TEXT DEFAULT '',
+			region           TEXT DEFAULT '',
+			name             TEXT DEFAULT '',
+			pair_expires_at  TIMESTAMP,
+			linked_at        TIMESTAMP,
+			last_seen_at     TIMESTAMP,
+			created_at       TIMESTAMP DEFAULT NOW()
+		)`,
+		`CREATE INDEX IF NOT EXISTS idx_connected_consoles_user ON connected_consoles(user_id)`,
 	];
 	for (const sql of migrations) {
 		try { await pool.query(sql); } catch { }

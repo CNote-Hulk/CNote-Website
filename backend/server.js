@@ -75,6 +75,7 @@ const consoleModelsRoutes = require('./routes/console-models');
 const gamesRoutes = require('./routes/games');
 const articlesRoutes = require('./routes/articles');
 const ordersRoutes = require('./routes/orders');
+const devicesRoutes = require('./routes/devices');
 
 /* ── Environment validation ── */
 
@@ -378,6 +379,16 @@ const friendRequestLimiter = rateLimit({
 	message: { success: false, error: 'Too many friend requests, please try again later.' }
 });
 
+// Pairing endpoints are unauthenticated (the console has no account yet) — keep
+// them on a short leash. Polling every 5 s for the 10-minute window is ~120 calls.
+const devicePairLimiter = rateLimit({
+	windowMs: 15 * 60 * 1000,
+	max: 200,
+	standardHeaders: true,
+	legacyHeaders: false,
+	message: { success: false, error: 'Too many attempts, please try again later.' }
+});
+
 const marketplaceListingLimiter = rateLimit({
 	windowMs: 15 * 60 * 1000,
 	max: 20,
@@ -493,6 +504,8 @@ app.use('/api/console-models', consoleModelsRoutes);
 app.use('/api/games', gamesRoutes);
 app.use('/api/articles', articlesRoutes);
 app.use('/api/orders', ordersRoutes);
+app.use('/api/devices/pair', devicePairLimiter);
+app.use('/api/devices', devicesRoutes);
 
 /* ── Static files & redirects ── */
 
