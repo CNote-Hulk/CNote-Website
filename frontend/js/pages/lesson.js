@@ -42,9 +42,14 @@ async function fetchCourseStructure() {
     if (!courseSlug) return null;
     const lang = getCurrentLang();
     try {
-        const res = await fetch(`${API_BASE_URL}/courses/${encodeURIComponent(courseSlug)}?lang=${encodeURIComponent(lang)}`);
+        const res = await fetch(`${API_BASE_URL}/courses/${encodeURIComponent(courseSlug)}?lang=${encodeURIComponent(lang)}&upcoming=1`);
         if (!res.ok) return null;
-        return (await res.json()).course;
+        const course = (await res.json()).course;
+        // Not-yet-written lessons only matter for "is this really the end of the course?" (see
+        // completeAndNavigate); everything else here works on the lessons that can be opened.
+        window._lsnMoreComing = (course.modules || []).some(m => (m.lessons || []).some(l => l.available === false));
+        (course.modules || []).forEach(m => { m.lessons = (m.lessons || []).filter(l => l.available !== false); });
+        return course;
     } catch { return null; }
 }
 
@@ -332,6 +337,9 @@ async function completeAndNavigate(score) {
     const nextId = window._lsnNextId;
     if (nextId) {
         window.location.href = `lesson.html?id=${nextId}&slug=${encodeURIComponent(courseSlug)}`;
+    } else if (window._lsnMoreComing) {
+        // Last written lesson, but the course isn't finished: back to the syllabus, not "Course Complete!"
+        window.location.href = `course.html?slug=${encodeURIComponent(courseSlug)}`;
     } else {
         showCourseComplete();
     }

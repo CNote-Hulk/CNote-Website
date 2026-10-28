@@ -15,6 +15,8 @@ if (slug !== 'starter-guide' && !_token) {
 let completedIds = new Set();
 let lessonScores = {};
 let allLessons = [];
+// Every lesson in the syllabus, including not-yet-written ones (allLessons holds only the openable ones)
+let totalLessonCount = 0;
 
 function esc(str) {
     return String(str ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -167,7 +169,7 @@ function renderHeroStats(course, progress) {
     const inner = document.querySelector('.crs-hero__inner');
     if (!inner) return;
 
-    const total = allLessons.length;
+    const total = totalLessonCount;
     const completedArr = progress ? (progress.completed_lesson_ids || []) : [];
     const completed = completedArr.length;
     const chapters = (course.modules || []).length;
@@ -267,7 +269,7 @@ function buildCourseLayout(course, progress) {
     while (container.firstChild) main.appendChild(container.firstChild);
     container.appendChild(main);
 
-    const total = allLessons.length;
+    const total = totalLessonCount;
     const completedArr = progress ? (progress.completed_lesson_ids || []) : [];
     const completed = completedArr.length;
     const pct = total > 0 ? Math.round((completed / total) * 100) : 0;
@@ -396,8 +398,10 @@ function renderModules(course) {
     const list = document.querySelector('.crs-module-list');
     list.innerHTML = '';
     allLessons = [];
+    totalLessonCount = 0;
 
     (course.modules || []).forEach(mod => {
+        totalLessonCount += (mod.lessons || []).length;
         (mod.lessons || []).filter(l => l.available !== false).forEach(l => allLessons.push(l));
     });
 

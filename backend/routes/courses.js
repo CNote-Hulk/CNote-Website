@@ -172,9 +172,11 @@ router.get('/courses/:slug/progress', authRequired, async (req, res) => {
                 [userId, courseId]
             ),
             pool.query(`
+                -- All lessons, written or not: a course with unwritten (unpublished) lessons
+                -- must not look finished after its published ones are done.
                 SELECT COUNT(l.id)::int AS total FROM lessons l
                 JOIN modules m ON m.id = l.module_id
-                WHERE m.course_id = $1 AND l.is_published = true
+                WHERE m.course_id = $1
             `, [courseId])
         ]);
 
@@ -402,9 +404,10 @@ router.post('/lessons/:id/complete', authRequired, async (req, res) => {
         // Check if all course lessons are complete + find next lesson
         const [totalResult, doneResult, nextLessonResult] = await Promise.all([
             pool.query(`
+                -- All lessons (see /progress): no certificate while unwritten lessons remain.
                 SELECT COUNT(l.id)::int AS total FROM lessons l
                 JOIN modules m ON m.id = l.module_id
-                WHERE m.course_id = $1 AND l.is_published = true
+                WHERE m.course_id = $1
             `, [course_id]),
             pool.query(`
                 SELECT COUNT(ul.id)::int AS done FROM user_lessons ul
@@ -532,7 +535,7 @@ router.get('/user/progress/:username', async (req, res) => {
                 COUNT(DISTINCT ul.lesson_id)::int                                   AS completed_count
             FROM courses c
             LEFT JOIN modules m   ON m.course_id = c.id
-            LEFT JOIN lessons l   ON l.module_id = m.id AND l.is_published = true
+            LEFT JOIN lessons l   ON l.module_id = m.id
             LEFT JOIN user_lessons ul
                 ON ul.lesson_id = l.id AND ul.user_id = $1 AND ul.completed = true
             WHERE c.is_published = true
