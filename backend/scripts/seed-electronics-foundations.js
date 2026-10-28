@@ -40,9 +40,9 @@ async function seed({ pool, apply, force = false, log = console.log }) {
         let course = (await client.query('SELECT id FROM courses WHERE slug = $1', [plan.course.slug])).rows[0];
         if (!course) {
             course = (await client.query(
-                `INSERT INTO courses (slug, title, description, icon, difficulty, order_index, is_published)
-                 VALUES ($1, $2, $3, $4, $5, $6, FALSE) RETURNING id`,
-                [plan.course.slug, plan.course.title, plan.course.description, plan.course.icon, plan.course.difficulty, plan.course.order_index]
+                `INSERT INTO courses (slug, title, description, icon, difficulty, is_published)
+                 VALUES ($1, $2, $3, $4, $5, FALSE) RETURNING id`,
+                [plan.course.slug, plan.course.title, plan.course.description, plan.course.icon, plan.course.difficulty]
             )).rows[0];
             s.course = 'created (NOT published)';
         }
