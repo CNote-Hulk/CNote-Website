@@ -1241,3 +1241,7 @@
 .crs-cert__footer-val { font-size: 0.75rem; font-weight: 600; color: var(--text-light); }
 [data-theme="light"] .crs-cert__footer-val { color: #111317; }
 .crs-cert__sig-line { width: 100%; height: 1px; background: rgba(var(--accent-rgb), 0.3); margin-bottom: 4px; }
+
+/* Lessons not written yet: listed so the syllabus is complete, but not openable (2026-10-28) */
+.crs-lesson-card--soon { opacity: 0.5; cursor: default; pointer-events: none; }
+.crs-lesson-card--soon .crs-lesson-card__action { font-style: italic; }

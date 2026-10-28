@@ -28,7 +28,7 @@ async function fetchCourse() {
     const headers = {};
     if (_token) headers['Authorization'] = 'Bearer ' + _token;
     const lang = getCurrentLang();
-    const res = await fetch(`${API_BASE_URL}/courses/${encodeURIComponent(slug)}?lang=${encodeURIComponent(lang)}`, { headers });
+    const res = await fetch(`${API_BASE_URL}/courses/${encodeURIComponent(slug)}?lang=${encodeURIComponent(lang)}&upcoming=1`, { headers });
     if (!res.ok) { window.location.href = 'invata.html'; return null; }
     const data = await res.json();
     return data.course;
@@ -398,7 +398,7 @@ function renderModules(course) {
     allLessons = [];
 
     (course.modules || []).forEach(mod => {
-        (mod.lessons || []).forEach(l => allLessons.push(l));
+        (mod.lessons || []).filter(l => l.available !== false).forEach(l => allLessons.push(l));
     });
 
     const nextLesson = allLessons.find(l => !completedIds.has(Number(l.id)));
@@ -406,7 +406,9 @@ function renderModules(course) {
     const isGuest = !_token;
 
     (course.modules || []).forEach((mod, modIdx) => {
-        const lessons = mod.lessons || [];
+        const shownLessons = mod.lessons || [];
+        const lessons = shownLessons.filter(l => l.available !== false);
+        const soonCount = shownLessons.length - lessons.length;
         const isModFree = isGuest ? (modIdx === 0) : true;
         const doneInMod = lessons.filter(l => completedIds.has(Number(l.id))).length;
         const isModDone = doneInMod === lessons.length && lessons.length > 0;
@@ -423,7 +425,7 @@ function renderModules(course) {
                 <span class="crs-section-num${isModDone ? ' crs-section-num--done' : ''}">${isModDone ? '✓' : modIdx + 1}</span>
                 <div class="crs-section-info">
                     <h2 class="crs-section-title">${esc(mod.title)}</h2>
-                    <span class="crs-section-meta">${doneInMod}/${lessons.length} lessons</span>
+                    <span class="crs-section-meta">${doneInMod}/${lessons.length} lessons${soonCount ? ` · ${soonCount} coming soon` : ''}</span>
                 </div>
                 ${badgeHTML}
             </div>
@@ -432,7 +434,22 @@ function renderModules(course) {
 
         const grid = section.querySelector('.crs-lessons-grid');
 
-        lessons.forEach((lesson, lessonIdx) => {
+        shownLessons.forEach((lesson, lessonIdx) => {
+            if (lesson.available === false) {
+                const soon = document.createElement('div');
+                soon.className = 'crs-lesson-card crs-lesson-card--soon';
+                soon.setAttribute('aria-disabled', 'true');
+                soon.innerHTML = `
+                <div class="crs-lesson-card__top">
+                    <div class="crs-lesson-card__num">${String(lessonIdx + 1).padStart(2, '0')}.</div>
+                </div>
+                <span class="crs-lesson-card__badge">${esc(mod.title)}</span>
+                <div class="crs-lesson-card__title">${esc(lesson.title)}</div>
+                <div class="crs-lesson-card__action">Coming soon</div>
+            `;
+                grid.appendChild(soon);
+                return;
+            }
             const done = completedIds.has(Number(lesson.id));
             const isNext = Number(lesson.id) === nextId;
             const isProLocked = isGuest && !isModFree;

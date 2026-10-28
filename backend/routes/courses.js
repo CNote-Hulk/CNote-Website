@@ -70,6 +70,9 @@ router.get('/courses/:slug', authOptional, async (req, res) => {
     try {
         const { slug } = req.params;
         const lang = (req.query.lang || 'en').toLowerCase().slice(0, 5);
+        // The website passes ?upcoming=1 to also list not-yet-written (unpublished) lessons, flagged
+        // available:false so it can show them locked. Without it (the Android app) the list is unchanged.
+        const includeUpcoming = req.query.upcoming === '1';
         const courseResult = await pool.query(
             'SELECT * FROM courses WHERE slug = $1',
             [slug]
@@ -88,7 +91,8 @@ router.get('/courses/:slug', authOptional, async (req, res) => {
                         json_build_object(
                             'id', l.id,
                             'title', COALESCE(lt.title, l.title),
-                            'order_index', l.order_index
+                            'order_index', l.order_index,
+                            'available', l.is_published
                         )
                         ORDER BY l.order_index
                     ) FILTER (WHERE l.id IS NOT NULL),
@@ -96,12 +100,12 @@ router.get('/courses/:slug', authOptional, async (req, res) => {
                 ) AS lessons
             FROM modules m
             LEFT JOIN module_translations mt ON mt.module_id = m.id AND mt.lang = $2
-            LEFT JOIN lessons l ON l.module_id = m.id AND l.is_published = true
+            LEFT JOIN lessons l ON l.module_id = m.id AND (l.is_published = true OR $3::boolean)
             LEFT JOIN lesson_translations lt ON lt.lesson_id = l.id AND lt.lang = $2
             WHERE m.course_id = $1
             GROUP BY m.id, mt.title
             ORDER BY m.order_index
-        `, [course.id, lang]);
+        `, [course.id, lang, includeUpcoming]);
 
         course.modules = modulesResult.rows;
 
