@@ -7,7 +7,7 @@ import { getConsoleById, getConsoleIdFromUrl, resolveImagePath, invalidateCache 
 import { MODEL_DIRECTORY_GROUPS } from '../data/console-models.js?v=20260909d';
 import { AchievementsModule } from '../modules/achievements.js';
 import { AuthModule } from '../modules/auth.js?v=20261005';
-import { I18nModule } from '../modules/i18n.js?v=20261005b';
+import { I18nModule } from '../modules/i18n.js?v=20261028';
 import { API_BASE_URL } from '../config.js';
 import { MySpaceModule } from '../modules/my-space.js?v=20261009d';
 import { openImageViewer } from '../modules/image-viewer.js?v=20261009';

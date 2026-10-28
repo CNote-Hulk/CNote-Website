@@ -5,7 +5,7 @@
  */
 
 import { loadConsoles } from '../data/data-loader.js';
-import { I18nModule }   from '../modules/i18n.js?v=20261005b';
+import { I18nModule }   from '../modules/i18n.js?v=20261028';
 
 const selectA = document.getElementById('console-a-select');
 const selectB = document.getElementById('console-b-select');

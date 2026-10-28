@@ -13,7 +13,7 @@
  * single interpolated string becomes someone else's script.
  */
 import { API_BASE_URL } from '../config.js';
-import { I18nModule } from './i18n.js?v=20261005b';
+import { I18nModule } from './i18n.js?v=20261028';
 import { openImageViewer } from './image-viewer.js?v=20261009';
 
 const t = (key, fallback) => {

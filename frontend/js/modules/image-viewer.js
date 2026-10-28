@@ -11,7 +11,7 @@
  * Built with createElement rather than innerHTML — the URL and alt text can come from other users'
  * uploads, and a viewer is a poor place to discover an escaping mistake.
  */
-import { I18nModule } from './i18n.js?v=20261005b';
+import { I18nModule } from './i18n.js?v=20261028';
 
 export function openImageViewer(url, alt) {
     document.querySelector('.cn-img-viewer')?.remove();

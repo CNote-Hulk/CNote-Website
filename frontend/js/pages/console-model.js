@@ -1,5 +1,5 @@
 import { MOD_OPTIONS, flashTypesForModel, loadModels, invalidateModelsCache } from '../data/console-models.js?v=20260909d';
-import { I18nModule } from '../modules/i18n.js?v=20261005b';
+import { I18nModule } from '../modules/i18n.js?v=20261028';
 import { openImageViewer } from '../modules/image-viewer.js?v=20261009';
 import { AuthModule } from '../modules/auth.js?v=20261005';
 import { API_BASE_URL } from '../config.js';
