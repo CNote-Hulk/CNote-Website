@@ -4,6 +4,7 @@ import { API_BASE_URL } from '../config.js';
 const params = new URLSearchParams(window.location.search);
 const lessonId = params.get('id');
 let courseSlug = params.get('slug') || sessionStorage.getItem('lsn_course_slug') || '';
+let courseTitleText = '';
 
 if (!lessonId) window.location.href = 'invata.html';
 
@@ -55,6 +56,7 @@ function renderTopbar(lesson, course) {
     const crsLink = document.querySelector('.lsn-breadcrumb-course');
 
     if (course) {
+        courseTitleText = course.title;
         crsLink.textContent = course.title;
         crsLink.href = `course.html?slug=${encodeURIComponent(courseSlug)}`;
     } else {
@@ -344,7 +346,7 @@ function showCourseComplete() {
     screen.innerHTML = `
         <div class="lsn-course-complete__trophy">🏆</div>
         <h2 class="lsn-course-complete__title">Course Complete!</h2>
-        <p class="lsn-course-complete__sub">You've finished the <strong>Console Starter Guide</strong>. Great work!</p>
+        <p class="lsn-course-complete__sub">You've finished <strong>${courseTitleText ? esc(courseTitleText) : 'this course'}</strong>. Great work!</p>
         <div class="lsn-course-complete__actions">
             <a href="course.html?slug=${encodeURIComponent(courseSlug)}" class="lsn-btn-next">View Course →</a>
             <a href="invata.html" class="lsn-btn-secondary">Explore More Courses</a>

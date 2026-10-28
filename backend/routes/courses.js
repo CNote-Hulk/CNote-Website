@@ -240,10 +240,27 @@ router.get('/lessons/:id', authOptional, async (req, res) => {
                 : 'none';
         }
 
-        const quizResult = await pool.query(
-            'SELECT id, question, options, correct_option, explanation FROM quiz_questions WHERE lesson_id = $1 ORDER BY RANDOM()',
-            [lessonId]
-        );
+        // Quiz text follows ?lang= when a translation exists (quiz_question_translations); otherwise EN.
+        // Falls back to the plain EN query if the translation table isn't there yet, so a lesson never breaks.
+        let quizResult;
+        try {
+            quizResult = await pool.query(
+                `SELECT q.id, COALESCE(qt.question, q.question) AS question,
+                        COALESCE(qt.options, q.options) AS options,
+                        q.correct_option,
+                        COALESCE(qt.explanation, q.explanation) AS explanation
+                 FROM quiz_questions q
+                 LEFT JOIN quiz_question_translations qt ON qt.question_id = q.id AND qt.lang = $2
+                 WHERE q.lesson_id = $1 ORDER BY RANDOM()`,
+                [lessonId, lang]
+            );
+        } catch (qErr) {
+            console.error('quiz translation query failed, falling back to EN:', qErr.message);
+            quizResult = await pool.query(
+                'SELECT id, question, options, correct_option, explanation FROM quiz_questions WHERE lesson_id = $1 ORDER BY RANDOM()',
+                [lessonId]
+            );
+        }
 
         lesson.quiz_questions = quizResult.rows.map(q => {
             const options = Array.isArray(q.options) ? q.options : Object.values(q.options);

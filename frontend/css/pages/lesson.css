@@ -1762,3 +1762,87 @@
     color: var(--text-gray);
     margin: 10px 0 0;
 }
+
+/* ─────────────────────────────────────
+   Electronics Foundations / Console Engineering lesson blocks (2026-10-28)
+   Labels live in the HTML (h3), never in ::before, so they translate.
+───────────────────────────────────── */
+.experiment,
+.wonder,
+.quantity-card,
+.worked-example,
+.your-turn,
+.on-the-board,
+.mixups,
+.check-yourself {
+    border-radius: var(--radius-sm, 8px);
+    padding: 16px 20px;
+    margin: 1.6em 0;
+    font-size: 0.93rem;
+    line-height: 1.7;
+    color: var(--text-gray);
+    border: 1px solid rgba(var(--accent-rgb), 0.12);
+    border-left-width: 3px;
+}
+.experiment h3, .wonder h3, .quantity-card h3, .worked-example h3, .your-turn h3,
+.on-the-board h3, .mixups h3, .check-yourself h3 {
+    margin: 0 0 0.6em;
+    padding-left: 0;
+    border-left: none;
+    opacity: 1;
+    font-size: 0.98rem;
+}
+.experiment > :last-child, .wonder > :last-child, .worked-example > :last-child,
+.your-turn > :last-child, .on-the-board > :last-child, .mixups > :last-child { margin-bottom: 0; }
+
+.experiment   { background: rgba(var(--accent-rgb), 0.05); border-left-color: var(--accent-color); }
+.wonder       { background: rgba(var(--accent-rgb), 0.03); border-left-color: rgba(var(--accent-rgb), 0.55); }
+.quantity-card{ background: rgba(var(--accent-rgb), 0.04); border-left-color: var(--accent-color); }
+.worked-example{ background: rgba(var(--accent-rgb), 0.045); border-left-color: rgba(var(--accent-rgb), 0.7); }
+.your-turn    { background: transparent; border-left-color: rgba(var(--accent-rgb), 0.4); border-style: dashed; border-left-style: solid; }
+.on-the-board { background: rgba(var(--accent-rgb), 0.03); border-left-color: rgba(var(--accent-rgb), 0.5); }
+.mixups       { background: rgba(var(--accent-rgb), 0.06); border-left-color: var(--accent-color); }
+.check-yourself{ background: rgba(var(--accent-rgb), 0.03); border-left-color: rgba(var(--accent-rgb), 0.45); }
+
+ol.steps { padding-left: 1.3em; }
+ol.steps > li { margin-bottom: 0.9em; }
+
+.lsn-content details,
+details.observe {
+    margin: 0.5em 0 0;
+    padding: 6px 12px;
+    border: 1px dashed rgba(var(--accent-rgb), 0.25);
+    border-radius: var(--radius-sm, 8px);
+}
+.lsn-content details > summary,
+details.observe > summary {
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--accent-color);
+    list-style-position: inside;
+}
+.lsn-content details > p { margin: 0.6em 0 0.2em; }
+.check-yourself details { margin: 0.7em 0; }
+
+.quantity-card table,
+table.compare {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+.quantity-card th, .quantity-card td,
+table.compare th, table.compare td {
+    border: 1px solid rgba(var(--accent-rgb), 0.14);
+    padding: 8px 10px;
+    text-align: left;
+    vertical-align: top;
+}
+.quantity-card th { width: 36%; color: var(--text-light); background: rgba(var(--accent-rgb), 0.05); }
+table.compare { margin: 1.4em 0; display: block; overflow-x: auto; }
+table.compare th { color: var(--text-light); background: rgba(var(--accent-rgb), 0.05); }
+
+figure.lesson-diagram { margin: 1.6em 0; text-align: center; color: var(--text-light); }
+figure.lesson-diagram svg { max-width: 100%; height: auto; }
+figure.lesson-diagram figcaption { font-size: 0.82rem; color: var(--text-gray); margin-top: 6px; }
+
+.lesson-source { opacity: 0.7; font-size: 0.8rem; }

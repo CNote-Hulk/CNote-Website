@@ -691,6 +691,17 @@ async function initializeSchema() {
 			created_at       TIMESTAMP DEFAULT NOW()
 		)`,
 		`CREATE INDEX IF NOT EXISTS idx_connected_consoles_user ON connected_consoles(user_id)`,
+		// Quiz translations: one row per (question, lang). quiz_questions stays the EN canonical row;
+		// options must keep the SAME ORDER as the EN options (correct_option is an index into them).
+		`CREATE TABLE IF NOT EXISTS quiz_question_translations (
+			id          SERIAL PRIMARY KEY,
+			question_id INTEGER NOT NULL REFERENCES quiz_questions(id) ON DELETE CASCADE,
+			lang        TEXT    NOT NULL,
+			question    TEXT    NOT NULL,
+			options     JSONB   NOT NULL,
+			explanation TEXT    DEFAULT '',
+			UNIQUE(question_id, lang)
+		)`,
 	];
 	for (const sql of migrations) {
 		try { await pool.query(sql); } catch { }
