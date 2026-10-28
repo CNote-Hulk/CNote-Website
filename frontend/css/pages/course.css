@@ -1245,3 +1245,23 @@
 /* Lessons not written yet: listed so the syllabus is complete, but not openable (2026-10-28) */
 .crs-lesson-card--soon { opacity: 0.5; cursor: default; pointer-events: none; }
 .crs-lesson-card--soon .crs-lesson-card__action { font-style: italic; }
+
+/* Certificates menu — a course with parts (modules.part) has one certificate per part plus one for the whole course */
+.crs-certmenu { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; text-align: left; }
+.crs-certmenu__row {
+    display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 4px 10px;
+    padding: 10px 12px; border-radius: 10px;
+    border: 1px solid rgba(var(--accent-rgb), 0.14); background: rgba(var(--accent-rgb), 0.04);
+    font: inherit; color: var(--text-light); text-align: left;
+}
+.crs-certmenu__row--open { cursor: pointer; transition: background 0.15s, border-color 0.15s; }
+.crs-certmenu__row--open:hover { background: rgba(var(--accent-rgb), 0.09); border-color: rgba(var(--accent-rgb), 0.3); }
+.crs-certmenu__icon { font-size: 1.1rem; }
+.crs-certmenu__name { font-size: 0.88rem; font-weight: 600; }
+.crs-certmenu__action { font-size: 0.78rem; font-weight: 700; color: var(--accent-color); }
+.crs-certmenu__row--locked { color: var(--text-gray); }
+.crs-certmenu__count { font-size: 0.74rem; }
+.crs-certmenu__bar { grid-column: 2 / -1; display: block; height: 4px; border-radius: 2px; background: rgba(var(--accent-rgb), 0.12); overflow: hidden; }
+.crs-certmenu__fill { display: block; height: 100%; border-radius: 2px; background: linear-gradient(90deg, var(--accent-color), var(--accent-light, #FAF7F3)); }
+[data-theme="light"] .crs-certmenu__row { color: #111317; }
+[data-theme="light"] .crs-certmenu__row--locked { color: #6b7280; }

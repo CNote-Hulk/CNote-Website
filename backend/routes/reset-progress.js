@@ -29,6 +29,7 @@ async function resetUserData(userId) {
         'DELETE FROM user_favorites WHERE user_id = $1',
         'DELETE FROM user_owned_consoles WHERE user_id = $1',
         'DELETE FROM xp_transactions WHERE user_id = $1',
+        'DELETE FROM course_part_completions WHERE user_id = $1',
     ];
     for (const q of queries) {
         try { await pool.query(q, [userId]); } catch (_) { /* table may not exist yet */ }

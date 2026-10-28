@@ -86,6 +86,7 @@ router.get('/courses/:slug', authOptional, async (req, res) => {
             SELECT m.id,
                 COALESCE(mt.title, m.title) AS title,
                 m.order_index,
+                m.part,
                 COALESCE(
                     json_agg(
                         json_build_object(
@@ -180,6 +181,35 @@ router.get('/courses/:slug/progress', authRequired, async (req, res) => {
             `, [courseId])
         ]);
 
+        // Per-part progress (course parts, e.g. 'basics' / 'deep-dive'). Counts ALL lessons of the part, written or not,
+        // exactly like the course total above. Additive: older clients ignore the field. A failure here must not break
+        // the whole progress call.
+        let parts = [];
+        try {
+            const partsResult = await pool.query(`
+                SELECT m.part,
+                       COUNT(l.id)::int AS total,
+                       COUNT(ul.id) FILTER (WHERE ul.completed = true)::int AS done,
+                       pc.completed_at
+                FROM modules m
+                JOIN lessons l ON l.module_id = m.id
+                LEFT JOIN user_lessons ul ON ul.lesson_id = l.id AND ul.user_id = $2
+                LEFT JOIN course_part_completions pc ON pc.course_id = m.course_id AND pc.part = m.part AND pc.user_id = $2
+                WHERE m.course_id = $1 AND m.part IS NOT NULL
+                GROUP BY m.part, pc.completed_at
+                ORDER BY MIN(m.order_index)
+            `, [courseId, userId]);
+            parts = partsResult.rows.map(r => ({
+                part: r.part,
+                total: r.total,
+                done: r.done,
+                completed: !!r.completed_at,
+                completed_at: r.completed_at || null
+            }));
+        } catch (partsErr) {
+            console.error('GET /courses/:slug/progress parts error:', partsErr.message);
+        }
+
         const progress = progressResult.rows[0] || {};
         const completedIds = completedResult.rows.map(r => r.lesson_id);
         const total = totalResult.rows[0].total;
@@ -195,7 +225,9 @@ router.get('/courses/:slug/progress', authRequired, async (req, res) => {
             quiz_scores: quizScores,
             last_lesson_id: progress.last_lesson_id || null,
             course_completed: !!progress.completed_at,
-            total_lessons: total
+            course_completed_at: progress.completed_at || null,
+            total_lessons: total,
+            parts
         });
     } catch (err) {
         console.error('GET /courses/:slug/progress error:', err);
@@ -444,13 +476,45 @@ router.post('/lessons/:id/complete', authRequired, async (req, res) => {
                 completed_at = CASE WHEN $4 IS NOT NULL THEN $4 ELSE user_course_progress.completed_at END
         `, [userId, course_id, nextLessonId, allDone ? new Date() : null]);
 
-        res.json({ ok: true });
+        // Course parts: if this lesson's module belongs to a part and every lesson of that part is now done, record it once.
+        // Never lets a failure here fail the lesson completion itself.
+        let partCompleted = null;
+        try {
+            const partRow = (await pool.query(
+                'SELECT m.part FROM lessons l JOIN modules m ON m.id = l.module_id WHERE l.id = $1',
+                [lessonId]
+            )).rows[0];
+            if (partRow && partRow.part) {
+                const pr = (await pool.query(`
+                    SELECT COUNT(l.id)::int AS total,
+                           COUNT(ul.id) FILTER (WHERE ul.completed = true)::int AS done
+                    FROM modules m
+                    JOIN lessons l ON l.module_id = m.id
+                    LEFT JOIN user_lessons ul ON ul.lesson_id = l.id AND ul.user_id = $3
+                    WHERE m.course_id = $1 AND m.part = $2
+                `, [course_id, partRow.part, userId])).rows[0];
+                if (pr.total > 0 && pr.done >= pr.total) {
+                    const ins = await pool.query(
+                        'INSERT INTO course_part_completions (user_id, course_id, part) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING RETURNING part',
+                        [userId, course_id, partRow.part]
+                    );
+                    if (ins.rows.length) partCompleted = partRow.part;
+                }
+            }
+        } catch (partErr) {
+            console.error('POST /lessons/:id/complete part check error:', partErr.message);
+        }
+
+        res.json({ ok: true, part_completed: partCompleted });
         // Fire-and-forget XP awards (sequential so level-up detection is accurate)
         ;(async () => {
             const io = req.app.get('io');
             await awardXP(pool, io, userId, 'lesson_complete', lessonId.toString());
             if (Number(quiz_score) === 100) {
                 await awardXP(pool, io, userId, 'lesson_perfect', lessonId.toString());
+            }
+            if (partCompleted) {
+                await awardXP(pool, io, userId, 'part_complete', `${course_id}:${partCompleted}`);
             }
             if (allDone) {
                 await awardXP(pool, io, userId, 'course_complete', course_id.toString());

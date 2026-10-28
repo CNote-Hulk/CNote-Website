@@ -21,6 +21,7 @@ const XP_ACTIONS = {
     lesson_complete:     { xp: 50,  limit: 'per_item',      description: 'Completed a lesson' },
     lesson_perfect:      { xp: 30,  limit: 'per_item',      description: 'Perfect quiz score' },
     course_complete:     { xp: 200, limit: 'per_item',      description: 'Completed a course' },
+    part_complete:       { xp: 150, limit: 'per_item',      description: 'Completed a course part' },
     first_course:        { xp: 100, limit: 'once',          description: 'First course completed' },
     console_visit:       { xp: 10,  limit: 'per_item',      description: 'Visited a console page' },
     console_favorite:    { xp: 5,   limit: 'per_item',      description: 'Added console to favorites' },

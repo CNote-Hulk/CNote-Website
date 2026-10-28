@@ -693,6 +693,17 @@ async function initializeSchema() {
 		`CREATE INDEX IF NOT EXISTS idx_connected_consoles_user ON connected_consoles(user_id)`,
 		// Quiz translations: one row per (question, lang). quiz_questions stays the EN canonical row;
 		// options must keep the SAME ORDER as the EN options (correct_option is an index into them).
+		// Course parts: a course can be split into named parts (modules.part, e.g. 'basics' / 'deep-dive'); a part has its own
+		// certificate. NULL = the module belongs to no part (every course except Console Engineering).
+		`ALTER TABLE modules ADD COLUMN IF NOT EXISTS part TEXT`,
+		// One row per (user, course, part) once every lesson of that part is completed. Kept even if lessons are added later.
+		`CREATE TABLE IF NOT EXISTS course_part_completions (
+			user_id      INTEGER   NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+			course_id    INTEGER   NOT NULL REFERENCES courses(id) ON DELETE CASCADE,
+			part         TEXT      NOT NULL,
+			completed_at TIMESTAMP DEFAULT NOW(),
+			PRIMARY KEY (user_id, course_id, part)
+		)`,
 		`CREATE TABLE IF NOT EXISTS quiz_question_translations (
 			id          SERIAL PRIMARY KEY,
 			question_id INTEGER NOT NULL REFERENCES quiz_questions(id) ON DELETE CASCADE,

@@ -1,5 +1,6 @@
 import { AuthModule } from '../modules/auth.js?v=20261005';
 import { API_BASE_URL } from '../config.js';
+import { certT, partLabel, certDate } from '../modules/cert-i18n.js?v=20261029';
 
 const params = new URLSearchParams(window.location.search);
 const slug = params.get('slug');
@@ -84,28 +85,32 @@ function openPopover(anchor, html) {
     setTimeout(() => document.addEventListener('click', _popoverOutsideHandler, true), 0);
 }
 
-function showIncompleteModal(anchor, completed, total) {
+// Certificate strings follow the site language (cnote_lang); see modules/cert-i18n.js.
+function ct(key, vars) { return certT(key, getCurrentLang(), vars); }
+
+function showIncompleteModal(anchor, completed, total, kind) {
     const pct = total > 0 ? Math.round((completed / total) * 100) : 0;
     openPopover(anchor, `
         <div class="crs-popover__icon">🔒</div>
-        <h3 class="crs-popover__title">Certificate Locked</h3>
-        <p class="crs-popover__text">Complete all lessons to unlock your certificate.</p>
+        <h3 class="crs-popover__title">${esc(ct('cert_locked_title'))}</h3>
+        <p class="crs-popover__text">${esc(ct(kind === 'part' ? 'cert_locked_part' : 'cert_locked_course'))}</p>
         <div class="crs-popover__prog-header">
-            <span>Progress</span><span>${pct}%</span>
+            <span>${esc(ct('cert_progress'))}</span><span>${pct}%</span>
         </div>
         <div class="crs-popover__track"><div class="crs-popover__fill" style="width:${pct}%"></div></div>
-        <p class="crs-popover__sub">${completed} of ${total} lessons completed</p>
-        <button class="crs-popover__close" aria-label="Close">✕</button>
+        <p class="crs-popover__sub">${esc(ct('cert_lessons_done', { done: completed, total }))}</p>
+        <button class="crs-popover__close" aria-label="${esc(ct('cert_close'))}">✕</button>
     `);
 }
 
-function showCertificateModal(anchor, course, completedCount) {
+// cert = { title, iso, count } - title is what the certificate says was completed, iso the real completion time
+// (null -> today), count the number of lessons it covers.
+function showCertificateModal(anchor, cert) {
     const userName = getUsername() || 'Learner';
-    const now = new Date();
-    const dateStr = now.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    const dateStr = certDate(cert.iso, getCurrentLang());
 
     openPopover(anchor, `
-        <button class="crs-popover__close" aria-label="Close">✕</button>
+        <button class="crs-popover__close" aria-label="${esc(ct('cert_close'))}">✕</button>
         <div class="crs-cert__deco crs-cert__deco--tl"></div>
         <div class="crs-cert__deco crs-cert__deco--br"></div>
         <div class="crs-cert__top">
@@ -113,17 +118,17 @@ function showCertificateModal(anchor, course, completedCount) {
                 <span class="crs-cert__logo-icon">📜</span>
                 <span class="crs-cert__logo-text">Console Notebook</span>
             </div>
-            <p class="crs-cert__subtitle">Certificate of Completion</p>
+            <p class="crs-cert__subtitle">${esc(ct('cert_of_completion'))}</p>
         </div>
         <div class="crs-cert__divider"></div>
         <div class="crs-cert__body">
-            <p class="crs-cert__awarded-to">This certifies that</p>
+            <p class="crs-cert__awarded-to">${esc(ct('cert_certifies'))}</p>
             <h2 class="crs-cert__name">${esc(userName)}</h2>
-            <p class="crs-cert__completed-text">has successfully completed</p>
-            <h3 class="crs-cert__course">${esc(course.title)}</h3>
+            <p class="crs-cert__completed-text">${esc(ct('cert_completed_text'))}</p>
+            <h3 class="crs-cert__course">${esc(cert.title)}</h3>
             <div class="crs-cert__rank-wrap">
                 <div class="crs-cert__rank">
-                    <span class="crs-cert__rank-label">Earned Rank</span>
+                    <span class="crs-cert__rank-label">${esc(ct('cert_rank_label'))}</span>
                     <span class="crs-cert__rank-value">Adept</span>
                 </div>
             </div>
@@ -131,12 +136,12 @@ function showCertificateModal(anchor, course, completedCount) {
         <div class="crs-cert__divider"></div>
         <div class="crs-cert__footer">
             <div class="crs-cert__date-block">
-                <span class="crs-cert__footer-label">Date</span>
-                <span class="crs-cert__footer-val">${dateStr}</span>
+                <span class="crs-cert__footer-label">${esc(ct('cert_date'))}</span>
+                <span class="crs-cert__footer-val">${esc(dateStr)}</span>
             </div>
             <div class="crs-cert__lessons-block">
-                <span class="crs-cert__footer-label">Completed</span>
-                <span class="crs-cert__footer-val">${completedCount} lessons</span>
+                <span class="crs-cert__footer-label">${esc(ct('cert_completed_label'))}</span>
+                <span class="crs-cert__footer-val">${esc(ct('cert_lessons_count', { n: cert.count }))}</span>
             </div>
             <div class="crs-cert__sig-block">
                 <div class="crs-cert__sig-line"></div>
@@ -144,6 +149,55 @@ function showCertificateModal(anchor, course, completedCount) {
             </div>
         </div>
     `);
+}
+
+// Courses split into parts (modules.part, e.g. 'basics' / 'deep-dive') get a menu with one certificate per part plus
+// one for the whole course; a locked entry shows how far along the learner is.
+function certificateEntries(course, progress, total, completed) {
+    const lang = getCurrentLang();
+    const entries = (progress.parts || []).map(p => ({
+        title: partLabel(p.part, lang),
+        certTitle: `${course.title} — ${partLabel(p.part, lang)}`,
+        done: p.done, total: p.total, unlocked: !!p.completed, iso: p.completed_at, count: p.total
+    }));
+    entries.push({
+        title: ct('cert_whole_course'), certTitle: course.title,
+        done: completed, total, unlocked: !!progress.course_completed, iso: progress.course_completed_at, count: completed
+    });
+    return entries;
+}
+
+function showCertificatesMenu(anchor, course, progress, total, completed) {
+    const entries = certificateEntries(course, progress, total, completed);
+    const rows = entries.map((e, i) => {
+        if (e.unlocked) {
+            return `<button type="button" class="crs-certmenu__row crs-certmenu__row--open" data-i="${i}">
+                <span class="crs-certmenu__icon">🎓</span>
+                <span class="crs-certmenu__name">${esc(e.title)}</span>
+                <span class="crs-certmenu__action">${esc(ct('cert_menu_view'))}</span>
+            </button>`;
+        }
+        const pct = e.total > 0 ? Math.round((e.done / e.total) * 100) : 0;
+        return `<div class="crs-certmenu__row crs-certmenu__row--locked">
+            <span class="crs-certmenu__icon">🔒</span>
+            <span class="crs-certmenu__name">${esc(e.title)}</span>
+            <span class="crs-certmenu__count">${e.done}/${e.total}</span>
+            <span class="crs-certmenu__bar"><span class="crs-certmenu__fill" style="width:${pct}%"></span></span>
+        </div>`;
+    }).join('');
+
+    openPopover(anchor, `
+        <button class="crs-popover__close" aria-label="${esc(ct('cert_close'))}">✕</button>
+        <h3 class="crs-popover__title">${esc(ct('cert_menu_title'))}</h3>
+        <div class="crs-certmenu">${rows}</div>
+    `);
+    document.querySelectorAll('.crs-certmenu__row--open').forEach(btn => {
+        btn.addEventListener('click', ev => {
+            ev.stopPropagation();
+            const e = entries[Number(btn.dataset.i)];
+            showCertificateModal(anchor, { title: e.certTitle, iso: e.iso, count: e.count });
+        });
+    });
 }
 
 function renderHeader(course, progress) {
@@ -200,11 +254,12 @@ function renderHeroStats(course, progress) {
         }
     }
 
+    const hasParts = !!(progress && Array.isArray(progress.parts) && progress.parts.length > 0);
     const btnsEl = document.createElement('div');
     btnsEl.className = 'crs-hero-actions';
     btnsEl.innerHTML = `
         <a href="${resumeHref}" class="crs-hero-btn crs-hero-btn--primary">${resumeLabel}</a>
-        <button type="button" class="crs-hero-btn crs-hero-btn--outline" id="crs-cert-btn">View Certificate</button>
+        <button type="button" class="crs-hero-btn crs-hero-btn--outline" id="crs-cert-btn">${esc(hasParts ? ct('cert_btn_list') : ct('cert_btn_view'))}</button>
     `;
 
     const body = inner.querySelector('.crs-hero__body');
@@ -217,10 +272,12 @@ function renderHeroStats(course, progress) {
     if (certBtn) {
         certBtn.addEventListener('click', e => {
             e.stopPropagation();
-            if (isCourseCompleted) {
-                showCertificateModal(certBtn, course, completed);
+            if (hasParts) {
+                showCertificatesMenu(certBtn, course, progress, total, completed);
+            } else if (isCourseCompleted) {
+                showCertificateModal(certBtn, { title: course.title, iso: progress.course_completed_at, count: completed });
             } else {
-                showIncompleteModal(certBtn, completed, total);
+                showIncompleteModal(certBtn, completed, total, 'course');
             }
         });
     }

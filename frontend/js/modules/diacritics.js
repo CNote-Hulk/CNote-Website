@@ -29,7 +29,15 @@ const REPLACEMENTS = [
 
 const ATTRIBUTE_NAMES = ['placeholder', 'title', 'aria-label', 'content'];
 
+// These replacements are Romanian-only ("si" -> "și"). They used to run on every page in every language, which
+// rewrote ordinary words in Italian ("si"), Spanish and French ("si") into Romanian ones - lesson 22 showed ~24
+// wrong "și" in Italian (found 2026-10-28). Mirrors I18nModule.getStoredLang(): no stored language means English.
+function isRomanian() {
+    try { return localStorage.getItem('cnote_lang') === 'ro'; } catch { return false; }
+}
+
 function normalizeText(text) {
+    if (!isRomanian()) return text;
     let normalized = text;
 
     REPLACEMENTS.forEach(([pattern, replacement]) => {
