@@ -11,7 +11,7 @@ import { DiacriticsModule } from './modules/diacritics.js';
 import { SearchModule } from './modules/search.js';
 import { ProfileDropdownModule } from './modules/profile-dropdown.js';
 import { AuthModule } from './modules/auth.js?v=20261005';
-import { I18nModule } from './modules/i18n.js?v=20261028';
+import { I18nModule } from './modules/i18n.js?v=20261028b';
 import { initAchievementSocket } from './modules/achievement-socket.js';
 import { NotificationsModule } from './modules/notifications.js';
 import { initPixelEmoji } from './modules/pixel-emoji.js?v=20261005d';

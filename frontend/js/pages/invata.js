@@ -5,6 +5,12 @@
  */
 import { AuthModule } from '../modules/auth.js?v=20261005';
 import { API_BASE_URL } from '../config.js';
+import { I18nModule } from '../modules/i18n.js?v=20261028b';
+
+function tr(key) {
+    I18nModule.lang = I18nModule.getStoredLang();
+    return I18nModule.t(key);
+}
 
 async function initCourseCardsProgress() {
     const user = AuthModule.getCurrentUser();
@@ -42,7 +48,11 @@ async function initCourseCardsProgress() {
 
             // Change button text if user has already started
             if (cta && completed > 0) {
-                cta.textContent = data.course_completed ? 'Review Course →' : 'Continue →';
+                // Own the label from here on: drop data-i18n so a later language apply() can't reset it,
+                // and keep it in sync on language change (see the listener below).
+                cta.removeAttribute('data-i18n');
+                cta.dataset.ctaKey = data.course_completed ? 'learn_course_review_btn' : 'learn_course_continue_btn';
+                cta.textContent = tr(cta.dataset.ctaKey);
                 if (data.last_lesson_id) {
                     cta.href = `lesson.html?id=${data.last_lesson_id}&slug=${encodeURIComponent(slug)}`;
                 }
@@ -50,6 +60,10 @@ async function initCourseCardsProgress() {
         } catch { /* network error — ignore */ }
     }));
 }
+
+window.addEventListener('cn:language-changed', () => {
+    document.querySelectorAll('[data-cta-key]').forEach(el => { el.textContent = tr(el.dataset.ctaKey); });
+});
 
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initCourseCardsProgress);
