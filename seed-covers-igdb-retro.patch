@@ -1,0 +1,74 @@
+diff --git a/backend/scripts/seed-covers-igdb.js b/backend/scripts/seed-covers-igdb.js
+index 7d7b595..5f334c6 100644
+--- a/backend/scripts/seed-covers-igdb.js
++++ b/backend/scripts/seed-covers-igdb.js
+@@ -6,7 +6,7 @@
+    Needs IGDB_CLIENT_ID and IGDB_CLIENT_SECRET in .env — a Twitch
+    application, created at https://dev.twitch.tv/console/apps.
+ 
+-   Usage: node scripts/seed-covers-igdb.js [--apply] [console-slug ...]
++   Usage: node scripts/seed-covers-igdb.js [--apply] [--retro] [console-slug ...]
+    ───────────────────────────────────────── */
+ require('dotenv').config();
+ const { Pool } = require('pg');
+@@ -39,6 +39,51 @@ const IGDB_NAMES = {
+ 	'ps-vita': 'PlayStation Vita',
+ };
+ 
++// The older consoles libretro already covers best - IGDB is only asked about rows libretro left
++// empty (the script never overwrites a cover), so this fills the gaps libretro's file naming
++// leaves, mostly Japan-only releases and titles whose libretro name differs from the Wikidata one.
++// Run with --retro. Names are looked up on IGDB at start; any that IGDB does not recognise are
++// reported and skipped, so run WITHOUT --apply first and read the warnings.
++const RETRO_CONSOLES = [
++	'playstation-1', 'playstation-2', 'psp', 'nintendo-ds', 'nintendo-wii', 'nintendo-gamecube', 'xbox',
++	'nintendo-64', 'snes', 'nes', 'famicom', 'game-boy', 'game-boy-color', 'game-boy-advance',
++	'sega-genesis', 'sega-master-system', 'sega-game-gear', 'sega-saturn', 'sega-dreamcast',
++	'pc-engine', 'neo-geo-aes', 'atari-2600', 'atari-7800', 'atari-lynx', 'atari-jaguar',
++	'3do', 'philips-cd-i', 'wonderswan', 'colecovision', 'intellivision',
++];
++Object.assign(IGDB_NAMES, {
++	'playstation-1': 'PlayStation',
++	'playstation-2': 'PlayStation 2',
++	'psp': 'PlayStation Portable',
++	'nintendo-ds': 'Nintendo DS',
++	'nintendo-wii': 'Wii',
++	'nintendo-gamecube': 'Nintendo GameCube',
++	'xbox': 'Xbox',
++	'nintendo-64': 'Nintendo 64',
++	'snes': 'Super Nintendo Entertainment System',
++	'nes': 'Nintendo Entertainment System',
++	'famicom': 'Family Computer',
++	'game-boy': 'Game Boy',
++	'game-boy-color': 'Game Boy Color',
++	'game-boy-advance': 'Game Boy Advance',
++	'sega-genesis': 'Sega Mega Drive/Genesis',
++	'sega-master-system': 'Sega Master System/Mark III',
++	'sega-game-gear': 'Sega Game Gear',
++	'sega-saturn': 'Sega Saturn',
++	'sega-dreamcast': 'Dreamcast',
++	'pc-engine': 'TurboGrafx-16/PC Engine',
++	'neo-geo-aes': 'Neo Geo AES',
++	'atari-2600': 'Atari 2600',
++	'atari-7800': 'Atari 7800',
++	'atari-lynx': 'Atari Lynx',
++	'atari-jaguar': 'Atari Jaguar',
++	'3do': '3DO Interactive Multiplayer',
++	'philips-cd-i': 'Philips CD-i',
++	'wonderswan': 'WonderSwan',
++	'colecovision': 'ColecoVision',
++	'intellivision': 'Intellivision',
++});
++
+ const norm = s => String(s).toLowerCase()
+ 	.replace(/[·–—]/g, ' ')
+ 	.replace(/&/g, ' and ')
+@@ -87,7 +132,7 @@ async function igdb(path, body, auth) {
+ (async () => {
+ 	const apply = process.argv.includes('--apply');
+ 	const wanted = process.argv.slice(2).filter(a => !a.startsWith('--'));
+-	const consoles = wanted.length ? wanted : DEFAULT_CONSOLES;
++	const consoles = wanted.length ? wanted : process.argv.includes('--retro') ? RETRO_CONSOLES : DEFAULT_CONSOLES;
+ 	const auth = await token();
+ 
+ 	// Resolve the ids once, by name.
