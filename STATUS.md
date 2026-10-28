@@ -7,6 +7,8 @@ own notes.
 
 ## Gata (Done)
 
+- **(2026-10-28, branch `console-engineering`, NOT merged, NOT run against the database)** Quiz translations + the Electronics Foundations course skeleton. New table `quiz_question_translations` (db.js migration) and `GET /lessons/:id` returns the quiz in `?lang=` with an English fallback; 350 translations (70 Starter Guide questions x RO/DE/ES/FR/IT) in `backend/scripts/data/`; `seed-electronics-foundations.js` creates the 7-module / 51-lesson course (unpublished) with Lesson 1 written in English and the rest as placeholders; new block CSS in `lesson.css`; the course-complete screen no longer says 'Console Starter Guide' for every course. Both scripts were tested on a throwaway PostgreSQL 16 (dry-run rollback, idempotency, hand-edit protection, option re-alignment) - **not** on Supabase. To go live: merge the branch, let Railway boot (creates the table), then `node backend/scripts/insert-quiz-translations.js` (dry run) then `--apply`, and `node backend/scripts/seed-electronics-foundations.js` (dry run) then `--apply`. Still missing: Lesson 1 translated into RO/DE/ES/FR/IT (until then those languages fall back to the English text and title).
+
 - Core platform live in beta at consolenotebook.com: console encyclopedia, hardware comparison tool,
   repair course with progress tracking, marketplace (no-payment checkout via `routes/orders.js`),
   forums, DMs, friends, gamification (XP/levels/achievements).
