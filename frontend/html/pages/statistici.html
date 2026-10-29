@@ -81,7 +81,7 @@
                 <!-- 2 — Quizzes -->
                 <article class="statsd-card">
                     <span class="statsd-card__icon" aria-hidden="true">📝</span>
-                    <span class="statsd-card__label" data-i18n="stats_quizzes">Avg Quiz Score</span>
+                    <span class="statsd-card__label" id="stat-quiz-label">Avg Quiz Score</span>
                     <div class="statsd-card__num" id="stat-quiz-attempts">—</div>
                     <div class="statsd-card__sub" id="stat-quiz-sub">across all quizzes</div>
                 </article>
@@ -97,7 +97,7 @@
                 <!-- 4 — Courses in progress -->
                 <article class="statsd-card">
                     <span class="statsd-card__icon" aria-hidden="true">📚</span>
-                    <span class="statsd-card__label" data-i18n="stats_courses_completed">Courses In Progress</span>
+                    <span class="statsd-card__label" id="stat-courses-label">Courses In Progress</span>
                     <div class="statsd-card__num" id="stat-courses-completed">—</div>
                     <div class="statsd-card__sub" id="stat-courses-sub">active courses</div>
                 </article>
@@ -105,15 +105,15 @@
                 <!-- 5 — This week -->
                 <article class="statsd-card">
                     <span class="statsd-card__icon" aria-hidden="true">⭐</span>
-                    <span class="statsd-card__label" data-i18n="stats_perfect">This Week</span>
+                    <span class="statsd-card__label" id="stat-week-label">This Week</span>
                     <div class="statsd-card__num" id="stat-perfect-lessons">—</div>
-                    <div class="statsd-card__sub">lessons completed</div>
+                    <div class="statsd-card__sub" id="stat-week-sub">lessons completed</div>
                 </article>
 
                 <!-- 6 — Courses completed -->
                 <article class="statsd-card">
                     <span class="statsd-card__icon" aria-hidden="true">🎓</span>
-                    <span class="statsd-card__label" data-i18n="stats_lessons_visited">Courses Completed</span>
+                    <span class="statsd-card__label" data-i18n="stats_courses_completed">Courses Completed</span>
                     <div class="statsd-card__num" id="stat-lessons-visited">—</div>
                     <div class="statsd-card__sub" id="stat-lessons-visited-sub">finished courses</div>
                 </article>
@@ -196,7 +196,7 @@
     <script src="../../js/data/consoles-data.js"></script>
     <script src="../../js/modules/gamification-data.js"></script>
     <script type="module" src="../../js/main.js?v=20261028b"></script>
-    <script type="module" src="../../js/pages/statistici.js?v=20261029"></script>
+    <script type="module" src="../../js/pages/statistici.js?v=20261029c"></script>
     <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
     <script src="../../js/fallback/search-profile.js"></script>
 

@@ -8,7 +8,7 @@ import { API_BASE_URL } from '/js/config.js';
 import { AchievementsModule } from '/js/modules/achievements.js';
 import { I18nModule } from '/js/modules/i18n.js?v=20261028b';
 import { shareOrCopy } from '/js/utils/share.js';
-import { certT, certName, certDate } from '/js/modules/cert-i18n.js?v=20261029b';
+import { certT, certName, certDate } from '/js/modules/cert-i18n.js?v=20261029c';
 import { confirmModal, promptModal } from '/js/utils/confirm-modal.js';
 import { NO_IMAGE_PLACEHOLDER } from '/js/utils/no-image-placeholder.js';
 

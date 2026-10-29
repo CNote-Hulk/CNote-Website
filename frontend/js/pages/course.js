@@ -1,6 +1,6 @@
 import { AuthModule } from '../modules/auth.js?v=20261005';
 import { API_BASE_URL } from '../config.js';
-import { certT, partLabel, certDate } from '../modules/cert-i18n.js?v=20261029b';
+import { certT, partLabel, certDate } from '../modules/cert-i18n.js?v=20261029c';
 
 const params = new URLSearchParams(window.location.search);
 const slug = params.get('slug');

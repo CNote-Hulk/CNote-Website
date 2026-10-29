@@ -55,7 +55,7 @@ const MESSAGES = {
         cert_of_completion: 'Certificat de réussite', cert_certifies: 'Il est certifié que', cert_completed_text: 'a terminé avec succès',
         cert_rank_label: 'Rang obtenu', cert_date: 'Date', cert_completed_label: 'Terminé', cert_lessons_count: '{n} leçons', cert_close: 'Fermer',
         part_basics: 'Les bases', part_deep_dive: 'Approfondissement',
-        cert_profile_title: 'Certificats', cert_earned_on: 'Obtenu le {date}', cert_stat_sub: '{earned} certificats sur {total} obtenus', cert_goal_desc: '{done} leçons sur {total}',
+        cert_profile_title: 'Certificats', cert_earned_on: 'Obtenu le {date}', cert_stat_sub: 'Certificats obtenus : {earned} sur {total}', cert_goal_desc: '{done} leçons sur {total}',
     },
     it: {
         cert_btn_view: 'Vedi il certificato', cert_btn_list: 'Certificati', cert_menu_title: 'I tuoi certificati', cert_menu_view: 'Vedi',
@@ -66,7 +66,7 @@ const MESSAGES = {
         cert_of_completion: 'Certificato di completamento', cert_certifies: 'Si certifica che', cert_completed_text: 'ha completato con successo',
         cert_rank_label: 'Grado ottenuto', cert_date: 'Data', cert_completed_label: 'Completato', cert_lessons_count: '{n} lezioni', cert_close: 'Chiudi',
         part_basics: 'Le basi', part_deep_dive: 'Approfondimento',
-        cert_profile_title: 'Certificati', cert_earned_on: 'Ottenuto il {date}', cert_stat_sub: '{earned} certificati su {total} ottenuti', cert_goal_desc: '{done} lezioni su {total}',
+        cert_profile_title: 'Certificati', cert_earned_on: 'Ottenuto il {date}', cert_stat_sub: 'Certificati ottenuti: {earned} su {total}', cert_goal_desc: '{done} lezioni su {total}',
     },
 };
 

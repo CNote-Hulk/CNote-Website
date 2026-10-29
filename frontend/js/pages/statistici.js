@@ -8,9 +8,24 @@ import { AuthModule } from '../modules/auth.js?v=20261005';
 import { AchievementsModule } from '../modules/achievements.js';
 import { I18nModule } from '../modules/i18n.js?v=20261028b';
 import { shareOrCopy } from '../utils/share.js';
-import { certT, certName } from '../modules/cert-i18n.js?v=20261029b';
+import { certT, certName } from '../modules/cert-i18n.js?v=20261029c';
 
 
+// Texts of the learning cards. Their labels used translation keys that mean something else ("Quizzes Completed" for an
+// average score, "Courses Completed" for courses in progress, "Perfect Quizzes" for this week's lessons, "Lessons
+// Visited" for completed courses), so they are set here, in the six site languages, and re-applied on a language change.
+const CARD_TEXT = {
+    en: { quiz: 'Avg Quiz Score', quizSub: 'average quiz score', inProgress: 'Courses In Progress', inProgressSub: 'active courses', week: 'This Week', weekSub: 'lessons completed', finishedSub: 'finished courses', lessonsSub: 'of {n} lessons' },
+    ro: { quiz: 'Scor mediu la quiz-uri', quizSub: 'scor mediu la quiz-uri', inProgress: 'Cursuri în desfășurare', inProgressSub: 'cursuri active', week: 'Săptămâna asta', weekSub: 'lecții terminate', finishedSub: 'cursuri terminate', lessonsSub: 'din {n} lecții' },
+    de: { quiz: 'Ø Quiz-Ergebnis', quizSub: 'durchschnittliches Quiz-Ergebnis', inProgress: 'Laufende Kurse', inProgressSub: 'aktive Kurse', week: 'Diese Woche', weekSub: 'abgeschlossene Lektionen', finishedSub: 'abgeschlossene Kurse', lessonsSub: 'von {n} Lektionen' },
+    es: { quiz: 'Puntuación media de quiz', quizSub: 'puntuación media de quiz', inProgress: 'Cursos en curso', inProgressSub: 'cursos activos', week: 'Esta semana', weekSub: 'lecciones completadas', finishedSub: 'cursos terminados', lessonsSub: 'de {n} lecciones' },
+    fr: { quiz: 'Score moyen aux quiz', quizSub: 'score moyen aux quiz', inProgress: 'Cours en cours', inProgressSub: 'cours actifs', week: 'Cette semaine', weekSub: 'leçons terminées', finishedSub: 'cours terminés', lessonsSub: 'sur {n} leçons' },
+    it: { quiz: 'Punteggio medio dei quiz', quizSub: 'punteggio medio dei quiz', inProgress: 'Corsi in corso', inProgressSub: 'corsi attivi', week: 'Questa settimana', weekSub: 'lezioni completate', finishedSub: 'corsi completati', lessonsSub: 'su {n} lezioni' },
+};
+const cardState = { totalLessons: 0, certificates: [] };
+
+// (Defined before the bootstrap below: renderStats() starts running right at the top of this module, so these constants
+// must already exist when it first calls applyCardTexts().)
 let user = AuthModule.getCurrentUser();
 if (!user) {
     AuthModule.autoLogin().then(u => {
@@ -100,6 +115,23 @@ async function getCourseProgress() {
         return null;
     }
 }
+
+function applyCardTexts() {
+    const lang = localStorage.getItem('cnote_lang') || 'en';
+    const T = CARD_TEXT[lang] || CARD_TEXT.en;
+    const set = (id, text) => { const el = document.getElementById(id); if (el) el.textContent = text; };
+    set('stat-quiz-label', T.quiz);
+    set('stat-quiz-sub', T.quizSub);
+    set('stat-courses-label', T.inProgress);
+    set('stat-courses-sub', T.inProgressSub);
+    set('stat-week-label', T.week);
+    set('stat-week-sub', T.weekSub);
+    set('stat-lessons-sub', T.lessonsSub.replace('{n}', cardState.totalLessons));
+    set('stat-lessons-visited-sub', cardState.certificates.length
+        ? certT('cert_stat_sub', lang, { earned: cardState.certificates.filter((c) => c.completed).length, total: cardState.certificates.length })
+        : T.finishedSub);
+}
+window.addEventListener('cn:language-changed', applyCardTexts);
 
 /** GET /api/user/certificates — every certificate (earned and locked) with done/total lessons */
 async function getCertificates() {
@@ -238,6 +270,7 @@ async function renderStats() {
     const daysMember = Math.max(1, Math.floor((Date.now() - createdAt) / (1000 * 60 * 60 * 24)) + 1);
     document.getElementById('stat-days-member').textContent = String(daysMember);
 
+    applyCardTexts(); // right away, so the labels are never shown in the wrong language while the data loads
     // Fetch all server data in parallel
     const [visitedConsoles, friendsCount, favoritesCount, ownedCount, learningStats, courseProgress, certificates] = await Promise.all([
         getVisitedConsolesCount(),
@@ -280,14 +313,13 @@ async function renderStats() {
         const subEl = document.getElementById('stat-lessons-sub');
         const fillEl = document.getElementById('stat-lessons-fill');
         if (completedEl) completedEl.textContent = String(total);
-        if (subEl) subEl.textContent = `of ${totalLessons} lessons`;
+        cardState.totalLessons = totalLessons;
         if (fillEl) setTimeout(() => { fillEl.style.width = pct + '%'; }, 80);
 
         // Quiz average score
         const quizEl = document.getElementById('stat-quiz-attempts');
         const quizSubEl = document.getElementById('stat-quiz-sub');
         if (quizEl) quizEl.textContent = avgScore > 0 ? avgScore + '%' : '—';
-        if (quizSubEl) quizSubEl.textContent = 'average quiz score';
 
         // Courses in progress
         const coursesEl = document.getElementById('stat-courses-completed');
@@ -300,11 +332,7 @@ async function renderStats() {
         // Courses completed
         const completedCoursesEl = document.getElementById('stat-lessons-visited');
         if (completedCoursesEl) completedCoursesEl.textContent = String(coursesCompleted);
-        const completedCoursesSub = document.getElementById('stat-lessons-visited-sub');
-        if (completedCoursesSub && certificates.length) {
-            completedCoursesSub.textContent = certT('cert_stat_sub', localStorage.getItem('cnote_lang') || 'en',
-                { earned: certificates.filter((c) => c.completed).length, total: certificates.length });
-        }
+        cardState.certificates = certificates;
 
         // Continue learning link — prefer last_lesson_id from course progress (has slug context)
         const lastLessonId = learningStats.last_lesson_id
@@ -342,6 +370,7 @@ async function renderStats() {
 
     renderGoals(allBadges);
     renderCertificateGoals(certificates);
+    applyCardTexts();
     renderAchievementsPanel(allBadges);
 
     // Level — fetch from API (XP-based: Newcomer → Legend)
