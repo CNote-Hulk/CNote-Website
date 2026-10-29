@@ -214,9 +214,19 @@
     scrollbar-color: var(--accent-color, #E06B58) transparent;
 }
 
-.lsn-course-nav::before {
-    background: linear-gradient(to bottom, rgba(var(--dark-rgb), 0.95) 0%, rgba(var(--dark-rgb), 0.5) 55%, transparent 100%);
+/* Edge fades: this list scrolls inside the sidebar, so its edges fade out wherever more items are hidden.
+   lesson.js (setupScrollFade) toggles .has-fade-top / .has-fade-bottom from the scroll position, which keeps the
+   first and last items fully visible when you are at the very top / bottom. (The old ::before gradient that stood
+   here had no `content`, so it never rendered.) */
+@property --lsn-fade-top    { syntax: '<length>'; inherits: false; initial-value: 0px; }
+@property --lsn-fade-bottom { syntax: '<length>'; inherits: false; initial-value: 0px; }
+.lsn-course-nav {
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 var(--lsn-fade-top), #000 calc(100% - var(--lsn-fade-bottom)), transparent 100%);
+            mask-image: linear-gradient(to bottom, transparent 0, #000 var(--lsn-fade-top), #000 calc(100% - var(--lsn-fade-bottom)), transparent 100%);
+    transition: --lsn-fade-top 0.2s ease, --lsn-fade-bottom 0.2s ease;
 }
+.lsn-course-nav.has-fade-top    { --lsn-fade-top: 30px; }
+.lsn-course-nav.has-fade-bottom { --lsn-fade-bottom: 46px; }
 
 .lsn-course-nav::-webkit-scrollbar {
     width: 6px;

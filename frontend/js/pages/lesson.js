@@ -542,6 +542,20 @@ function renderSidebarTOC(course, completedIds) {
     });
 
     container.appendChild(nav);
+    setupScrollFade(nav);
+}
+
+// Fades the edges of a scrolling list only where more items are hidden (CSS: .lsn-course-nav.has-fade-*).
+function setupScrollFade(el) {
+    const update = () => {
+        const max = el.scrollHeight - el.clientHeight;
+        el.classList.toggle('has-fade-top', el.scrollTop > 2);
+        el.classList.toggle('has-fade-bottom', max > 2 && el.scrollTop < max - 2);
+    };
+    el.addEventListener('scroll', update, { passive: true });
+    if (typeof ResizeObserver !== 'undefined') new ResizeObserver(update).observe(el);
+    else window.addEventListener('resize', update, { passive: true });
+    requestAnimationFrame(update);
 }
 
 /* ─────────────────────────────────────
