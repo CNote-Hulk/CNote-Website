@@ -8,6 +8,7 @@ import { AuthModule } from '../modules/auth.js?v=20261005';
 import { AchievementsModule } from '../modules/achievements.js';
 import { I18nModule } from '../modules/i18n.js?v=20261028b';
 import { shareOrCopy } from '../utils/share.js';
+import { certT, certName } from '../modules/cert-i18n.js?v=20261029b';
 
 
 let user = AuthModule.getCurrentUser();
@@ -98,6 +99,45 @@ async function getCourseProgress() {
     } catch {
         return null;
     }
+}
+
+/** GET /api/user/certificates — every certificate (earned and locked) with done/total lessons */
+async function getCertificates() {
+    try {
+        const resp = await fetch('/api/user/certificates', { headers: authHeaders(), credentials: 'include' });
+        if (!resp.ok) return [];
+        const data = await resp.json();
+        return data.certificates || [];
+    } catch {
+        return [];
+    }
+}
+
+/** Certificates still to earn go on top of the Next Goals list: the two closest to done, with a progress bar */
+function renderCertificateGoals(certs) {
+    const container = document.getElementById('next-goals');
+    if (!container || !certs.length) return;
+    const lang = localStorage.getItem('cnote_lang') || 'en';
+    const open = certs.filter((c) => !c.completed && c.total > 0)
+        .sort((a, b) => (b.done / b.total) - (a.done / a.total))
+        .slice(0, 2);
+    if (!open.length) return;
+    const esc = (v) => String(v).replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+    const allDone = container.querySelector('.next-goal-all-done');
+    if (allDone) allDone.remove();
+    container.insertAdjacentHTML('afterbegin', open.map((c) => {
+        const pct = Math.round((c.done / c.total) * 100);
+        return `
+        <div class="next-goal-item">
+            <div class="next-goal-item__icon-wrap"><span class="next-goal-item__icon">🎓</span></div>
+            <div class="next-goal-item__body">
+                <div class="next-goal-item__name">${esc(certName(c.course_title, c.part, lang))}</div>
+                <div class="next-goal-item__desc">${esc(certT('cert_goal_desc', lang, { done: c.done, total: c.total }))}</div>
+                <span class="cert-goal-bar"><span style="width:${pct}%"></span></span>
+            </div>
+            <span class="next-goal-item__lock" aria-hidden="true">🔒</span>
+        </div>`;
+    }).join(''));
 }
 
 /** Render next achievement goals (up to 6 locked badges) */
@@ -199,13 +239,14 @@ async function renderStats() {
     document.getElementById('stat-days-member').textContent = String(daysMember);
 
     // Fetch all server data in parallel
-    const [visitedConsoles, friendsCount, favoritesCount, ownedCount, learningStats, courseProgress] = await Promise.all([
+    const [visitedConsoles, friendsCount, favoritesCount, ownedCount, learningStats, courseProgress, certificates] = await Promise.all([
         getVisitedConsolesCount(),
         getFriendsCount(),
         getFavoritesCount(),
         getOwnedCount(),
         getLearningStats(),
         getCourseProgress(),
+        getCertificates(),
     ]);
 
     // Consoles visited
@@ -229,9 +270,10 @@ async function renderStats() {
         const coursesCompleted = learningStats.courses_completed || 0;
 
         // Real total from course progress API (fallback to learningStats if unavailable)
-        const totalLessons = courseProgress && courseProgress.total_lessons > 0
-            ? courseProgress.total_lessons
-            : (learningStats.total_lessons || 0);
+        // Lessons available across ALL published courses (the server sums them); the Starter Guide's own total is only a fallback
+        const totalLessons = learningStats.total_lessons > 0
+            ? learningStats.total_lessons
+            : (courseProgress && courseProgress.total_lessons > 0 ? courseProgress.total_lessons : 0);
         const pct = totalLessons > 0 ? Math.min(100, Math.round((total / totalLessons) * 100)) : 0;
 
         const completedEl = document.getElementById('stat-lessons-completed');
@@ -258,11 +300,16 @@ async function renderStats() {
         // Courses completed
         const completedCoursesEl = document.getElementById('stat-lessons-visited');
         if (completedCoursesEl) completedCoursesEl.textContent = String(coursesCompleted);
+        const completedCoursesSub = document.getElementById('stat-lessons-visited-sub');
+        if (completedCoursesSub && certificates.length) {
+            completedCoursesSub.textContent = certT('cert_stat_sub', localStorage.getItem('cnote_lang') || 'en',
+                { earned: certificates.filter((c) => c.completed).length, total: certificates.length });
+        }
 
         // Continue learning link — prefer last_lesson_id from course progress (has slug context)
-        const lastLessonId = (courseProgress && courseProgress.last_lesson_id)
-            || learningStats.last_lesson_id;
-        const courseSlug = courseProgress ? 'starter-guide' : 'starter-guide';
+        const lastLessonId = learningStats.last_lesson_id
+            || (courseProgress && courseProgress.last_lesson_id);
+        const courseSlug = learningStats.last_lesson_course_slug || 'starter-guide';
         const ctaBtn = document.getElementById('statsd-continue-btn');
         if (ctaBtn && lastLessonId) {
             ctaBtn.href = `lesson.html?id=${lastLessonId}&slug=${courseSlug}`;
@@ -294,6 +341,7 @@ async function renderStats() {
     // AchievementsModule.showUnlockNotifications(awardedIds, allBadges); // dacă ai awardedIds
 
     renderGoals(allBadges);
+    renderCertificateGoals(certificates);
     renderAchievementsPanel(allBadges);
 
     // Level — fetch from API (XP-based: Newcomer → Legend)

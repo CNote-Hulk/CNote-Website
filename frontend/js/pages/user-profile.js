@@ -8,6 +8,7 @@ import { API_BASE_URL } from '/js/config.js';
 import { AchievementsModule } from '/js/modules/achievements.js';
 import { I18nModule } from '/js/modules/i18n.js?v=20261028b';
 import { shareOrCopy } from '/js/utils/share.js';
+import { certT, certName, certDate } from '/js/modules/cert-i18n.js?v=20261029b';
 import { confirmModal, promptModal } from '/js/utils/confirm-modal.js';
 import { NO_IMAGE_PLACEHOLDER } from '/js/utils/no-image-placeholder.js';
 
@@ -54,11 +55,40 @@ const t = key => I18nModule.t(key);
 
             // Progress — fetch from server (localStorage only has the viewer's own data)
             let serverCourses = [];
+            let serverCerts = [];
             try {
-                const progRes = await fetch(`${API_BASE_URL}/user/progress/${encodeURIComponent(profile.username)}`);
+                // Sent with the token (when there is one) so the owner still sees their own certificates after hiding their stats.
+                const progHeaders = {};
+                const progToken = localStorage.getItem('cn_token');
+                if (progToken) progHeaders.Authorization = `Bearer ${progToken}`;
+                const progRes = await fetch(`${API_BASE_URL}/user/progress/${encodeURIComponent(profile.username)}`, { headers: progHeaders });
                 const progData = await progRes.json();
-                if (progData.success) serverCourses = progData.courses || [];
+                if (progData.success) {
+                    serverCourses = progData.courses || [];
+                    serverCerts = progData.certificates || [];
+                }
             } catch { /* fall through with empty */ }
+
+            // Certificates earned (the server leaves them out when the user hid their stats): nothing is shown when empty.
+            const certBox = document.getElementById('user-dash-certificates');
+            if (certBox) {
+                if (serverCerts.length === 0) {
+                    certBox.hidden = true;
+                    certBox.innerHTML = '';
+                } else {
+                    const certLang = localStorage.getItem('cnote_lang') || 'en';
+                    certBox.hidden = false;
+                    certBox.innerHTML = `<div class="up-cert-label">${escapeHtml(certT('cert_profile_title', certLang))}</div>
+                        <div class="up-cert-strip">${serverCerts.map(c => `
+                            <div class="up-cert">
+                                <span class="up-cert__icon" aria-hidden="true">🎓</span>
+                                <div class="up-cert__body">
+                                    <div class="up-cert__name">${escapeHtml(certName(c.course_title, c.part, certLang))}</div>
+                                    <div class="up-cert__date">${escapeHtml(certT('cert_earned_on', certLang, { date: certDate(c.completed_at, certLang) }))}</div>
+                                </div>
+                            </div>`).join('')}</div>`;
+                }
+            }
 
             let totalLessons = 0, completedLessons = 0;
             serverCourses.forEach(c => {

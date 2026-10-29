@@ -533,12 +533,72 @@ router.post('/lessons/:id/complete', authRequired, async (req, res) => {
     }
 });
 
+// Every certificate a user can earn: one per course part (modules.part) plus one per course. Like the progress API,
+// done/total count ALL lessons of the part/course, written or not. Failures in the parts query (e.g. the table is
+// missing) only drop the part certificates; the course ones still come back.
+async function loadCertificates(userId) {
+    let parts = [];
+    try {
+        parts = (await pool.query(`
+            SELECT c.id AS course_id, c.slug AS course_slug, c.title AS course_title, m.part,
+                   COUNT(l.id)::int AS total,
+                   COUNT(ul.id) FILTER (WHERE ul.completed = true)::int AS done,
+                   pc.completed_at
+            FROM courses c
+            JOIN modules m ON m.course_id = c.id AND m.part IS NOT NULL
+            JOIN lessons l ON l.module_id = m.id
+            LEFT JOIN user_lessons ul ON ul.lesson_id = l.id AND ul.user_id = $1
+            LEFT JOIN course_part_completions pc ON pc.course_id = c.id AND pc.part = m.part AND pc.user_id = $1
+            WHERE c.is_published = true
+            GROUP BY c.id, c.slug, c.title, m.part, pc.completed_at
+            ORDER BY c.id, MIN(m.order_index)
+        `, [userId])).rows;
+    } catch (err) {
+        console.error('loadCertificates parts error:', err.message);
+    }
+    const courses = (await pool.query(`
+        SELECT c.id AS course_id, c.slug AS course_slug, c.title AS course_title,
+               COUNT(l.id)::int AS total,
+               COUNT(ul.id) FILTER (WHERE ul.completed = true)::int AS done,
+               ucp.completed_at
+        FROM courses c
+        JOIN modules m ON m.course_id = c.id
+        JOIN lessons l ON l.module_id = m.id
+        LEFT JOIN user_lessons ul ON ul.lesson_id = l.id AND ul.user_id = $1
+        LEFT JOIN user_course_progress ucp ON ucp.course_id = c.id AND ucp.user_id = $1
+        WHERE c.is_published = true
+        GROUP BY c.id, c.slug, c.title, ucp.completed_at
+        ORDER BY c.id
+    `, [userId])).rows;
+
+    const out = [];
+    for (const c of courses) {
+        for (const p of parts.filter(x => x.course_id === c.course_id)) {
+            out.push({ kind: 'part', course_slug: c.course_slug, course_title: c.course_title, part: p.part,
+                       done: p.done, total: p.total, completed: !!p.completed_at, completed_at: p.completed_at || null });
+        }
+        out.push({ kind: 'course', course_slug: c.course_slug, course_title: c.course_title, part: null,
+                   done: c.done, total: c.total, completed: !!c.completed_at, completed_at: c.completed_at || null });
+    }
+    return out;
+}
+
+// GET /api/user/certificates — all certificates of the authenticated user, earned and still locked (statistics page)
+router.get('/user/certificates', authRequired, async (req, res) => {
+    try {
+        res.json({ success: true, certificates: await loadCertificates(req.user.id) });
+    } catch (err) {
+        console.error('GET /user/certificates error:', err);
+        res.status(500).json({ success: false, error: 'Internal server error' });
+    }
+});
+
 // GET /api/user/stats — learning statistics for the authenticated user
 router.get('/user/stats', authRequired, async (req, res) => {
     try {
         const userId = req.user.id;
 
-        const [totalResult, weekResult, avgResult, inProgressResult, completedResult, lastLessonResult] = await Promise.all([
+        const [totalResult, weekResult, avgResult, inProgressResult, completedResult, lastLessonResult, publishedLessonsResult] = await Promise.all([
             pool.query(
                 'SELECT COUNT(*)::int AS total FROM user_lessons WHERE user_id = $1 AND completed = true',
                 [userId]
@@ -562,8 +622,20 @@ router.get('/user/stats', authRequired, async (req, res) => {
                 [userId]
             ),
             pool.query(
-                'SELECT last_lesson_id FROM user_course_progress WHERE user_id = $1 AND last_lesson_id IS NOT NULL LIMIT 1',
+                `SELECT ucp.last_lesson_id, c.slug AS course_slug
+                 FROM user_course_progress ucp
+                 JOIN lessons l ON l.id = ucp.last_lesson_id
+                 JOIN modules m ON m.id = l.module_id
+                 JOIN courses c ON c.id = m.course_id
+                 WHERE ucp.user_id = $1 AND ucp.last_lesson_id IS NOT NULL
+                 ORDER BY ucp.id DESC LIMIT 1`,
                 [userId]
+            ),
+            pool.query(
+                `SELECT COUNT(*)::int AS total FROM lessons l
+                 JOIN modules m ON m.id = l.module_id
+                 JOIN courses c ON c.id = m.course_id
+                 WHERE c.is_published = true AND l.is_published = true`
             )
         ]);
 
@@ -574,7 +646,9 @@ router.get('/user/stats', authRequired, async (req, res) => {
             average_quiz_score: avgResult.rows[0].avg_score || 0,
             courses_in_progress: inProgressResult.rows[0].in_progress,
             courses_completed: completedResult.rows[0].completed,
-            last_lesson_id: lastLessonResult.rows[0] ? lastLessonResult.rows[0].last_lesson_id : null
+            last_lesson_id: lastLessonResult.rows[0] ? lastLessonResult.rows[0].last_lesson_id : null,
+            last_lesson_course_slug: lastLessonResult.rows[0] ? lastLessonResult.rows[0].course_slug : null,
+            total_lessons: publishedLessonsResult.rows[0].total
         });
     } catch (err) {
         console.error('GET /user/stats error:', err);
@@ -583,10 +657,10 @@ router.get('/user/stats', authRequired, async (req, res) => {
 });
 
 // GET /api/user/progress/:username — Public course progress for any user
-router.get('/user/progress/:username', async (req, res) => {
+router.get('/user/progress/:username', authOptional, async (req, res) => {
     try {
         const { username } = req.params;
-        const userRes = await pool.query('SELECT id FROM users WHERE LOWER(username) = LOWER($1)', [username]);
+        const userRes = await pool.query('SELECT id, show_stats FROM users WHERE LOWER(username) = LOWER($1)', [username]);
         if (!userRes.rows.length) return res.status(404).json({ success: false, error: 'User not found.' });
         const userId = userRes.rows[0].id;
 
@@ -615,7 +689,20 @@ router.get('/user/progress/:username', async (req, res) => {
             total:     r.total_count,
         }));
 
-        res.json({ success: true, courses });
+        // Certificates (earned only) follow the "Show stats on profile" setting; the owner always sees their own.
+        // Only certificates are gated here - the course progress above stays public as before.
+        let certificates = [];
+        const canSee = userRes.rows[0].show_stats !== false || (req.user && req.user.id === userId);
+        if (canSee) {
+            try {
+                certificates = (await loadCertificates(userId)).filter(c => c.completed)
+                    .map(c => ({ kind: c.kind, course_slug: c.course_slug, course_title: c.course_title, part: c.part, completed_at: c.completed_at }));
+            } catch (certErr) {
+                console.error('GET /user/progress/:username certificates error:', certErr.message);
+            }
+        }
+
+        res.json({ success: true, courses, certificates });
     } catch (err) {
         console.error('GET /user/progress/:username error:', err);
         res.status(500).json({ success: false, error: 'Internal server error.' });

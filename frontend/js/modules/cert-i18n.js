@@ -11,6 +11,7 @@ const MESSAGES = {
         cert_of_completion: 'Certificate of Completion', cert_certifies: 'This certifies that', cert_completed_text: 'has successfully completed',
         cert_rank_label: 'Earned Rank', cert_date: 'Date', cert_completed_label: 'Completed', cert_lessons_count: '{n} lessons', cert_close: 'Close',
         part_basics: 'The Basics', part_deep_dive: 'Deep Dive',
+        cert_profile_title: 'Certificates', cert_earned_on: 'Earned {date}', cert_stat_sub: '{earned} of {total} certificates earned', cert_goal_desc: '{done} of {total} lessons',
     },
     ro: {
         cert_btn_view: 'Vezi certificatul', cert_btn_list: 'Certificate', cert_menu_title: 'Certificatele tale', cert_menu_view: 'Vezi',
@@ -21,6 +22,7 @@ const MESSAGES = {
         cert_of_completion: 'Certificat de absolvire', cert_certifies: 'Se certifică faptul că', cert_completed_text: 'a finalizat cu succes',
         cert_rank_label: 'Rang obținut', cert_date: 'Data', cert_completed_label: 'Finalizat', cert_lessons_count: '{n} lecții', cert_close: 'Închide',
         part_basics: 'Bazele', part_deep_dive: 'Aprofundare',
+        cert_profile_title: 'Certificate', cert_earned_on: 'Obținut pe {date}', cert_stat_sub: '{earned} din {total} certificate obținute', cert_goal_desc: '{done} din {total} lecții',
     },
     de: {
         cert_btn_view: 'Zertifikat ansehen', cert_btn_list: 'Zertifikate', cert_menu_title: 'Deine Zertifikate', cert_menu_view: 'Ansehen',
@@ -31,6 +33,7 @@ const MESSAGES = {
         cert_of_completion: 'Abschlusszertifikat', cert_certifies: 'Hiermit wird bestätigt, dass', cert_completed_text: 'erfolgreich abgeschlossen hat',
         cert_rank_label: 'Erreichter Rang', cert_date: 'Datum', cert_completed_label: 'Abgeschlossen', cert_lessons_count: '{n} Lektionen', cert_close: 'Schließen',
         part_basics: 'Grundlagen', part_deep_dive: 'Vertiefung',
+        cert_profile_title: 'Zertifikate', cert_earned_on: 'Erhalten am {date}', cert_stat_sub: '{earned} von {total} Zertifikaten erhalten', cert_goal_desc: '{done} von {total} Lektionen',
     },
     es: {
         cert_btn_view: 'Ver certificado', cert_btn_list: 'Certificados', cert_menu_title: 'Tus certificados', cert_menu_view: 'Ver',
@@ -41,6 +44,7 @@ const MESSAGES = {
         cert_of_completion: 'Certificado de finalización', cert_certifies: 'Se certifica que', cert_completed_text: 'ha completado con éxito',
         cert_rank_label: 'Rango obtenido', cert_date: 'Fecha', cert_completed_label: 'Completado', cert_lessons_count: '{n} lecciones', cert_close: 'Cerrar',
         part_basics: 'Fundamentos', part_deep_dive: 'En profundidad',
+        cert_profile_title: 'Certificados', cert_earned_on: 'Obtenido el {date}', cert_stat_sub: '{earned} de {total} certificados obtenidos', cert_goal_desc: '{done} de {total} lecciones',
     },
     fr: {
         cert_btn_view: 'Voir le certificat', cert_btn_list: 'Certificats', cert_menu_title: 'Tes certificats', cert_menu_view: 'Voir',
@@ -51,6 +55,7 @@ const MESSAGES = {
         cert_of_completion: 'Certificat de réussite', cert_certifies: 'Il est certifié que', cert_completed_text: 'a terminé avec succès',
         cert_rank_label: 'Rang obtenu', cert_date: 'Date', cert_completed_label: 'Terminé', cert_lessons_count: '{n} leçons', cert_close: 'Fermer',
         part_basics: 'Les bases', part_deep_dive: 'Approfondissement',
+        cert_profile_title: 'Certificats', cert_earned_on: 'Obtenu le {date}', cert_stat_sub: '{earned} certificats sur {total} obtenus', cert_goal_desc: '{done} leçons sur {total}',
     },
     it: {
         cert_btn_view: 'Vedi il certificato', cert_btn_list: 'Certificati', cert_menu_title: 'I tuoi certificati', cert_menu_view: 'Vedi',
@@ -61,6 +66,7 @@ const MESSAGES = {
         cert_of_completion: 'Certificato di completamento', cert_certifies: 'Si certifica che', cert_completed_text: 'ha completato con successo',
         cert_rank_label: 'Grado ottenuto', cert_date: 'Data', cert_completed_label: 'Completato', cert_lessons_count: '{n} lezioni', cert_close: 'Chiudi',
         part_basics: 'Le basi', part_deep_dive: 'Approfondimento',
+        cert_profile_title: 'Certificati', cert_earned_on: 'Ottenuto il {date}', cert_stat_sub: '{earned} certificati su {total} ottenuti', cert_goal_desc: '{done} lezioni su {total}',
     },
 };
 
@@ -85,4 +91,9 @@ export function certDate(iso, lang) {
     const d = iso ? new Date(iso) : new Date();
     const date = isNaN(d.getTime()) ? new Date() : d;
     return date.toLocaleDateString(LOCALES[lang] || 'en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+}
+
+// What a certificate is called: "<course> — <part>" for a part certificate, just the course title otherwise.
+export function certName(courseTitle, part, lang) {
+    return part ? `${courseTitle} — ${partLabel(part, lang)}` : courseTitle;
 }
