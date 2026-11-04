@@ -7,6 +7,16 @@ own notes.
 
 ## Gata (Done)
 
+### Owner-only Finance + Projects API (2026-11-04)
+`backend/routes/personal.js`, mounted at `/api/personal`, for the Android app's PERSONAL pages
+(moved from the retired Mind Tree app). Gated on `users.id` 3 (AndreiHulk07), not on role.
+Expenses/income live in the new `personal_cash_flow` table (migration `personal_cash_flow`,
+RLS on, no policies, so the publishable key in the APK gets `permission denied`); the 15 rows
+from the old AI Analyzer project were copied over and checked by totals and by a row hash.
+`GET /projects` reads the vault's two `_Index.md` files from GitHub.
+**Needs on Railway:** env var `VAULT_GITHUB_TOKEN` (read-only access to
+`CNote-Hulk/Mind-Tree-Vault`). Without it `/projects` answers 500 "not configured".
+
 - **(2026-10-28) Statistics page: four cards had the wrong label ("Courses Completed doesn't work").** The card that showed 0 under the label *Courses Completed* was really the courses-IN-PROGRESS card (it used the key `stats_courses_completed`), while the real completed-courses number (1) sat under *Lessons Visited*; *Avg Quiz Score* was shown as *Quizzes Completed* and *This Week* as *Perfect Quizzes*. Course completion itself was fine (checked in the database: `completed_at`, `course_complete` XP and the `first_course` badge all recorded). Labels and sub-lines are now set from a six-language table in statistici.js, and the completed-courses card uses the right key. Found by loading the production page with the real account's numbers; the first version of the fix crashed the page (a constant used before its definition) and the browser test caught it before deploy. Also fixed the FR/IT wording of the certificate counter.
 
 - **(2026-10-28) Certificates on the public profile and on the statistics page.** Profile: the Course Progress card shows the EARNED certificates with their date (e.g. "Console Engineering — The Basics"), translated in 6 languages; nothing is shown when there are none, and the server leaves them out when the user switched off "Show stats on profile" (the owner always sees their own). Statistics: the two certificates closest to done sit on top of Next Goals with a progress bar, and the Courses Completed card says "1 of 4 certificates earned". New/changed API (all additive): `GET /user/certificates` (login), `certificates` in `GET /user/progress/:username`, `total_lessons` + `last_lesson_course_slug` in `GET /user/stats`. Fixed on the way: the statistics page assumed the Starter Guide (lesson total "of 21", Continue-learning link to `slug=starter-guide`), and `last_lesson_id` was an unordered `LIMIT 1`. Tested: 21 end-to-end checks on PostgreSQL 16 with the real db.js schema and routes (privacy for anonymous / other user / owner, missing parts table, deterministic last lesson), and in a real browser against a stubbed API (profile in EN/RO/IT/DE, dark and light theme; statistics in EN/RO). Known and untouched: the "Show stats on profile" setting still does not hide the course progress, only the certificates.
