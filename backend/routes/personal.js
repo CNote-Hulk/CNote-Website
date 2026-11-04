@@ -141,9 +141,9 @@ router.delete('/cash-flow/:id', async (req, res) => {
 // consumables. Quantity changes only through movements (a DB trigger applies
 // them), so the history is kept. Same owner gate and pg pool as cash-flow.
 
-const INV_CATEGORIES = new Set([
-    'consola', 'accesoriu', 'componenta', 'unealta', 'cablu_adaptor', 'consumabil', 'de_vanzare',
-]);
+// Free text: the app ships 7 built-in values (consola, accesoriu, componenta, unealta,
+// cablu_adaptor, consumabil, de_vanzare) and the owner can add their own.
+const INV_CATEGORY_MAX = 100;
 const INV_REASONS = new Set(['vanzare', 'achizitie', 'consum', 'corectie', 'initial']);
 const INV_COLS = `id, category, name, model, quantity, unit, condition, location,
     min_quantity, vault_note, notes, created_at, updated_at`;
@@ -177,9 +177,9 @@ function toItem(row) {
 /** Returns [values, error]. Quantity is not validated here: it only moves via movements. */
 function validateItem(body) {
     const b = body || {};
-    const category = typeof b.category === 'string' ? b.category : '';
+    const category = typeof b.category === 'string' ? b.category.trim() : '';
     const name = typeof b.name === 'string' ? b.name.trim() : '';
-    if (!INV_CATEGORIES.has(category)) return [null, 'category'];
+    if (!category || category.length > INV_CATEGORY_MAX) return [null, 'category'];
     if (!name || name.length > 200) return [null, 'name'];
     const out = { category, name };
     for (const [key, max] of [['model', 200], ['condition', 500], ['location', 200], ['vault_note', 500], ['notes', 2000]]) {
