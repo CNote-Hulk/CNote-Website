@@ -7,6 +7,13 @@ own notes.
 
 ## Gata (Done)
 
+### Owner-only inventory API (2026-11-04, evening)
+`backend/routes/personal.js` also serves `/api/personal/inventory` (items CRUD + `/:id/movements`) for the
+Android app's Inventory page. Tables `personal_inventory_items` / `personal_inventory_movements` in the
+Supabase project (RLS on, no policies, anon/authenticated revoked); same owner gate as cash-flow.
+Quantity changes only through movements (trigger). Syntax-checked only — not exercised with a real
+owner token yet; confirm the Railway redeploy, then test from the app.
+
 ### Owner-only Finance + Projects API (2026-11-04)
 `backend/routes/personal.js`, mounted at `/api/personal`, for the Android app's PERSONAL pages
 (moved from the retired Mind Tree app). Gated on `users.id` 3 (AndreiHulk07), not on role.
