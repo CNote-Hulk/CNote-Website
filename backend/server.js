@@ -77,6 +77,7 @@ const gamesRoutes = require('./routes/games');
 const articlesRoutes = require('./routes/articles');
 const ordersRoutes = require('./routes/orders');
 const devicesRoutes = require('./routes/devices');
+const remoteRoutes = require('./routes/remote');
 
 /* ── Environment validation ── */
 
@@ -508,6 +509,7 @@ app.use('/api/articles', articlesRoutes);
 app.use('/api/orders', ordersRoutes);
 app.use('/api/devices/pair', devicePairLimiter);
 app.use('/api/devices', devicesRoutes);
+app.use('/api/remote', remoteRoutes);
 
 /* ── Static files & redirects ── */
 
