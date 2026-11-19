@@ -7,6 +7,11 @@ own notes.
 
 ## Gata (Done)
 
+### Games catalogue: 10,950 missing covers filled (2026-11-19)
+After the per-game fixes below, Andrei pointed out that popular titles were still coverless (Call of Duty 4 on PS3). Root cause: `seed-covers-igdb.js` paged IGDB with `offset` and no `sort`, so pages overlapped or skipped at random. It also matched exact titles only and was never run for the retro consoles. New `backend/scripts/fill-missing-covers.js` (see INDEX) does a Wikidata-identity pass and then a title pass. The results were checked against IGDB names (low-similarity matches kept only when backed by an alternative or regional name). **Uncovered rows: 15,742 → 4,792.**
+
+**Open — non-games in the catalogue.** Wikidata P31 shows that ~2,800 `games` rows are not tagged "video game": series (527), engines, Steam/Xbox/GOG achievements and PlayStation trophies, controllers, operating systems, streaming services, PS themes, cancelled games. 1,017 match a junk class and none are owned. 720 of those also have a real same-title game on the same console, so they are pure duplicates. A delete of those 720 was prepared (scratchpad `delete_ids.json`, with a JSON backup of the rows written before deleting). It was not run: it waits for Andrei's go-ahead. The other 297 are series with no separate game row (some, like Corpse Party or Hellblade, really are the game) and need case-by-case handling.
+
 ### Games catalogue fixes from user feedback (2026-11-19, Supabase data only)
 A user reported missing box art and missing/wrong entries. Fixed directly in `games`/`game_platforms` (one transaction):
 - **Covers added**: Saints Row (Xbox 360, `igdb:co2w7c`), Sniper: Ghost Warrior 2 (PS3 + X360, `igdb:co39uv`), Conflict: Desert Storm II (Xbox, EU cover `igdb:coas1q`).
