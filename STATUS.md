@@ -1,11 +1,22 @@
 # CNote-Website — Status
 
 Current-state snapshot — separate from INDEX.md (which is the complete file map). Updated whenever
-the project's state changes meaningfully, not on every commit. Last updated 2026-11-05 (Console Engineering Lessons 8, 9 and 10 live: Module 1 complete; Module 2 Lesson 1 live); before that: 2026-11-04 (Console Engineering Lessons 5, 6 and 7 live; personal API); before that: 2026-10-09 (shared image viewer; My Space photos zoom); before that: 2026-10-08 (games catalogue + box art + My Space read-only on the site); before that: 2026-10-06 (Care Guide SCPH-70004; before that 2026-10-05 brand cleanup + generations; before that 2026-10-04 Instagram
+the project's state changes meaningfully, not on every commit. Last updated 2026-11-19 (games catalogue fixes from user feedback, Supabase data only); before that: 2026-11-05 (Console Engineering Lessons 8, 9 and 10 live: Module 1 complete; Module 2 Lesson 1 live); before that: 2026-11-04 (Console Engineering Lessons 5, 6 and 7 live; personal API); before that: 2026-10-09 (shared image viewer; My Space photos zoom); before that: 2026-10-08 (games catalogue + box art + My Space read-only on the site); before that: 2026-10-06 (Care Guide SCPH-70004; before that 2026-10-05 brand cleanup + generations; before that 2026-10-04 Instagram
 notebook template; previous: 2026-09-23 Care Guide SCPH-39003 pass), grounded in `git log` (most recent commit `b509ede8`, 2026-09-22) and CLAUDE.md's
 own notes.
 
 ## Gata (Done)
+
+### Games catalogue fixes from user feedback (2026-11-19, Supabase data only)
+A user reported missing box art and missing/wrong entries. Fixed directly in `games`/`game_platforms` (one transaction):
+- **Covers added**: Saints Row (Xbox 360, `igdb:co2w7c`), Sniper: Ghost Warrior 2 (PS3 + X360, `igdb:co39uv`), Conflict: Desert Storm II (Xbox, EU cover `igdb:coas1q`).
+- **Minecraft legacy editions** are now their own rows (`cnote:minecraft-*`): Xbox 360 / PS3 / Wii U / PS Vita / PS4 / Xbox One / New 3DS Edition, each with its IGDB cover. "Minecraft: Legacy Console Edition" (id 698) has no platforms anymore. "Minecraft" (21415) is no longer on X360/PS3/Wii U/Vita/3DS.
+- **Tom Clancy's Rainbow Six 3** (`cnote:rainbow-six-3-console`) added on Xbox/PS2/GameCube with EU covers. Raven Shield (12417) is PC-only, so its console links were removed.
+- **Conflict: Global Storm** (`cnote:conflict-global-storm`, PAL name) added on Xbox/PS2. Conflict: Global Terror (USA) stays.
+- Removed row 55978 "Saints Row" (Q683841 = the series, not a game). It was a coverless duplicate on X360/PS3.
+- Existing shelves were moved to the new rows: 2× Minecraft X360, 1× Legacy PS3, 1× Raven Shield Xbox. One user still has Global Terror on Xbox; I left it, since it may genuinely be the US copy.
+- All 16 covers return 200 through `GET /api/games/:consoleId/cover/:gameId` and are mirrored to R2.
+- **Caveat**: `seed-games.js` re-adds `game_platforms` links with `ON CONFLICT DO NOTHING` and upserts by Q-id. A full re-seed would put back the removed links (698, 21415, 12417) and row 55978. The `cnote:` rows are safe.
 
 ### Owner-only inventory API (2026-11-04, evening)
 `backend/routes/personal.js` also serves `/api/personal/inventory` (items CRUD + `/:id/movements`) for the
