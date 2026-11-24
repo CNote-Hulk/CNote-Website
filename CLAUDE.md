@@ -193,6 +193,7 @@ ar fi șters muncă necomisă.
 - **`03 Jurnal/_Index.md`** — adaugă linia zilei. Verificatorul `_Tools/vault_brief.py` o reclamă
   altfel ca „lipsește din `03 Jurnal/_Index`".
 - **`INDEX.md`** și **`STATUS.md`** locale, dacă s-au schimbat fișiere sau stadiul proiectului.
+- **Puncte închise**: dacă ai terminat ceva marcat deschis („de făcut / de reluat / pas următor / TODO”) într-un jurnal vechi, editează paragraful acela cu `rezolvat AAAA-LL-ZZ` (sau `[x]`); task-urile persistente se bifează în `00 Task-uri.md` din vault.
 - **Commit ȘI push automat**, fără să întrebi (Andrei, 2026-08-21: „commit and push automatically
   at every project, no more asking").
 
