@@ -10,23 +10,28 @@
 
 html.theme-notebook {
     /* palette */
-    --nb-desk: #24160d;
-    --nb-desk-2: #33200f;
-    --nb-paper: #f3ddb0;
-    --nb-paper-hi: #f9eacb;
-    --nb-paper-lo: #e6c48c;
-    --nb-rule: rgba(150, 104, 52, 0.24);
+    --nb-desk: #2e1805;
+    --nb-desk-2: #3b2009;
+    --nb-paper: #fde6b5;
+    --nb-paper-hi: #fff0cc;
+    --nb-paper-lo: #f3cf8e;
+    --nb-rule: rgba(214, 140, 52, 0.30);
     --nb-margin: rgba(178, 70, 50, 0.30);
-    --nb-ink: #2a1a0e;
+    --nb-ink: #24140a;
     --nb-ink-2: #5a3d22;
     --nb-ink-3: #8a6a3e;
-    --nb-frame: #3a2414;
-    --nb-stitch: rgba(90, 55, 25, 0.50);
-    --nb-btn: #5b2f12;
-    --nb-btn-hi: #7a4219;
+    --nb-frame: #2e1606;
+    --nb-stitch: rgba(130, 75, 25, 0.60);
+    --nb-btn: #6a3304;
+    --nb-btn-hi: #9a5414;
     --nb-amber: #f2c56b;
     --nb-amber-lo: #d9a344;
     --nb-chunk: 0 3px 0 var(--nb-frame);
+    /* textures: brown speckle grain for paper, darker grain for the desk */
+    --nb-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .45 0 0 0 0 .25 0 0 0 0 .04 1.6 0 0 0 -0.62'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.30'/%3E%3C/svg%3E");
+    --nb-grain-desk: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .08 0 0 0 0 .03 0 0 0 0 .0 1.6 0 0 0 -0.62'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E");
+    /* burnt paper edges */
+    --nb-burn: radial-gradient(ellipse at 50% 45%, transparent 62%, rgba(196, 112, 28, 0.20) 88%, rgba(120, 60, 10, 0.30) 100%);
     --nb-pixel: 'Pixelify Sans', var(--font-sans);
 
     /* site-wide tokens (variables.css) */
@@ -57,7 +62,7 @@ html.theme-notebook {
     --bg: var(--nb-paper);
     --panel: var(--nb-paper-hi);
     --panel-soft: var(--nb-paper-lo);
-    --panel-rgb: 249, 234, 203;
+    --panel-rgb: 255, 240, 204;
     --text: var(--nb-ink);
     --muted: var(--nb-ink-2);
     --accent: var(--nb-btn);
@@ -82,8 +87,9 @@ html.theme-notebook h4 { font-family: var(--font-sans); }
 html.theme-notebook body.home-page::before {
     background:
         radial-gradient(ellipse at 50% -10%, rgba(255, 190, 110, 0.10), transparent 60%),
-        repeating-linear-gradient(93deg, rgba(0, 0, 0, 0.10) 0 2px, transparent 2px 7px),
-        repeating-linear-gradient(88deg, rgba(255, 220, 170, 0.03) 0 1px, transparent 1px 11px),
+        var(--nb-grain-desk),
+        repeating-linear-gradient(91deg, rgba(0, 0, 0, 0.16) 0 2px, transparent 2px 9px, rgba(255, 170, 90, 0.035) 9px 10px, transparent 10px 17px),
+        repeating-linear-gradient(89deg, transparent 0 40px, rgba(0, 0, 0, 0.12) 40px 43px, transparent 43px 97px),
         linear-gradient(var(--nb-desk-2), var(--nb-desk));
     filter: none;
     opacity: 1;
@@ -94,11 +100,12 @@ html.theme-notebook .navbar,
 html.theme-notebook .dashboard-sidebar,
 html.theme-notebook .dashboard-content {
     background-color: var(--nb-paper);
-    border: 3px solid var(--nb-frame);
+    background-image: var(--nb-grain), var(--nb-burn), repeating-linear-gradient(transparent 0 31px, var(--nb-rule) 31px 32px);
+    border: 4px solid var(--nb-frame);
     border-radius: 14px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45), inset 0 0 0 2px var(--nb-paper-hi);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 0 0 2px rgba(255, 240, 205, 0.55), inset 0 0 26px 4px rgba(150, 75, 10, 0.38);
     outline: 2px dashed var(--nb-stitch);
-    outline-offset: -9px;
+    outline-offset: -11px;
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
 }
@@ -110,7 +117,7 @@ html.theme-notebook .navbar {
     right: 12px;
     height: 62px;
     padding: 0 28px;
-    background-image: linear-gradient(var(--nb-paper-hi), var(--nb-paper));
+    background-image: var(--nb-grain), var(--nb-burn);
 }
 html.theme-notebook .navbar::after { display: none; }
 html.theme-notebook .logo {
@@ -262,10 +269,7 @@ html.theme-notebook .dashboard-main { margin-left: 300px; }
 html.theme-notebook .dashboard-content {
     position: relative;
     margin: 26px 14px 24px 8px;
-    padding: 40px 34px 34px 58px;
-    background-image:
-        linear-gradient(90deg, transparent 32px, var(--nb-margin) 32px 34px, transparent 34px),
-        repeating-linear-gradient(transparent 0 31px, var(--nb-rule) 31px 32px);
+    padding: 40px 38px 34px 44px;
 }
 html.theme-notebook .dashboard-content::before {
     content: "";
@@ -299,6 +303,8 @@ html.theme-notebook .home-hero__date { color: var(--nb-ink-2); letter-spacing: 0
 html.theme-notebook .home-hero__welcome-text { color: var(--nb-ink); font-weight: 500; }
 html.theme-notebook .home-hero__username {
     color: var(--nb-ink);
+    font-family: "Bitter", var(--font-serif);
+    letter-spacing: -0.01em;
     font-weight: 900;
     font-size: clamp(2.2rem, 4.5vw, 3.2rem);
     line-height: 1.1;
@@ -326,7 +332,7 @@ html.theme-notebook .home-hero-section::after {
 html.theme-notebook .level-chip {
     background: linear-gradient(var(--nb-btn-hi), var(--nb-btn));
     border: 2.5px solid var(--nb-frame);
-    box-shadow: var(--nb-chunk);
+    box-shadow: var(--nb-chunk), inset 0 2px 0 rgba(255, 200, 120, 0.35);
     color: var(--nb-paper-hi);
     padding: 7px 18px;
     font-weight: 700;
@@ -351,8 +357,10 @@ html.theme-notebook .article-card,
 html.theme-notebook .home-listing-card,
 html.theme-notebook .dash-course-card,
 html.theme-notebook .activity-list {
-    background: var(--nb-paper-hi);
+    background: rgba(255, 241, 206, 0.55);
     border: 2.5px solid var(--nb-frame);
+    outline: 1.5px dashed var(--nb-stitch);
+    outline-offset: -6px;
     border-radius: 12px;
     box-shadow: var(--nb-chunk);
     color: var(--nb-ink);
@@ -376,6 +384,7 @@ html.theme-notebook .card .community-card {
     border-radius: 0;
     box-shadow: none;
     background: transparent;
+    outline: 0;
 }
 html.theme-notebook .card .community-card:last-child { border-bottom: 0; }
 html.theme-notebook .card h3,
@@ -434,8 +443,8 @@ html.theme-notebook .qsg-tour-btn--next {
     color: var(--nb-paper-hi) !important;
     border: 2.5px solid var(--nb-frame);
     border-radius: 999px;
-    box-shadow: var(--nb-chunk);
-    font-weight: 700;
+    box-shadow: var(--nb-chunk), inset 0 2px 0 rgba(255, 200, 120, 0.35);
+    font-weight: 800;
     text-decoration: none;
     opacity: 1;
     transition: transform 0.15s ease, box-shadow 0.15s ease;
@@ -499,8 +508,8 @@ html.theme-notebook .stats-card h3 { color: var(--nb-ink-2); letter-spacing: 0.1
 html.theme-notebook .stats-card p,
 html.theme-notebook .stats-card strong {
     color: var(--nb-ink);
-    font-family: var(--font-serif);
-    font-weight: 900;
+    font-family: "Bitter", var(--font-serif);
+    font-weight: 800;
     font-size: 1.9rem;
     line-height: 1.1;
 }
@@ -576,10 +585,7 @@ html.theme-notebook .mobile-bottom-nav {
     html.theme-notebook .dashboard-main { margin-left: 0; }
     html.theme-notebook .dashboard-content {
         margin: 34px 8px 90px;
-        padding: 34px 16px 24px 40px;
-        background-image:
-            linear-gradient(90deg, transparent 24px, var(--nb-margin) 24px 26px, transparent 26px),
-            repeating-linear-gradient(transparent 0 31px, var(--nb-rule) 31px 32px);
+        padding: 34px 18px 24px 22px;
     }
     html.theme-notebook .home-hero-section::after { display: none; }
 }
