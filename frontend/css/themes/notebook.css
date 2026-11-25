@@ -12,10 +12,10 @@ html.theme-notebook {
     /* palette */
     --nb-desk: #24160d;
     --nb-desk-2: #33200f;
-    --nb-paper: #f4e4c4;
-    --nb-paper-hi: #fbf1dc;
-    --nb-paper-lo: #ead3a6;
-    --nb-rule: rgba(150, 104, 52, 0.20);
+    --nb-paper: #f3ddb0;
+    --nb-paper-hi: #f9eacb;
+    --nb-paper-lo: #e6c48c;
+    --nb-rule: rgba(150, 104, 52, 0.24);
     --nb-margin: rgba(178, 70, 50, 0.30);
     --nb-ink: #2a1a0e;
     --nb-ink-2: #5a3d22;
@@ -57,7 +57,7 @@ html.theme-notebook {
     --bg: var(--nb-paper);
     --panel: var(--nb-paper-hi);
     --panel-soft: var(--nb-paper-lo);
-    --panel-rgb: 251, 241, 220;
+    --panel-rgb: 249, 234, 203;
     --text: var(--nb-ink);
     --muted: var(--nb-ink-2);
     --accent: var(--nb-btn);
@@ -71,7 +71,14 @@ html.theme-notebook {
 html.theme-notebook body {
     background: var(--nb-desk);
     color: var(--nb-ink);
+    font-weight: 500;
 }
+/* the light theme paints .dashboard-shell cream, which hid the desk */
+html.theme-notebook .dashboard-shell { background: transparent; }
+/* headings default to the serif; the mockup uses bold sans everywhere except the big name */
+html.theme-notebook h2,
+html.theme-notebook h3,
+html.theme-notebook h4 { font-family: var(--font-sans); }
 html.theme-notebook body.home-page::before {
     background:
         radial-gradient(ellipse at 50% -10%, rgba(255, 190, 110, 0.10), transparent 60%),
@@ -108,9 +115,10 @@ html.theme-notebook .navbar {
 html.theme-notebook .navbar::after { display: none; }
 html.theme-notebook .logo {
     color: var(--nb-ink);
-    font-family: var(--nb-pixel);
-    font-weight: 700;
-    letter-spacing: 0.04em;
+    font-family: var(--font-sans);
+    font-weight: 800;
+    font-size: 1.35rem;
+    letter-spacing: 0.02em;
 }
 html.theme-notebook .logo-icon { image-rendering: pixelated; }
 html.theme-notebook .navbar-search-wrap .navbar-search-btn {
@@ -124,6 +132,7 @@ html.theme-notebook .navbar-search-placeholder { color: var(--nb-ink-3); font-we
 html.theme-notebook .nav-links a {
     color: var(--nb-ink);
     font-weight: 700;
+    font-size: 1.02rem;
     border-radius: 999px;
     padding: 6px 12px;
 }
@@ -156,16 +165,26 @@ html.theme-notebook .sidebar-profile .profile-avatar {
 }
 html.theme-notebook .sidebar-profile .profile-name {
     color: var(--nb-ink);
-    font-family: var(--font-serif);
-    font-weight: 900;
+    font-family: var(--font-sans);
+    font-weight: 800;
+    font-size: 1.15rem;
+}
+html.theme-notebook .sidebar-profile .level-badge,
+html.theme-notebook .sidebar-profile .profile-level-badge {
+    background: #4f6b2c;
+    color: #f2f6e4;
+    border: 2px solid #2b3c16;
+    border-radius: 999px;
+    font-weight: 700;
 }
 html.theme-notebook .sidebar-profile .admin-badge {
     background: var(--nb-frame);
     color: var(--nb-amber);
     border: 2px solid var(--nb-frame);
     border-radius: 999px;
-    font-family: var(--nb-pixel);
-    letter-spacing: 0.08em;
+    font-family: var(--font-sans);
+    font-weight: 800;
+    letter-spacing: 0.06em;
 }
 html.theme-notebook .sidebar-profile .profile-bio { color: var(--nb-ink-2); font-style: italic; }
 html.theme-notebook .sidebar-profile-divider {
@@ -178,17 +197,18 @@ html.theme-notebook .sidebar-section h3 {
     margin: 14px 0 6px 4px;
     padding: 1px 10px;
     color: var(--nb-ink);
-    font-family: var(--nb-pixel);
-    font-size: 0.72rem;
-    letter-spacing: 0.12em;
+    font-family: var(--font-sans);
+    font-weight: 800;
+    font-size: 0.74rem;
+    letter-spacing: 0.08em;
     background: var(--nb-paper-hi);
     border: 2px solid var(--nb-frame);
     border-radius: 6px;
 }
 html.theme-notebook .sidebar-link {
     color: var(--nb-ink);
-    font-size: 0.9rem;
-    font-weight: 600;
+    font-size: 0.95rem;
+    font-weight: 700;
     border-left: 0;
     border-radius: 8px;
     padding: 7px 12px;
@@ -249,8 +269,9 @@ html.theme-notebook .dashboard-content::before {
 /* ── Section titles ── */
 html.theme-notebook .panel-section-title {
     color: var(--nb-ink);
-    font-size: 1.15rem;
-    font-weight: 700;
+    font-family: var(--font-sans);
+    font-size: 1.2rem;
+    font-weight: 800;
     margin: 22px 0 12px;
 }
 html.theme-notebook .panel-section-title svg { color: var(--nb-ink); width: 20px; height: 20px; }
@@ -271,8 +292,8 @@ html.theme-notebook .home-hero__username {
     line-height: 1.1;
 }
 html.theme-notebook .home-hero__subtitle {
-    color: var(--nb-ink-2);
-    font-family: var(--font-serif);
+    color: var(--nb-ink);
+    font-family: var(--font-sans);
     font-style: italic;
     font-weight: 700;
     font-size: 1rem;
@@ -284,9 +305,9 @@ html.theme-notebook .home-hero-section::after {
     position: absolute;
     right: 0;
     top: -10px;
-    width: 230px;
-    height: 150px;
-    opacity: 0.55;
+    width: 290px;
+    height: 190px;
+    opacity: 0.5;
     pointer-events: none;
     background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 42' shape-rendering='crispEdges'%3E%3Cg fill='%233a2414' opacity='.35'%3E%3Crect x='6' y='38' width='52' height='1'/%3E%3Crect x='8' y='39' width='48' height='1'/%3E%3C/g%3E%3Crect x='10' y='3' width='18' height='35' fill='%233a2414'/%3E%3Crect x='11' y='4' width='16' height='33' fill='%23cdb48a'/%3E%3Crect x='11' y='4' width='2' height='33' fill='%23e8d6b0'/%3E%3Crect x='25' y='4' width='2' height='33' fill='%23a8885a'/%3E%3Crect x='14' y='9' width='10' height='1' fill='%236b4a2a'/%3E%3Crect x='14' y='12' width='10' height='1' fill='%236b4a2a'/%3E%3Crect x='14' y='22' width='10' height='3' fill='%236b4a2a'/%3E%3Crect x='14' y='29' width='3' height='2' fill='%236b4a2a'/%3E%3Crect x='19' y='29' width='3' height='2' fill='%236b4a2a'/%3E%3Crect x='30' y='24' width='28' height='12' fill='%233a2414'/%3E%3Crect x='29' y='28' width='4' height='9' fill='%233a2414'/%3E%3Crect x='55' y='28' width='4' height='9' fill='%233a2414'/%3E%3Crect x='31' y='25' width='26' height='10' fill='%23cdb48a'/%3E%3Crect x='30' y='29' width='2' height='7' fill='%23cdb48a'/%3E%3Crect x='56' y='29' width='2' height='7' fill='%23cdb48a'/%3E%3Crect x='31' y='25' width='26' height='2' fill='%23e8d6b0'/%3E%3Crect x='34' y='28' width='2' height='6' fill='%236b4a2a'/%3E%3Crect x='32' y='30' width='6' height='2' fill='%236b4a2a'/%3E%3Crect x='50' y='27' width='2' height='2' fill='%236b4a2a'/%3E%3Crect x='53' y='29' width='2' height='2' fill='%236b4a2a'/%3E%3Crect x='47' y='29' width='2' height='2' fill='%236b4a2a'/%3E%3Crect x='50' y='31' width='2' height='2' fill='%236b4a2a'/%3E%3Crect x='27' y='30' width='3' height='1' fill='%233a2414'/%3E%3C/svg%3E") no-repeat right top / contain;
 }
@@ -299,6 +320,14 @@ html.theme-notebook .level-chip {
     font-weight: 700;
 }
 html.theme-notebook .level-chip .level-label { color: var(--nb-amber); }
+html.theme-notebook .level-chip .level-badge {
+    background: transparent;
+    border: 0;
+    padding: 0;
+    color: var(--nb-paper-hi);
+    font-size: 1.05rem;
+    font-weight: 800;
+}
 
 /* ── Cards: lighter paper, thick ink outline, chunky bottom shadow ── */
 html.theme-notebook .card,
@@ -368,7 +397,7 @@ html.theme-notebook .continue-card__icon {
     border: 2.5px solid var(--nb-frame);
     border-radius: 10px;
 }
-html.theme-notebook .continue-content h2 { font-size: 1.25rem; font-weight: 700; }
+html.theme-notebook .continue-content h2 { font-size: 1.3rem; font-weight: 800; color: var(--nb-ink); }
 
 /* empty states: dashed frame, like a blank page */
 html.theme-notebook .dash-empty-state {
@@ -478,6 +507,14 @@ html.theme-notebook .achievement-card__desc { color: var(--nb-ink-2); }
 html.theme-notebook .achievement-card--locked { opacity: 0.55; }
 
 /* ── Quick Start Guide banner ── */
+html.theme-notebook .quick-start-guide {
+    background: transparent;
+    border: 0;
+    padding: 0;
+    box-shadow: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+}
 html.theme-notebook .quick-start-guide > * {
     background: linear-gradient(#fff4d8, var(--nb-paper-hi));
     border: 4px double var(--nb-frame);
