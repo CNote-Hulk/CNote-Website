@@ -25,18 +25,23 @@ const LIBRETRO = 'https://thumbnails.libretro.com';
 // IGDB covers are addressed by an opaque image id; t_cover_big is the 264x374 size, which is
 // comfortably above what a two-across shelf renders at.
 const IGDB_IMAGES = 'https://images.igdb.com/igdb/image/upload/t_cover_big';
+// TheGamesDB keeps one entry per platform release, so it has the boxes IGDB folds into a single
+// game: the 2014 Xbox 360 and 2015 PS3 San Andreas ports, for one. "tgdb:<file>" is the file name
+// under its original-size front boxart folder, e.g. "tgdb:24257-1.jpg".
+const TGDB_IMAGES = 'https://cdn.thegamesdb.net/images/original/boxart/front';
 
-// Where a not-yet-mirrored cover actually lives. Two sources because they cover different eras:
-// libretro has the retro consoles almost completely and the modern ones barely at all (twelve files
-// for the whole Xbox 360), IGDB is the other way round.
+// Where a not-yet-mirrored cover actually lives. libretro has the retro consoles almost completely
+// and the modern ones barely at all (twelve files for the whole Xbox 360), IGDB is the other way
+// round, and TheGamesDB fills in per-platform boxes neither of them has.
 function upstreamUrlFor(key) {
 	if (key.startsWith('igdb:')) return `${IGDB_IMAGES}/${key.slice('igdb:'.length)}.jpg`;
+	if (key.startsWith('tgdb:')) return `${TGDB_IMAGES}/${encodeURIComponent(key.slice('tgdb:'.length))}`;
 	return LIBRETRO + '/' + key.slice('libretro:'.length)
 		.split('/').map(encodeURIComponent).join('/');
 }
 
 function isUpstream(key) {
-	return key.startsWith('libretro:') || key.startsWith('igdb:');
+	return key.startsWith('libretro:') || key.startsWith('igdb:') || key.startsWith('tgdb:');
 }
 
 // Clients are pointed at us, never at libretro directly. Hotlinking someone else's host for every
@@ -142,8 +147,12 @@ router.get('/:consoleId/cover/:gameId', async (req, res) => {
 		if (!upstream.ok) return res.redirect(302, source);
 
 		const buffer = Buffer.from(await upstream.arrayBuffer());
-		const ext = key.startsWith('igdb:') ? 'jpg' : 'png';
-		const mirrored = `game-covers/${consoleId}/${gameId}.${ext}`;
+		const ext = key.startsWith('libretro:') || key.endsWith('.png') ? 'png' : 'jpg';
+		// A TheGamesDB cover usually REPLACES a box already mirrored at <gameId>.<ext>, and mirrored
+		// objects are served immutable for a year - so it gets its own name, or browsers that saw the
+		// old box would keep showing it.
+		const suffix = key.startsWith('tgdb:') ? '-tgdb' : '';
+		const mirrored = `game-covers/${consoleId}/${gameId}${suffix}.${ext}`;
 		try {
 			await uploadBuffer(mirrored, buffer, ext === 'jpg' ? 'image/jpeg' : 'image/png');
 			await pool.query(
