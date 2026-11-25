@@ -193,6 +193,10 @@ from the old AI Analyzer project were copied over and checked by totals and by a
 
 ## Următorii pași (Next)
 
+### Tema „Notebook” — mockup pe pagina Acasă (2026-11-25)
+
+Andrei a generat cu GPT 3 machete (Acasă, Evoluție, PS1) într-un stil caiet: hârtie crem liniată, chenare cusute, spirală, butoane maro. Primul pas: mockup pe pagina reală Acasă — `/html/pages/home-notebook.html` (copie a home.html) + `css/themes/notebook.css`. Un artifact standalone făcut înainte a fost respins („nu arată nici măcar ca site-ul”) — mockup-urile se fac pe paginile reale ale site-ului. Nu s-a putut face screenshot local (Chromium headless crapă în proot), deci aspectul e neverificat vizual — așteaptă feedback-ul lui Andrei pe live. Dacă e aprobat: a treia temă „Notebook” în selectorul de teme (profile-dropdown.js + restore-script din toate cele ~112 HTML + profile.js), extinsă pagină cu pagină; apoi Evoluție (carte deschisă) și pagina consolei.
+
 ### Android app handoff - course parts + certificates (2026-10-28)
 
 Nothing breaks if the app stays as it is (Gson ignores unknown JSON fields; every old field is unchanged). To give the app the same certificates as the website, in the Android repo (`E:\Console-Notebook`, see its CLAUDE.md for the rules):

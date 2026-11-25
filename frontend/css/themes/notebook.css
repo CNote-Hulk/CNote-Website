@@ -1,0 +1,524 @@
+/* ==========================================================================
+   THEME: Notebook (mockup, 2026-11-25)
+   Cream ruled paper on a dark-brown desk, stitched borders, brass spiral rings,
+   chunky dark-brown pill buttons. Layered ON TOP of the light theme: the page
+   keeps data-theme="light" (so the ~500 existing light-theme fixes for hard-coded
+   colours still apply) and adds html.theme-notebook. Every rule here is scoped to
+   html.theme-notebook, which out-specifies the matching [data-theme="light"] rule.
+   Only loaded by home-notebook.html for now.
+   ========================================================================== */
+
+html.theme-notebook {
+    /* palette */
+    --nb-desk: #24160d;
+    --nb-desk-2: #33200f;
+    --nb-paper: #f4e4c4;
+    --nb-paper-hi: #fbf1dc;
+    --nb-paper-lo: #ead3a6;
+    --nb-rule: rgba(150, 104, 52, 0.20);
+    --nb-margin: rgba(178, 70, 50, 0.30);
+    --nb-ink: #2a1a0e;
+    --nb-ink-2: #5a3d22;
+    --nb-ink-3: #8a6a3e;
+    --nb-frame: #3a2414;
+    --nb-stitch: rgba(90, 55, 25, 0.50);
+    --nb-btn: #5b2f12;
+    --nb-btn-hi: #7a4219;
+    --nb-amber: #f2c56b;
+    --nb-amber-lo: #d9a344;
+    --nb-chunk: 0 3px 0 var(--nb-frame);
+    --nb-pixel: 'Pixelify Sans', var(--font-sans);
+
+    /* site-wide tokens (variables.css) */
+    --primary-color: var(--nb-paper);
+    --secondary-color: var(--nb-paper-lo);
+    --accent-color: var(--nb-btn) !important;
+    --accent-light: var(--nb-btn-hi) !important;
+    --accent-rgb: 91, 47, 18 !important;
+    --accent-color-rgb: 91, 47, 18 !important;
+    --dark-bg: var(--nb-paper);
+    --dark-bg-2: var(--nb-paper-lo);
+    --card-bg: var(--nb-paper-hi);
+    --text-light: var(--nb-ink);
+    --text-gray: var(--nb-ink-2);
+    --border-color: rgba(58, 36, 20, 0.30);
+    --primary-rgb: 244, 228, 196;
+    --secondary-rgb: 234, 211, 166;
+    --dark-rgb: 58, 36, 20;
+    --gray-rgb: 90, 61, 34;
+    --cream-rgb: 42, 26, 14;
+    --glow-accent: none;
+    --shadow-card: var(--nb-chunk);
+    --shadow-sm: var(--nb-chunk);
+    --shadow-md: 0 4px 0 var(--nb-frame);
+    --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.45);
+
+    /* home.css short tokens */
+    --bg: var(--nb-paper);
+    --panel: var(--nb-paper-hi);
+    --panel-soft: var(--nb-paper-lo);
+    --panel-rgb: 251, 241, 220;
+    --text: var(--nb-ink);
+    --muted: var(--nb-ink-2);
+    --accent: var(--nb-btn);
+    --accent-soft: var(--nb-btn-hi);
+    --border: rgba(58, 36, 20, 0.30);
+
+    background: var(--nb-desk);
+}
+
+/* ── Desk background (replaces the wallpaper photo) ── */
+html.theme-notebook body {
+    background: var(--nb-desk);
+    color: var(--nb-ink);
+}
+html.theme-notebook body.home-page::before {
+    background:
+        radial-gradient(ellipse at 50% -10%, rgba(255, 190, 110, 0.10), transparent 60%),
+        repeating-linear-gradient(93deg, rgba(0, 0, 0, 0.10) 0 2px, transparent 2px 7px),
+        repeating-linear-gradient(88deg, rgba(255, 220, 170, 0.03) 0 1px, transparent 1px 11px),
+        linear-gradient(var(--nb-desk-2), var(--nb-desk));
+    filter: none;
+    opacity: 1;
+}
+
+/* ── Shared "paper sheet" look ── */
+html.theme-notebook .navbar,
+html.theme-notebook .dashboard-sidebar,
+html.theme-notebook .dashboard-content {
+    background-color: var(--nb-paper);
+    border: 3px solid var(--nb-frame);
+    border-radius: 14px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45), inset 0 0 0 2px var(--nb-paper-hi);
+    outline: 2px dashed var(--nb-stitch);
+    outline-offset: -9px;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+}
+
+/* ── Navbar: a paper strip floating over the desk ── */
+html.theme-notebook .navbar {
+    top: 10px;
+    left: 12px;
+    right: 12px;
+    height: 62px;
+    padding: 0 28px;
+    background-image: linear-gradient(var(--nb-paper-hi), var(--nb-paper));
+}
+html.theme-notebook .navbar::after { display: none; }
+html.theme-notebook .logo {
+    color: var(--nb-ink);
+    font-family: var(--nb-pixel);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+}
+html.theme-notebook .logo-icon { image-rendering: pixelated; }
+html.theme-notebook .navbar-search-wrap .navbar-search-btn {
+    background: var(--nb-paper-hi);
+    border: 2.5px solid var(--nb-frame);
+    border-radius: 999px;
+    color: var(--nb-ink-3);
+}
+html.theme-notebook .navbar-search-wrap .navbar-search-btn:hover { background: #fff7e6; }
+html.theme-notebook .navbar-search-placeholder { color: var(--nb-ink-3); font-weight: 500; }
+html.theme-notebook .nav-links a {
+    color: var(--nb-ink);
+    font-weight: 700;
+    border-radius: 999px;
+    padding: 6px 12px;
+}
+html.theme-notebook .nav-links a:hover { background: var(--nb-paper-lo); color: var(--nb-ink); }
+html.theme-notebook .nav-links a.active {
+    background: linear-gradient(var(--nb-btn-hi), var(--nb-btn));
+    color: var(--nb-paper-hi);
+    box-shadow: inset 0 0 0 2px var(--nb-frame);
+}
+html.theme-notebook .nav-links a.active::after { display: none; }
+html.theme-notebook .navbar-notifications-btn,
+html.theme-notebook .navbar-profile-btn { color: var(--nb-ink); background: transparent; border-color: transparent; }
+html.theme-notebook .navbar-notifications-btn:hover,
+html.theme-notebook .navbar-profile-btn:hover { background: var(--nb-paper-lo); }
+html.theme-notebook .hamburger span { background: var(--nb-ink); }
+
+/* ── Sidebar page ── */
+html.theme-notebook .dashboard-sidebar {
+    top: calc(var(--cn-nav-offset, 64px) + 26px);
+    left: 12px;
+    height: calc(100vh - var(--cn-nav-offset, 64px) - 40px);
+    width: 270px;
+    padding: 24px 16px 14px;
+    scrollbar-color: var(--nb-ink-3) transparent;
+}
+html.theme-notebook .sidebar-profile .profile-avatar {
+    border: 3px solid var(--nb-frame);
+    background: var(--nb-paper-lo);
+    box-shadow: var(--nb-chunk);
+}
+html.theme-notebook .sidebar-profile .profile-name {
+    color: var(--nb-ink);
+    font-family: var(--font-serif);
+    font-weight: 900;
+}
+html.theme-notebook .sidebar-profile .admin-badge {
+    background: var(--nb-frame);
+    color: var(--nb-amber);
+    border: 2px solid var(--nb-frame);
+    border-radius: 999px;
+    font-family: var(--nb-pixel);
+    letter-spacing: 0.08em;
+}
+html.theme-notebook .sidebar-profile .profile-bio { color: var(--nb-ink-2); font-style: italic; }
+html.theme-notebook .sidebar-profile-divider {
+    height: 0;
+    background: none;
+    border-top: 2px dashed var(--nb-stitch);
+}
+html.theme-notebook .sidebar-section h3 {
+    display: inline-block;
+    margin: 14px 0 6px 4px;
+    padding: 1px 10px;
+    color: var(--nb-ink);
+    font-family: var(--nb-pixel);
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    background: var(--nb-paper-hi);
+    border: 2px solid var(--nb-frame);
+    border-radius: 6px;
+}
+html.theme-notebook .sidebar-link {
+    color: var(--nb-ink);
+    font-size: 0.9rem;
+    font-weight: 600;
+    border-left: 0;
+    border-radius: 8px;
+    padding: 7px 12px;
+}
+html.theme-notebook .sidebar-link svg { opacity: 1; color: var(--nb-ink); }
+html.theme-notebook .sidebar-link:hover { background: var(--nb-paper-lo); color: var(--nb-ink); }
+html.theme-notebook .sidebar-link.active {
+    background: linear-gradient(var(--nb-btn-hi), var(--nb-btn));
+    color: var(--nb-paper-hi);
+    border-left: 0;
+    padding-left: 12px;
+    box-shadow: inset 0 0 0 2px var(--nb-frame);
+}
+html.theme-notebook .sidebar-link.active svg { color: var(--nb-paper-hi); }
+html.theme-notebook .sidebar-badge { background: #b0352a; color: #fff; }
+html.theme-notebook .sidebar-footer {
+    background: var(--nb-paper-hi);
+    border: 2px solid var(--nb-frame);
+}
+html.theme-notebook .sidebar-footer__copy,
+html.theme-notebook .sidebar-footer__link { color: var(--nb-ink-2); opacity: 1; }
+
+/* ── Spiral binding between the two pages (brass rings) ── */
+html.theme-notebook .dashboard-shell::before {
+    content: "";
+    position: fixed;
+    z-index: 101;
+    top: calc(var(--cn-nav-offset, 64px) + 56px);
+    bottom: 40px;
+    left: 270px;
+    width: 46px;
+    pointer-events: none;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='46' height='64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%23f0c070'/%3E%3Cstop offset='.5' stop-color='%23b87a34'/%3E%3Cstop offset='1' stop-color='%235a3412'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='7' cy='20' r='4' fill='%231c0f06'/%3E%3Ccircle cx='39' cy='20' r='4' fill='%231c0f06'/%3E%3Crect x='3' y='14' width='40' height='11' rx='5.5' fill='url(%23g)' stroke='%231c0f06' stroke-width='2'/%3E%3Crect x='8' y='16' width='30' height='2' rx='1' fill='%23ffe2a8' opacity='.7'/%3E%3C/svg%3E") repeat-y center top / 46px 64px;
+}
+/* Main page sits a bit further right so the rings bridge the gap */
+html.theme-notebook .dashboard-main { margin-left: 300px; }
+
+/* ── Main page: ruled paper with a red margin line and rings on top ── */
+html.theme-notebook .dashboard-content {
+    position: relative;
+    margin: 26px 14px 24px 8px;
+    padding: 40px 34px 34px 58px;
+    background-image:
+        linear-gradient(90deg, transparent 32px, var(--nb-margin) 32px 34px, transparent 34px),
+        repeating-linear-gradient(transparent 0 31px, var(--nb-rule) 31px 32px);
+}
+html.theme-notebook .dashboard-content::before {
+    content: "";
+    position: absolute;
+    top: -22px;
+    left: 6%;
+    right: 6%;
+    height: 40px;
+    pointer-events: none;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='40'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='0'%3E%3Cstop offset='0' stop-color='%235a3412'/%3E%3Cstop offset='.45' stop-color='%23f0c070'/%3E%3Cstop offset='.8' stop-color='%23a86a2a'/%3E%3Cstop offset='1' stop-color='%235a3412'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect x='20' y='2' width='13' height='34' rx='6.5' fill='url(%23g)' stroke='%231c0f06' stroke-width='2'/%3E%3Crect x='46' y='2' width='13' height='34' rx='6.5' fill='url(%23g)' stroke='%231c0f06' stroke-width='2'/%3E%3C/svg%3E") repeat-x left top / 180px 40px;
+}
+
+/* ── Section titles ── */
+html.theme-notebook .panel-section-title {
+    color: var(--nb-ink);
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin: 22px 0 12px;
+}
+html.theme-notebook .panel-section-title svg { color: var(--nb-ink); width: 20px; height: 20px; }
+html.theme-notebook .panel-section-title__link,
+html.theme-notebook .dash-see-all {
+    color: var(--nb-ink);
+    font-weight: 700;
+    font-size: 0.88rem;
+}
+
+/* ── Hero ── */
+html.theme-notebook .home-hero__date { color: var(--nb-ink-2); letter-spacing: 0.16em; }
+html.theme-notebook .home-hero__welcome-text { color: var(--nb-ink); font-weight: 500; }
+html.theme-notebook .home-hero__username {
+    color: var(--nb-ink);
+    font-weight: 900;
+    font-size: clamp(2.2rem, 4.5vw, 3.2rem);
+    line-height: 1.1;
+}
+html.theme-notebook .home-hero__subtitle {
+    color: var(--nb-ink-2);
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-weight: 700;
+    font-size: 1rem;
+}
+html.theme-notebook .home-hero-section { position: relative; }
+html.theme-notebook .home-hero-section::after {
+    /* sepia console sketch in the top-right corner, like the mockup */
+    content: "";
+    position: absolute;
+    right: 0;
+    top: -10px;
+    width: 230px;
+    height: 150px;
+    opacity: 0.55;
+    pointer-events: none;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 42' shape-rendering='crispEdges'%3E%3Cg fill='%233a2414' opacity='.35'%3E%3Crect x='6' y='38' width='52' height='1'/%3E%3Crect x='8' y='39' width='48' height='1'/%3E%3C/g%3E%3Crect x='10' y='3' width='18' height='35' fill='%233a2414'/%3E%3Crect x='11' y='4' width='16' height='33' fill='%23cdb48a'/%3E%3Crect x='11' y='4' width='2' height='33' fill='%23e8d6b0'/%3E%3Crect x='25' y='4' width='2' height='33' fill='%23a8885a'/%3E%3Crect x='14' y='9' width='10' height='1' fill='%236b4a2a'/%3E%3Crect x='14' y='12' width='10' height='1' fill='%236b4a2a'/%3E%3Crect x='14' y='22' width='10' height='3' fill='%236b4a2a'/%3E%3Crect x='14' y='29' width='3' height='2' fill='%236b4a2a'/%3E%3Crect x='19' y='29' width='3' height='2' fill='%236b4a2a'/%3E%3Crect x='30' y='24' width='28' height='12' fill='%233a2414'/%3E%3Crect x='29' y='28' width='4' height='9' fill='%233a2414'/%3E%3Crect x='55' y='28' width='4' height='9' fill='%233a2414'/%3E%3Crect x='31' y='25' width='26' height='10' fill='%23cdb48a'/%3E%3Crect x='30' y='29' width='2' height='7' fill='%23cdb48a'/%3E%3Crect x='56' y='29' width='2' height='7' fill='%23cdb48a'/%3E%3Crect x='31' y='25' width='26' height='2' fill='%23e8d6b0'/%3E%3Crect x='34' y='28' width='2' height='6' fill='%236b4a2a'/%3E%3Crect x='32' y='30' width='6' height='2' fill='%236b4a2a'/%3E%3Crect x='50' y='27' width='2' height='2' fill='%236b4a2a'/%3E%3Crect x='53' y='29' width='2' height='2' fill='%236b4a2a'/%3E%3Crect x='47' y='29' width='2' height='2' fill='%236b4a2a'/%3E%3Crect x='50' y='31' width='2' height='2' fill='%236b4a2a'/%3E%3Crect x='27' y='30' width='3' height='1' fill='%233a2414'/%3E%3C/svg%3E") no-repeat right top / contain;
+}
+html.theme-notebook .level-chip {
+    background: linear-gradient(var(--nb-btn-hi), var(--nb-btn));
+    border: 2.5px solid var(--nb-frame);
+    box-shadow: var(--nb-chunk);
+    color: var(--nb-paper-hi);
+    padding: 7px 18px;
+    font-weight: 700;
+}
+html.theme-notebook .level-chip .level-label { color: var(--nb-amber); }
+
+/* ── Cards: lighter paper, thick ink outline, chunky bottom shadow ── */
+html.theme-notebook .card,
+html.theme-notebook .stats-card,
+html.theme-notebook .continue-card,
+html.theme-notebook .achievement-card,
+html.theme-notebook .community-card,
+html.theme-notebook .article-card,
+html.theme-notebook .home-listing-card,
+html.theme-notebook .dash-course-card,
+html.theme-notebook .activity-list {
+    background: var(--nb-paper-hi);
+    border: 2.5px solid var(--nb-frame);
+    border-radius: 12px;
+    box-shadow: var(--nb-chunk);
+    color: var(--nb-ink);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+}
+html.theme-notebook .card:hover,
+html.theme-notebook .achievement-card:hover,
+html.theme-notebook .community-card:hover,
+html.theme-notebook .article-card:hover,
+html.theme-notebook .home-listing-card:hover {
+    border-color: var(--nb-frame);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 0 var(--nb-frame);
+}
+/* nested cards inside a card: no double outline */
+html.theme-notebook .card .community-card {
+    border-width: 0 0 2px;
+    border-style: dotted;
+    border-color: var(--nb-stitch);
+    border-radius: 0;
+    box-shadow: none;
+    background: transparent;
+}
+html.theme-notebook .card .community-card:last-child { border-bottom: 0; }
+html.theme-notebook .card h3,
+html.theme-notebook .card h4,
+html.theme-notebook .continue-content h2,
+html.theme-notebook .dash-course-card__title,
+html.theme-notebook .article-card__title,
+html.theme-notebook .home-listing-card__title { color: var(--nb-ink); }
+html.theme-notebook .card p,
+html.theme-notebook .dash-course-card__sub,
+html.theme-notebook .article-card__excerpt,
+html.theme-notebook .article-card__meta,
+html.theme-notebook .dash-empty { color: var(--nb-ink-2); }
+html.theme-notebook .article-card__title { font-family: var(--font-serif); }
+html.theme-notebook .article-card__cover,
+html.theme-notebook .home-listing-card__media,
+html.theme-notebook .home-listing-card__img { border-bottom: 2.5px solid var(--nb-frame); }
+html.theme-notebook .home-listing-card__price {
+    color: var(--nb-btn);
+    font-family: var(--nb-pixel);
+    font-weight: 700;
+}
+html.theme-notebook .continue-card__icon {
+    width: 56px;
+    height: 56px;
+    flex: none;
+    display: grid;
+    place-items: center;
+    font-size: 1.8rem;
+    background: var(--nb-paper);
+    border: 2.5px solid var(--nb-frame);
+    border-radius: 10px;
+}
+html.theme-notebook .continue-content h2 { font-size: 1.25rem; font-weight: 700; }
+
+/* empty states: dashed frame, like a blank page */
+html.theme-notebook .dash-empty-state {
+    border: 2px dashed var(--nb-stitch);
+    border-radius: 12px;
+    background: rgba(251, 241, 220, 0.6);
+    color: var(--nb-ink);
+}
+html.theme-notebook .dash-empty-state__text { color: var(--nb-ink); font-weight: 700; }
+html.theme-notebook .dash-empty-state__hint { color: var(--nb-ink-2); }
+
+/* ── Buttons: dark-brown pills that press down ── */
+html.theme-notebook .dash-course-card__btn,
+html.theme-notebook .primary-btn,
+html.theme-notebook .qsg-task-btn,
+html.theme-notebook .dash-empty-state__link,
+html.theme-notebook .qsg-tour-btn--next {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: linear-gradient(var(--nb-btn-hi), var(--nb-btn));
+    color: var(--nb-paper-hi) !important;
+    border: 2.5px solid var(--nb-frame);
+    border-radius: 999px;
+    box-shadow: var(--nb-chunk);
+    font-weight: 700;
+    text-decoration: none;
+    opacity: 1;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+html.theme-notebook .dash-course-card__btn:hover,
+html.theme-notebook .primary-btn:hover,
+html.theme-notebook .qsg-task-btn:hover,
+html.theme-notebook .dash-empty-state__link:hover {
+    opacity: 1;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 0 var(--nb-frame);
+}
+html.theme-notebook .dash-course-card__btn:active,
+html.theme-notebook .primary-btn:active,
+html.theme-notebook .qsg-task-btn:active {
+    transform: translateY(2px);
+    box-shadow: 0 1px 0 var(--nb-frame);
+}
+/* completed course → amber "Review" pill */
+html.theme-notebook .dash-course-card--complete .dash-course-card__btn {
+    background: linear-gradient(#f7d585, var(--nb-amber-lo));
+    color: var(--nb-ink) !important;
+}
+html.theme-notebook .dash-course-card--complete {
+    border-color: var(--nb-frame);
+    background: var(--nb-paper-hi);
+}
+
+/* ── Progress bars: ink outline, striped brown fill ── */
+html.theme-notebook .progress-bar,
+html.theme-notebook .custom-progress-bar,
+html.theme-notebook .dash-course-card__progress-bar,
+html.theme-notebook .level-row__bar {
+    height: 12px;
+    background: var(--nb-paper-lo);
+    border: 2px solid var(--nb-frame);
+    border-radius: 999px;
+    overflow: hidden;
+}
+html.theme-notebook .progress-bar > div,
+html.theme-notebook .custom-progress-bar__fill,
+html.theme-notebook .dash-course-card__progress-fill,
+html.theme-notebook .level-row__bar-fill {
+    background: repeating-linear-gradient(90deg, var(--nb-btn) 0 6px, var(--nb-btn-hi) 6px 8px);
+    border-radius: 0;
+}
+
+/* ── Stats ── */
+html.theme-notebook .stats-card h3 { color: var(--nb-ink-2); letter-spacing: 0.12em; font-size: 0.72rem; font-weight: 700; }
+html.theme-notebook .stats-card p,
+html.theme-notebook .stats-card strong {
+    color: var(--nb-ink);
+    font-family: var(--font-serif);
+    font-weight: 900;
+    font-size: 1.9rem;
+    line-height: 1.1;
+}
+
+/* ── Activity list ── */
+html.theme-notebook .activity-list { padding: 6px 16px; }
+html.theme-notebook .activity-list li {
+    background: transparent;
+    border: 0;
+    border-bottom: 2px dotted var(--nb-stitch);
+    border-radius: 0;
+    color: var(--nb-ink);
+}
+html.theme-notebook .activity-list li:last-child { border-bottom: 0; }
+html.theme-notebook .activity-icon {
+    background: var(--nb-paper);
+    border: 2px solid var(--nb-frame);
+    border-radius: 8px;
+    color: var(--nb-ink);
+}
+html.theme-notebook .activity-text a { color: var(--nb-btn); }
+html.theme-notebook .activity-time { color: var(--nb-ink-3); }
+
+/* ── Achievements ── */
+html.theme-notebook .achievement-card__name { color: var(--nb-ink); }
+html.theme-notebook .achievement-card__desc { color: var(--nb-ink-2); }
+html.theme-notebook .achievement-card--locked { opacity: 0.55; }
+
+/* ── Quick Start Guide banner ── */
+html.theme-notebook .quick-start-guide > * {
+    background: linear-gradient(#fff4d8, var(--nb-paper-hi));
+    border: 4px double var(--nb-frame);
+    border-radius: 12px;
+    box-shadow: var(--nb-chunk);
+    color: var(--nb-ink);
+}
+html.theme-notebook .qsg-title { color: var(--nb-ink); }
+html.theme-notebook .qsg-subtitle,
+html.theme-notebook .qsg-task-label { color: var(--nb-ink-2); }
+
+/* ── Footer + mobile bottom nav ── */
+html.theme-notebook .footer {
+    background: transparent;
+    color: var(--nb-paper-lo);
+    backdrop-filter: none;
+}
+html.theme-notebook .footer a { color: var(--nb-amber); }
+html.theme-notebook .mobile-bottom-nav {
+    background: var(--nb-paper);
+    border-top: 3px solid var(--nb-frame);
+    color: var(--nb-ink);
+}
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+    html.theme-notebook .dashboard-sidebar { width: 210px; }
+    html.theme-notebook .dashboard-shell::before { left: 200px; }
+    html.theme-notebook .dashboard-main { margin-left: 230px; }
+    html.theme-notebook .home-hero-section::after { width: 160px; height: 105px; }
+}
+@media (max-width: 680px) {
+    html.theme-notebook .navbar { top: 6px; left: 8px; right: 8px; padding: 0 16px; }
+    html.theme-notebook .dashboard-shell::before { display: none; }
+    html.theme-notebook .dashboard-main { margin-left: 0; }
+    html.theme-notebook .dashboard-content {
+        margin: 34px 8px 90px;
+        padding: 34px 16px 24px 40px;
+        background-image:
+            linear-gradient(90deg, transparent 24px, var(--nb-margin) 24px 26px, transparent 26px),
+            repeating-linear-gradient(transparent 0 31px, var(--nb-rule) 31px 32px);
+    }
+    html.theme-notebook .home-hero-section::after { display: none; }
+}
