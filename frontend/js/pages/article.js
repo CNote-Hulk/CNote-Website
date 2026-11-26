@@ -3,8 +3,9 @@
  * Admin sees Edit/Delete buttons (reusing the same modal markup as articles.js).
  */
 import { AuthModule } from '../modules/auth.js?v=20261005';
-import { I18nModule } from '../modules/i18n.js?v=20261028b';
+import { I18nModule } from '../modules/i18n.js?v=20261126';
 import { API_BASE_URL } from '../config.js';
+import { categoryBadgeHtml, fillCategorySelect, mountConsolePicker, loadConsoleNames } from '../modules/article-meta.js?v=20261126';
 import { confirmModal } from '../utils/confirm-modal.js';
 
 async function api(method, path, body) {
@@ -95,6 +96,12 @@ function renderArticle() {
     document.getElementById('article-views').textContent = `${article.views} ${I18nModule.t('articles_views_label') || 'views'}`;
     document.getElementById('article-content').innerHTML = article.content_html;
 
+    // Category pill above the title; a speculation also says plainly it is unconfirmed.
+    const catEl = document.getElementById('article-category');
+    catEl.innerHTML = categoryBadgeHtml(article.category) + (article.category === 'speculations'
+        ? `<span class="article-view__unconfirmed">${escapeHtml(I18nModule.t('articles_speculation_note') || 'Rumour — not confirmed')}</span>` : '');
+    renderConsoleLinks();
+
     if (isAdmin()) {
         document.getElementById('article-admin-actions').hidden = false;
         if (!article.published) {
@@ -105,6 +112,18 @@ function renderArticle() {
         }
     }
 }
+
+async function renderConsoleLinks() {
+    const el = document.getElementById('article-consoles');
+    const ids = article.consoles || [];
+    if (!ids.length) { el.hidden = true; el.innerHTML = ''; return; }
+    const names = new Map((await loadConsoleNames()).map(c => [c.id, c.name]));
+    el.innerHTML = `<span class="article-view__consoles-label">${escapeHtml(I18nModule.t('articles_about_consoles') || 'Consoles in this article')}</span>`
+        + ids.map(id => `<a class="article-console-chip" href="consoles/${encodeURIComponent(id)}.html">${escapeHtml(names.get(id) || id)}</a>`).join('');
+    el.hidden = false;
+}
+
+window.addEventListener('cn:language-changed', () => { if (article) renderArticle(); });
 
 loadArticle();
 
@@ -118,9 +137,14 @@ const publishedInput = document.getElementById('article-published-input');
 const coverInput = document.getElementById('article-cover-input');
 const coverPreview = document.getElementById('article-cover-preview');
 const coverStatus = document.getElementById('article-cover-status');
+const categoryInput = document.getElementById('article-category-input');
 let coverImageKey = null;
+let consolePicker = null;
 
-function openModal() {
+async function openModal() {
+    fillCategorySelect(categoryInput, article.category);
+    if (!consolePicker) consolePicker = await mountConsolePicker(document.getElementById('article-consoles-picker'));
+    consolePicker.set(article.consoles || []);
     titleInput.value = article.title;
     excerptInput.value = article.excerpt || '';
     contentInput.value = article.content_html;
@@ -172,6 +196,8 @@ form.addEventListener('submit', async e => {
             excerpt: excerptInput.value.trim(),
             content_html: contentInput.value,
             published: publishedInput.checked,
+            category: categoryInput.value,
+            consoles: consolePicker ? consolePicker.get() : [],
         };
         if (coverImageKey) body.cover_image_key = coverImageKey;
         const res = await api('PUT', `/articles/${article.id}`, body);

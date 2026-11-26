@@ -27,6 +27,10 @@
    portrait scans (h/w >= 1.15, 1.08 for the ~1.14 Blu-ray boxes) are used - TheGamesDB stores the wide store banner as "front boxart" for some
    digital-only games, which looks worse on a shelf than IGDB's poster. Files
    without known size are listed in os.tmpdir()/seed-covers-tgdb-need-dims.json.
+   Optional TITLE_ALIASES=aliases.json (from igdb-title-aliases.js): when our
+   title finds no box, IGDB's other names for that game on that console are
+   tried (PAL/US titles, romanizations), and so are both sides without a
+   "Tom Clancy's"/"Disney's"-style prefix.
    Needs DATABASE_URL in backend/.env.
    ───────────────────────────────────────── */
 require('dotenv').config();
@@ -87,6 +91,10 @@ const isPortrait = (file, platform) => {
 	return !STORE_ERA.has(platform) || d[1] / d[0] >= (BLU_RAY.has(platform) ? 1.08 : 1.15);
 };
 
+const ALIASES = process.env.TITLE_ALIASES ? JSON.parse(fs.readFileSync(process.env.TITLE_ALIASES, 'utf8')) : {};
+const PREFIX = /^(tom clancy s|sid meier s|disney pixar|disney s|disney|marvel s|dreamworks|nickelodeon|clive barker s|american mcgee s|james cameron s|peter jackson s|robert ludlum s|bram stoker s|tim burton s) /;
+const loose = s => norm(s).replace(PREFIX, '');
+
 const yearOf = g => (g.release_date ? parseInt(g.release_date.slice(0, 4), 10) : null);
 
 async function main() {
@@ -108,7 +116,7 @@ async function main() {
 		if (!file) continue;
 		if (!index.has(g.platform)) index.set(g.platform, new Map());
 		const byTitle = index.get(g.platform);
-		const titles = new Set([norm(g.game_title), ...(g.alternates || []).map(norm)]);
+		const titles = new Set([g.game_title, ...(g.alternates || [])].flatMap(t => [norm(t), loose(t)]));
 		for (const t of titles) {
 			if (!t) continue;
 			if (!byTitle.has(t)) byTitle.set(t, []);
@@ -130,9 +138,13 @@ async function main() {
 	for (const r of rows) {
 		const plats = TGDB_PLATFORMS[r.console_id];
 		if (!plats) { stats.noPlatform++; continue; }
-		const t = norm(r.title);
-		let hits = [];
-		for (const p of plats) hits.push(...((index.get(p) && index.get(p).get(t)) || []));
+		const lookup = names => {
+			const out = [];
+			for (const t of new Set(names)) for (const p of plats) out.push(...((index.get(p) && index.get(p).get(t)) || []));
+			return out;
+		};
+		let hits = lookup([norm(r.title), loose(r.title)]);
+		if (!hits.length) hits = lookup((ALIASES[`${r.console_id}|${r.title}`] || []).flatMap(n => [norm(n), loose(n)]));
 		if (!hits.length) continue;
 		if (DIMS) {
 			for (const h of hits) if (!DIMS[h.file]) needDims.add(h.file);

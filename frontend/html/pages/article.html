@@ -23,7 +23,7 @@
     <title id="article-doc-title">Article — Console Notebook</title>
     <link rel="stylesheet" href="../../css/main.css?v=20261005b">
     <link rel="stylesheet" href="../../css/pages/lesson.css?v=20260909">
-    <link rel="stylesheet" href="../../css/pages/articles.css">
+    <link rel="stylesheet" href="../../css/pages/articles.css?v=20261126">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
@@ -46,6 +46,7 @@
 
                 <img class="article-view__cover" id="article-cover" hidden alt="">
 
+                <div class="article-view__cat" id="article-category"></div>
                 <h1 class="article-view__title" id="article-title"></h1>
                 <div class="article-view__meta">
                     <span id="article-author"></span> · <span id="article-date"></span> · <span id="article-views"></span>
@@ -57,6 +58,8 @@
                 </div>
 
                 <div class="lsn-content" id="article-content"></div>
+
+                <div class="article-view__consoles" id="article-consoles" hidden></div>
             </article>
 
         </div>
@@ -70,6 +73,12 @@
             <form id="article-form">
                 <label class="article-form__label" data-i18n="articles_field_title">Title</label>
                 <input type="text" id="article-title-input" class="hub-form-input" maxlength="200" required>
+
+                <label class="article-form__label" for="article-category-input" data-i18n="articles_field_category">Category</label>
+                <select id="article-category-input" class="hub-form-input"></select>
+
+                <label class="article-form__label" data-i18n="articles_field_consoles">Consoles this article is about</label>
+                <div class="article-consoles" id="article-consoles-picker"></div>
 
                 <label class="article-form__label" data-i18n="articles_field_excerpt">Excerpt</label>
                 <textarea id="article-excerpt-input" class="hub-form-textarea" rows="2" maxlength="400"></textarea>
@@ -103,8 +112,8 @@
     <div id="footer-placeholder"></div>
 
     <!-- Scripts -->
-    <script type="module" src="../../js/main.js?v=20261028b"></script>
-    <script type="module" src="../../js/pages/article.js?v=20260909"></script>
+    <script type="module" src="../../js/main.js?v=20261126"></script>
+    <script type="module" src="../../js/pages/article.js?v=20261126"></script>
     <script src="/js/cookie-consent.js"></script>
     <script src="../js/components.js"></script>
 </body>

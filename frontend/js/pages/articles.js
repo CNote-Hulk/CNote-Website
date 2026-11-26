@@ -1,10 +1,13 @@
 /**
  * Articles list page — public grid of admin-written articles, with an
  * admin-only "Write article" modal that creates a new one.
+ * Filters: category chips, and ?console=<id> (linked from a console page's
+ * "Articles" section), both kept in the URL.
  */
 import { AuthModule } from '../modules/auth.js?v=20261005';
-import { I18nModule } from '../modules/i18n.js?v=20261028b';
+import { I18nModule } from '../modules/i18n.js?v=20261126';
 import { API_BASE_URL } from '../config.js';
+import { ARTICLE_CATEGORIES, categoryLabel, categoryBadgeHtml, fillCategorySelect, mountConsolePicker, loadConsoleNames } from '../modules/article-meta.js?v=20261126';
 
 const PAGE_SIZE = 12;
 
@@ -49,6 +52,9 @@ const loadMoreBtn = document.getElementById('articles-load-more');
 const writeBtn = document.getElementById('articles-write-btn');
 
 let offset = 0;
+const params = new URLSearchParams(location.search);
+let category = ARTICLE_CATEGORIES.some(c => c.id === params.get('category')) ? params.get('category') : null;
+const consoleFilter = /^[a-z0-9-]{1,40}$/.test(params.get('console') || '') ? params.get('console') : null;
 
 function formatDate(iso) {
     return new Date(iso).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
@@ -61,6 +67,7 @@ function renderCard(a) {
     card.innerHTML = `
         ${a.cover_image_url ? `<img class="article-card__cover" src="${escapeHtml(a.cover_image_url)}" alt="" loading="lazy">` : '<div class="article-card__cover article-card__cover--placeholder">📰</div>'}
         <div class="article-card__body">
+            ${categoryBadgeHtml(a.category)}
             <h3 class="article-card__title">${escapeHtml(a.title)}</h3>
             ${a.excerpt ? `<p class="article-card__excerpt">${escapeHtml(a.excerpt)}</p>` : ''}
             <div class="article-card__meta">
@@ -75,7 +82,10 @@ async function loadPage() {
     loadingEl.hidden = false;
     loadMoreBtn.hidden = true;
     try {
-        const res = await api('GET', `/articles?limit=${PAGE_SIZE}&offset=${offset}`);
+        const q = new URLSearchParams({ limit: PAGE_SIZE, offset });
+        if (category) q.set('category', category);
+        if (consoleFilter) q.set('console', consoleFilter);
+        const res = await api('GET', `/articles?${q}`);
         if (!res.success) throw new Error(res.error || 'failed');
 
         if (offset === 0 && res.articles.length === 0) {
@@ -97,6 +107,48 @@ async function loadPage() {
 }
 
 loadMoreBtn.addEventListener('click', loadPage);
+
+// ── Filters ─────────────────────────────────────────────────────────
+const filtersEl = document.getElementById('articles-filters');
+
+function syncUrl() {
+    const q = new URLSearchParams();
+    if (category) q.set('category', category);
+    if (consoleFilter) q.set('console', consoleFilter);
+    history.replaceState(null, '', location.pathname + (q.toString() ? `?${q}` : ''));
+}
+
+async function renderFilters() {
+    const chips = [{ id: null, label: I18nModule.t('articles_filter_all') || 'All' }]
+        .concat(ARTICLE_CATEGORIES.map(c => ({ id: c.id, label: categoryLabel(c.id) })));
+    filtersEl.innerHTML = chips.map(c => `
+        <button type="button" role="tab" class="articles-filter${c.id === category ? ' is-active' : ''}"
+            aria-selected="${c.id === category}" data-cat="${c.id || ''}">${escapeHtml(c.label)}</button>`).join('');
+    if (consoleFilter) {
+        const name = (await loadConsoleNames()).find(c => c.id === consoleFilter)?.name || consoleFilter;
+        const chip = document.createElement('a');
+        chip.className = 'articles-filter articles-filter--console';
+        chip.href = location.pathname + (category ? `?category=${category}` : '');
+        chip.title = I18nModule.t('articles_filter_clear') || 'Show all consoles';
+        chip.textContent = `${name} ×`;
+        filtersEl.prepend(chip);
+    }
+}
+
+filtersEl.addEventListener('click', e => {
+    const btn = e.target.closest('button[data-cat]');
+    if (!btn) return;
+    category = btn.dataset.cat || null;
+    syncUrl();
+    renderFilters();
+    gridEl.innerHTML = '';
+    emptyEl.hidden = true;
+    offset = 0;
+    loadPage();
+});
+window.addEventListener('cn:language-changed', renderFilters);
+
+renderFilters();
 loadPage();
 
 // ── Admin: write article modal ──────────────────────────────────────
@@ -111,10 +163,15 @@ const publishedInput = document.getElementById('article-published-input');
 const coverInput = document.getElementById('article-cover-input');
 const coverPreview = document.getElementById('article-cover-preview');
 const coverStatus = document.getElementById('article-cover-status');
+const categoryInput = document.getElementById('article-category-input');
 let coverImageKey = null;
+let consolePicker = null;
 
-function openModal() {
+async function openModal() {
     form.reset();
+    fillCategorySelect(categoryInput, category || 'news');
+    if (!consolePicker) consolePicker = await mountConsolePicker(document.getElementById('article-consoles-picker'));
+    consolePicker.set(consoleFilter ? [consoleFilter] : []);
     coverImageKey = null;
     coverPreview.hidden = true;
     coverStatus.textContent = '';
@@ -158,6 +215,8 @@ form.addEventListener('submit', async e => {
             content_html: contentInput.value,
             cover_image_key: coverImageKey,
             published: publishedInput.checked,
+            category: categoryInput.value,
+            consoles: consolePicker ? consolePicker.get() : [],
         });
         if (res.success) {
             window.location.href = `article.html?slug=${encodeURIComponent(res.article.slug)}`;

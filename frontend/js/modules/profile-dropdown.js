@@ -5,7 +5,7 @@
  */
 
 import { AuthModule } from './auth.js?v=20261005';
-import { I18nModule } from './i18n.js?v=20261028b';
+import { I18nModule } from './i18n.js?v=20261126';
 
 const THEME_KEY = 'cnote-theme';
 const ACCENT_KEY = 'cnote-accent-color';

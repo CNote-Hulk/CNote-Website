@@ -4,6 +4,9 @@
    Admin-only write (create/update/delete), public read. Cover + inline
    content images are uploaded separately via the existing
    POST /api/uploads/presign ('article' kind, admin-gated there too).
+   Each article has one category (CATEGORIES) and the consoles it is about
+   (article_consoles); GET / filters by both, which is what the console pages
+   use to list their articles.
    ───────────────────────────────────────── */
 const express = require('express');
 const router = express.Router();
@@ -11,6 +14,29 @@ const pool = require('../db');
 const { authRequired, authOptional } = require('../middleware/auth');
 const { adminOnly } = require('../middleware/adminOnly');
 const { publicUrlForKey } = require('../utils/objectStorage');
+
+const CATEGORIES = ['news', 'history', 'special-editions', 'speculations', 'fun-facts'];
+const pickCategory = (v, fallback) => (CATEGORIES.includes(v) ? v : fallback);
+
+// Only ids of consoles that exist; anything else is dropped silently.
+async function validConsoles(list) {
+    if (!Array.isArray(list)) return null;
+    const ids = [...new Set(list.filter(x => typeof x === 'string' && /^[a-z0-9-]{1,40}$/.test(x)))].slice(0, 60);
+    if (!ids.length) return [];
+    const { rows } = await pool.query('SELECT DISTINCT id FROM consoles_translations WHERE id = ANY($1)', [ids]);
+    return rows.map(r => r.id);
+}
+
+async function setConsoles(articleId, ids) {
+    await pool.query('DELETE FROM article_consoles WHERE article_id = $1', [articleId]);
+    if (ids.length) {
+        await pool.query(
+            'INSERT INTO article_consoles (article_id, console_id) SELECT $1, unnest($2::text[]) ON CONFLICT DO NOTHING',
+            [articleId, ids]);
+    }
+}
+
+const CONSOLES_SQL = `COALESCE((SELECT array_agg(ac.console_id ORDER BY ac.console_id) FROM article_consoles ac WHERE ac.article_id = a.id), '{}') AS consoles`;
 
 function slugify(title) {
     return String(title || '')
@@ -45,24 +71,31 @@ function toPublic(row) {
         author_id: row.author_id,
         author_name: row.author_name,
         published: row.published,
+        category: row.category,
+        consoles: row.consoles || [],
         views: row.views,
         created_at: row.created_at,
         updated_at: row.updated_at,
     };
 }
 
-// GET /api/articles — public, list published articles (newest first)
+// GET /api/articles — public, list published articles (newest first).
+// Optional ?category=<one of CATEGORIES> and ?console=<console id>.
 router.get('/', async (req, res) => {
     try {
         const limit = Math.min(parseInt(req.query.limit) || 20, 50);
         const offset = Math.max(parseInt(req.query.offset) || 0, 0);
+        const category = CATEGORIES.includes(req.query.category) ? req.query.category : null;
+        const consoleId = typeof req.query.console === 'string' && /^[a-z0-9-]{1,40}$/.test(req.query.console) ? req.query.console : null;
         const { rows } = await pool.query(
-            `SELECT a.*, u.username AS author_name
+            `SELECT a.*, u.username AS author_name, ${CONSOLES_SQL}
              FROM articles a JOIN users u ON u.id = a.author_id
              WHERE a.published = TRUE
+               AND ($3::text IS NULL OR a.category = $3)
+               AND ($4::text IS NULL OR EXISTS (SELECT 1 FROM article_consoles ac WHERE ac.article_id = a.id AND ac.console_id = $4))
              ORDER BY a.created_at DESC
              LIMIT $1 OFFSET $2`,
-            [limit, offset]
+            [limit, offset, category, consoleId]
         );
         res.json({ success: true, articles: rows.map(toPublic) });
     } catch (err) {
@@ -75,7 +108,7 @@ router.get('/', async (req, res) => {
 router.get('/:slug', authOptional, async (req, res) => {
     try {
         const { rows } = await pool.query(
-            `SELECT a.*, u.username AS author_name
+            `SELECT a.*, u.username AS author_name, ${CONSOLES_SQL}
              FROM articles a JOIN users u ON u.id = a.author_id
              WHERE a.slug = $1`,
             [req.params.slug]
@@ -102,6 +135,8 @@ router.post('/', authRequired, adminOnly, async (req, res) => {
         const coverImageKey = typeof req.body?.cover_image_key === 'string' && req.body.cover_image_key.startsWith(`articles/image/${req.user.id}/`)
             ? req.body.cover_image_key.slice(0, 300) : null;
         const published = req.body?.published !== false;
+        const category = pickCategory(req.body?.category, 'news');
+        const consoles = (await validConsoles(req.body?.consoles)) || [];
 
         if (!title || !contentHtml) {
             return res.status(400).json({ success: false, error: 'Title and content are required.' });
@@ -109,12 +144,13 @@ router.post('/', authRequired, adminOnly, async (req, res) => {
 
         const slug = await uniqueSlug(slugify(title));
         const { rows } = await pool.query(
-            `INSERT INTO articles (slug, title, excerpt, content_html, cover_image_key, author_id, published)
-             VALUES ($1, $2, $3, $4, $5, $6, $7)
+            `INSERT INTO articles (slug, title, excerpt, content_html, cover_image_key, author_id, published, category)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
              RETURNING *`,
-            [slug, title, excerpt, contentHtml, coverImageKey, req.user.id, published]
+            [slug, title, excerpt, contentHtml, coverImageKey, req.user.id, published, category]
         );
-        res.status(201).json({ success: true, article: toPublic({ ...rows[0], author_name: req.user.username }) });
+        await setConsoles(rows[0].id, consoles);
+        res.status(201).json({ success: true, article: toPublic({ ...rows[0], consoles, author_name: req.user.username }) });
     } catch (err) {
         console.error('Article POST error:', err.message);
         res.status(500).json({ success: false, error: 'Could not create article.' });
@@ -138,6 +174,8 @@ router.put('/:id', authRequired, adminOnly, async (req, res) => {
             ? (req.body.cover_image_key.startsWith(`articles/image/${req.user.id}/`) ? req.body.cover_image_key.slice(0, 300) : existing.cover_image_key)
             : existing.cover_image_key;
         const published = typeof req.body?.published === 'boolean' ? req.body.published : existing.published;
+        const category = pickCategory(req.body?.category, existing.category);
+        const consoles = await validConsoles(req.body?.consoles); // null = not sent, keep as is
 
         if (!title || !contentHtml) {
             return res.status(400).json({ success: false, error: 'Title and content are required.' });
@@ -150,13 +188,17 @@ router.put('/:id', authRequired, adminOnly, async (req, res) => {
 
         const { rows } = await pool.query(
             `UPDATE articles SET slug = $1, title = $2, excerpt = $3, content_html = $4,
-                cover_image_key = $5, published = $6, updated_at = NOW()
-             WHERE id = $7
+                cover_image_key = $5, published = $6, category = $7, updated_at = NOW()
+             WHERE id = $8
              RETURNING *`,
-            [slug, title, excerpt, contentHtml, coverImageKey, published, id]
+            [slug, title, excerpt, contentHtml, coverImageKey, published, category, id]
         );
-        const { rows: authorRows } = await pool.query('SELECT username FROM users WHERE id = $1', [existing.author_id]);
-        res.json({ success: true, article: toPublic({ ...rows[0], author_name: authorRows[0]?.username }) });
+        if (consoles) await setConsoles(id, consoles);
+        const { rows: extra } = await pool.query(
+            `SELECT (SELECT username FROM users WHERE id = $1) AS author_name,
+                    COALESCE((SELECT array_agg(console_id ORDER BY console_id) FROM article_consoles WHERE article_id = $2), '{}') AS consoles`,
+            [existing.author_id, id]);
+        res.json({ success: true, article: toPublic({ ...rows[0], ...extra[0] }) });
     } catch (err) {
         console.error('Article PUT error:', err.message);
         res.status(500).json({ success: false, error: 'Could not update article.' });

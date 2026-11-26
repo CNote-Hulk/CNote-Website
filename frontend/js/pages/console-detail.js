@@ -7,10 +7,11 @@ import { getConsoleById, getConsoleIdFromUrl, resolveImagePath, invalidateCache 
 import { MODEL_DIRECTORY_GROUPS } from '../data/console-models.js?v=20260909d';
 import { AchievementsModule } from '../modules/achievements.js';
 import { AuthModule } from '../modules/auth.js?v=20261005';
-import { I18nModule } from '../modules/i18n.js?v=20261028b';
+import { I18nModule } from '../modules/i18n.js?v=20261126';
 import { API_BASE_URL } from '../config.js';
 import { MySpaceModule } from '../modules/my-space.js?v=20261009d';
 import { openImageViewer } from '../modules/image-viewer.js?v=20261009';
+import { ConsoleArticlesModule } from '../modules/console-articles.js?v=20261126';
 
 /** Remove leftover Chrome UI elements from page template */
 function cleanupConsolePageChrome() {
@@ -1174,6 +1175,8 @@ async function init() {
     // Read-only here by design: the app is the only editor of My Space. Not awaited - it makes
     // two network calls and the page should not hold its first paint for someone else's shelf.
     MySpaceModule.render(consoleId);
+    // Not awaited either: the articles section appears below the specs once loaded.
+    ConsoleArticlesModule.render(consoleId);
     initAdminEditButton();
     injectStructuredData(currentConsole, consoleId);
 
@@ -1208,6 +1211,7 @@ async function init() {
         injectStructuredData(currentConsole, consoleId);
         loadRating(consoleId);
         MySpaceModule.render(consoleId);
+        ConsoleArticlesModule.render(consoleId);
     });
 
     AchievementsModule.trackConsoleVisit(consoleId);

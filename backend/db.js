@@ -633,6 +633,17 @@ async function initializeSchema() {
 			updated_at TIMESTAMP DEFAULT NOW()
 		)`,
 		`CREATE INDEX IF NOT EXISTS idx_articles_published_created_at ON articles(published, created_at DESC)`,
+		// Article categories + the consoles an article is about (2026-11-26): the
+		// console pages list their articles grouped by category. One article can
+		// be about several consoles (a controller sold for Xbox One and Series X).
+		`ALTER TABLE articles ADD COLUMN IF NOT EXISTS category TEXT NOT NULL DEFAULT 'news'`,
+		`CREATE INDEX IF NOT EXISTS idx_articles_category ON articles(category)`,
+		`CREATE TABLE IF NOT EXISTS article_consoles (
+			article_id INTEGER NOT NULL REFERENCES articles(id) ON DELETE CASCADE,
+			console_id TEXT NOT NULL,
+			PRIMARY KEY (article_id, console_id)
+		)`,
+		`CREATE INDEX IF NOT EXISTS idx_article_consoles_console ON article_consoles(console_id)`,
 
 		// ── Orders (no-payment marketplace checkout — buyer submits Sameday
 		// shipping data, seller processes the shipment off-platform) ──────────
