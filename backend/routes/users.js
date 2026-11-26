@@ -79,7 +79,7 @@ router.get('/users/:username', async (req, res) => {
     try {
         const { username } = req.params;
         const result = await pool.query(
-            `SELECT id, username, email, bio, avatar, favorite_consoles, owned_consoles, role, created_at, profile_background, profile_background_game,
+            `SELECT id, username, email, bio, avatar, favorite_consoles, owned_consoles, role, created_at, profile_background, profile_background_game, profile_background_focus,
                     social_discord, social_twitter, social_youtube, social_instagram,
                     show_email, show_stats, show_friends, show_social_links, xp
              FROM users WHERE LOWER(username) = LOWER($1)`,

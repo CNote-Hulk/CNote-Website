@@ -760,6 +760,7 @@ async function initializeSchema() {
 		// see routes/profileBackground.js.
 		`ALTER TABLE users ADD COLUMN IF NOT EXISTS profile_background TEXT`,
 		`ALTER TABLE users ADD COLUMN IF NOT EXISTS profile_background_game TEXT`,
+		`ALTER TABLE users ADD COLUMN IF NOT EXISTS profile_background_focus SMALLINT`,
 		`CREATE TABLE IF NOT EXISTS user_owned_variants (
 			user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
 			console_id TEXT NOT NULL,
