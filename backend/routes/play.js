@@ -17,6 +17,16 @@
      GET    /api/play/device/current      (device) the open session, for the emulator's toast
      POST   /api/play/device/session      (device) a game started: open a session named after it
      POST   /api/play/device/events       (device) batch of events, idempotent by client id
+   Duel (2026-11-27, Tools → Duel in ArmSX2): before each match the emulator shows two QR codes;
+   each player names himself on his phone, which then works as a second screen (live health,
+   rounds, fighters, result) — like a Nintendo DS.
+     POST   /api/play/device/match        (device) new match → {id, k1, k2} for the QR codes
+     GET    /api/play/device/match/:id    (device) the names typed so far
+     POST   /api/play/device/live         (device) live state of a match → phones (socket.io)
+     GET    /api/play/join?m=&k=          (public, with a key) which side, game, names
+     POST   /api/play/join                (public, with a key) { m, k, name }
+   socket.io: 'duel:watch' {m, k} joins the match room; the room gets 'duel:live',
+   'duel:names' and 'duel:result'.
    ───────────────────────────────────────── */
 /* ── REQUIRED IMPORTS — DO NOT REMOVE ──────
    If you add a new package:
@@ -64,6 +74,18 @@ const KINDS = new Set(['fight', 'arcade_run', 'race', 'score']);
             UNIQUE (user_id, client_id)
         )`,
         `CREATE INDEX IF NOT EXISTS idx_play_events_session ON play_events(session_id, occurred_at)`,
+        // Duel (2026-11-27): one row per match the emulator announces; k1/k2 are the keys in the
+        // two QR codes, so only someone who scanned P1's code can name P1.
+        `CREATE TABLE IF NOT EXISTS play_matches (
+            id         SERIAL PRIMARY KEY,
+            session_id INTEGER REFERENCES play_sessions(id) ON DELETE CASCADE,
+            user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+            k1         TEXT NOT NULL,
+            k2         TEXT NOT NULL,
+            p1_name    TEXT NOT NULL DEFAULT '',
+            p2_name    TEXT NOT NULL DEFAULT '',
+            created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        )`,
     ];
     for (const sql of statements) {
         try { await pool.query(sql); } catch (err) { console.error('[play] init:', err.message); }
@@ -386,6 +408,134 @@ router.post('/device/events', deviceAuth, async (req, res) => {
     }
 });
 
-router._test = { buildBoards, cleanData };
+/* ── duel ────────────────────────────────── */
+
+function newKey() {
+    return crypto.randomBytes(9).toString('base64url');
+}
+
+/** Which side a key opens (1 / 2), or 0. */
+function sideOf(match, key) {
+    const k = String(key || '');
+    if (!match || k.length < 8) return 0;
+    if (crypto.timingSafeEqual(Buffer.from(match.k1.padEnd(32)), Buffer.from(k.padEnd(32).slice(0, 32)))) return 1;
+    if (crypto.timingSafeEqual(Buffer.from(match.k2.padEnd(32)), Buffer.from(k.padEnd(32).slice(0, 32)))) return 2;
+    return 0;
+}
+
+async function loadMatch(id) {
+    const m = int(id, 1, 2147483647);
+    if (!m) return null;
+    const { rows } = await pool.query(
+        `SELECT m.*, s.title, s.slug, s.p1_name AS s_p1, s.p2_name AS s_p2
+           FROM play_matches m LEFT JOIN play_sessions s ON s.id = m.session_id WHERE m.id = $1`, [m]
+    );
+    return rows[0] || null;
+}
+
+router.post('/device/match', deviceAuth, async (req, res) => {
+    try {
+        const open = await pool.query(
+            `SELECT id, p1_name, p2_name FROM play_sessions WHERE user_id = $1 AND ended_at IS NULL
+              ORDER BY created_at DESC LIMIT 1`, [req.device.user_id]
+        );
+        const s = open.rows[0] || null;
+        const { rows } = await pool.query(
+            `INSERT INTO play_matches (session_id, user_id, k1, k2, p1_name, p2_name)
+             VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, k1, k2`,
+            [s ? s.id : null, req.device.user_id, newKey(), newKey(), s ? s.p1_name : '', s ? s.p2_name : '']
+        );
+        return res.json({ success: true, match: rows[0] });
+    } catch (err) {
+        console.error('[play] match:', err.message);
+        return res.status(503).json({ success: false, error: 'Database unavailable', retryable: true });
+    }
+});
+
+router.get('/device/match/:id', deviceAuth, async (req, res) => {
+    try {
+        const m = await loadMatch(req.params.id);
+        if (!m || m.user_id !== req.device.user_id) return res.status(404).json({ success: false, error: 'Not found' });
+        return res.json({ success: true, p1_name: m.p1_name, p2_name: m.p2_name });
+    } catch (err) {
+        return res.status(503).json({ success: false, error: 'Database unavailable', retryable: true });
+    }
+});
+
+/** Live state from the emulator, a few times a second: only relayed, never stored. */
+const LIVE_FIELDS = ['h1', 'h2', 'r1', 'r2', 'c1', 'c2', 'fight', 'ladder', 'mode', 'phase', 'place', 'game'];
+router.post('/device/live', deviceAuth, async (req, res) => {
+    const b = req.body || {};
+    const id = int(b.match, 1, 2147483647);
+    if (!id) return res.status(400).json({ success: false });
+    const state = {};
+    for (const k of LIVE_FIELDS) {
+        const v = b.state && b.state[k];
+        if (typeof v === 'number' && Number.isFinite(v)) state[k] = v;
+        else if (typeof v === 'string') state[k] = cleanText(v, 40);
+    }
+    const io = req.app.get('io');
+    if (io) {
+        if (b.result && typeof b.result === 'object') {
+            io.to('duel:' + id).emit('duel:result', { winner: int(b.result.winner, 1, 2), text: cleanText(b.result.text, 80) });
+        } else {
+            io.to('duel:' + id).volatile.emit('duel:live', state);
+        }
+    }
+    return res.json({ success: true });
+});
+
+router.get('/join', async (req, res) => {
+    try {
+        const m = await loadMatch(req.query.m);
+        const side = sideOf(m, req.query.k);
+        if (!side) return res.status(404).json({ success: false, error: 'This code is no longer valid' });
+        return res.json({
+            success: true, side, match: m.id, title: m.title || '', slug: m.slug || '',
+            p1_name: m.p1_name, p2_name: m.p2_name,
+        });
+    } catch (err) {
+        return res.status(503).json({ success: false, error: 'Database unavailable' });
+    }
+});
+
+router.post('/join', async (req, res) => {
+    const b = req.body || {};
+    const name = cleanText(b.name, 20);
+    if (!name) return res.status(400).json({ success: false, error: 'Name required' });
+    try {
+        const m = await loadMatch(b.m);
+        const side = sideOf(m, b.k);
+        if (!side) return res.status(404).json({ success: false, error: 'This code is no longer valid' });
+        const col = side === 1 ? 'p1_name' : 'p2_name';
+        await pool.query(`UPDATE play_matches SET ${col} = $1 WHERE id = $2`, [name, m.id]);
+        // The session's names follow the latest match, so results land under the right player.
+        if (m.session_id) await pool.query(`UPDATE play_sessions SET ${col} = $1 WHERE id = $2`, [name, m.session_id]);
+        const io = req.app.get('io');
+        const names = { p1_name: side === 1 ? name : m.p1_name, p2_name: side === 2 ? name : m.p2_name };
+        if (io) io.to('duel:' + m.id).emit('duel:names', names);
+        return res.json({ success: true, side, ...names });
+    } catch (err) {
+        console.error('[play] join:', err.message);
+        return res.status(503).json({ success: false, error: 'Database unavailable' });
+    }
+});
+
+/** socket.io: a phone that scanned a code watches its match. Called once from server.js. */
+function attachSockets(io) {
+    io.on('connection', (socket) => {
+        socket.on('duel:watch', async (msg) => {
+            try {
+                const m = await loadMatch(msg && msg.m);
+                if (!sideOf(m, msg && msg.k)) return;
+                for (const room of socket.rooms) if (room.startsWith('duel:')) socket.leave(room);
+                socket.join('duel:' + m.id);
+            } catch { /* a bad watch request just does nothing */ }
+        });
+    });
+}
+
+router._test = { buildBoards, cleanData, sideOf };
+router.attachSockets = attachSockets;
 
 module.exports = router;

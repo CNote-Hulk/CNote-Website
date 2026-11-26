@@ -162,3 +162,41 @@
     .pl-row { grid-template-columns: 2em 1fr auto; }
     .pl-row__extra { grid-column: 2 / -1; }
 }
+
+/* ── Duel: the player's phone (duel.html), a DS-style second screen ── */
+.du-body { background: #111; color: #f2f2f2; margin: 0; min-height: 100svh; font-family: var(--font-sans, system-ui, sans-serif); }
+.du { max-width: 520px; margin: 0 auto; padding: 16px; min-height: 100svh; display: flex; flex-direction: column; justify-content: center; box-sizing: border-box; }
+.du [hidden] { display: none !important; }
+.du-join { text-align: center; display: grid; gap: 0.8rem; }
+.du-tag { margin: 0; font-weight: 700; letter-spacing: 0.06em; color: #ffb547; }
+.du-p2 .du-tag { color: #5ab8ff; }
+.du-title { margin: 0; font-size: 1.8rem; overflow-wrap: anywhere; }
+.du-join form { display: grid; gap: 0.6rem; text-align: left; }
+.du-join label { font-size: 0.9rem; color: #bbb; }
+.du-join input { font: inherit; font-size: 1.3rem; padding: 0.7em 0.8em; border-radius: 12px; border: 2px solid #333; background: #1c1c1c; color: #fff; }
+.du-join .pl-btn { font-size: 1.1rem; padding: 0.8em; }
+.du-note { color: #999; font-size: 0.85rem; margin: 0; }
+
+.du-live { display: grid; gap: 0; }
+.du-screen { background: #1d1f24; border: 3px solid #2c2f36; border-radius: 16px; padding: 18px 16px; display: grid; gap: 10px; min-height: 28svh; align-content: center; }
+.du-screen--bottom { border-color: #ffb547; }
+.du-p2 .du-screen--bottom { border-color: #5ab8ff; }
+.du-hinge { text-align: center; padding: 10px 0; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: #ffd166; }
+.du-who { font-size: 1.15rem; font-weight: 700; overflow-wrap: anywhere; }
+.du-who--me { font-size: 1.5rem; }
+.du-char { font-weight: 400; color: #aaa; font-size: 0.8em; }
+.du-bar { height: 22px; background: #3a1214; border-radius: 6px; overflow: hidden; }
+.du-bar--me { height: 34px; }
+.du-bar i { display: block; height: 100%; width: 100%; background: linear-gradient(90deg, #ffcc33, #ffe680); transition: width 0.2s linear; }
+.du-bar i.low { background: linear-gradient(90deg, #ff4d4d, #ff8080); }
+.du-rounds { display: flex; gap: 6px; }
+.du-rounds span { width: 16px; height: 16px; border-radius: 50%; border: 2px solid #666; }
+.du-rounds span.on { background: #ffd166; border-color: #ffd166; }
+.du-fight { margin: 0; color: #ccc; font-size: 0.95rem; }
+.du-board { text-align: center; margin-top: 14px; color: #9ac3ff; }
+
+.du-result { text-align: center; display: grid; gap: 1rem; }
+.du-result__big { font-size: 5rem; font-weight: 900; margin: 0; color: #ff5a5a; letter-spacing: 0.05em; }
+.du-result--win .du-result__big { color: #4be38a; }
+.du-result__text { margin: 0; color: #ddd; font-size: 1.1rem; }
+@media (prefers-reduced-motion: reduce) { .du-bar i { transition: none; } }

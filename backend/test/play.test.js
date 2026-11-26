@@ -75,3 +75,29 @@ test('device events: token required, batch accepted', async () => {
         assert.equal(JSON.parse(inserted[0][6]).winner, 1);
     });
 });
+
+test('duel: a key opens only its own side; join names the side and the session', async () => {
+    const { sideOf } = playRoutes._test;
+    const match = { id: 5, k1: 'AAAAAAAAAAAA', k2: 'BBBBBBBBBBBB', session_id: 9, p1_name: '', p2_name: 'Old' };
+    assert.equal(sideOf(match, 'AAAAAAAAAAAA'), 1);
+    assert.equal(sideOf(match, 'BBBBBBBBBBBB'), 2);
+    assert.equal(sideOf(match, 'CCCCCCCCCCCC'), 0);
+    assert.equal(sideOf(match, ''), 0);
+
+    const updates = [];
+    mockPool.query = async (sql, params = []) => {
+        if (/FROM play_matches m LEFT JOIN play_sessions/.test(sql)) return { rows: params[0] === 5 ? [match] : [] };
+        if (/UPDATE play_matches SET p1_name/.test(sql) || /UPDATE play_sessions SET p1_name/.test(sql)) { updates.push([sql.split(' ')[1], params]); }
+        return { rows: [] };
+    };
+    await withServer(async (base) => {
+        const bad = await fetch(`${base}/api/play/join`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ m: 5, k: 'BAD-KEY-1234', name: 'X' }) });
+        assert.equal(bad.status, 404);
+        const ok = await fetch(`${base}/api/play/join`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ m: 5, k: 'AAAAAAAAAAAA', name: 'Andrei' }) });
+        const json = await ok.json();
+        assert.equal(json.side, 1);
+        assert.equal(json.p1_name, 'Andrei');
+        assert.equal(json.p2_name, 'Old');
+        assert.deepEqual(updates.map((u) => u[0]), ['play_matches', 'play_sessions']);
+    });
+});
