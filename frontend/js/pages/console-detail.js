@@ -7,12 +7,12 @@ import { getConsoleById, getConsoleIdFromUrl, resolveImagePath, invalidateCache 
 import { MODEL_DIRECTORY_GROUPS } from '../data/console-models.js?v=20260909d';
 import { AchievementsModule } from '../modules/achievements.js';
 import { AuthModule } from '../modules/auth.js?v=20261005';
-import { I18nModule } from '../modules/i18n.js?v=20261126c';
+import { I18nModule } from '../modules/i18n.js?v=20261126f';
 import { API_BASE_URL } from '../config.js';
-import { MySpaceModule } from '../modules/my-space.js?v=20261126e';
-import { openImageViewer } from '../modules/image-viewer.js?v=20261126e';
-import { ConsoleArticlesModule } from '../modules/console-articles.js?v=20261126c';
-import { ConsoleShopModule } from '../modules/console-shop.js?v=20261126c';
+import { MySpaceModule } from '../modules/my-space.js?v=20261126f';
+import { openImageViewer } from '../modules/image-viewer.js?v=20261126f';
+import { ConsoleArticlesModule } from '../modules/console-articles.js?v=20261126f';
+import { ConsoleShopModule } from '../modules/console-shop.js?v=20261126f';
 
 /** Remove leftover Chrome UI elements from page template */
 function cleanupConsolePageChrome() {

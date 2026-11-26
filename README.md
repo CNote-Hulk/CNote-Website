@@ -41,6 +41,20 @@ All guide content comes from hands-on testing and manual verification. Content i
 * favorites, seller reviews and similar-listing suggestions
 * order checkout without on-platform payment (payment is arranged off-platform) and flat-rate Sameday shipping fees
 
+### CNote Shop
+Restored consoles sold by CNote itself, ordered directly instead of through messages:
+* the buyer builds a package: the console model (each unit is a specific piece with its own cosmetic grade — Like new / Very good / Good — and price), an optional mod, a storage upgrade where offered, and accessories with a quantity; cables are always included
+* stock comes from the owner's inventory: an item is sent to sale from the app, accessories follow the inventory quantity, and shipping an order books the sale back into the inventory
+* only working items can be sold; orders reserve stock and are confirmed, shipped or cancelled by CNote (admins)
+* a "From the CNote shelf" block on every console page; CNote's marketplace listings lead to the shop and say so when out of stock
+* no on-platform payment (cash on delivery or bank transfer), Sameday shipping
+
+### Games Catalogue
+~52,000 games across 50 consoles with real box scans (TheGamesDB, libretro, IGDB): every edition, reissue, bundle, demo disc and add-on as its own entry, so a shelf can hold exactly what someone owns.
+
+### Articles
+Admin-written articles in five categories (News, History, Special Editions, Speculations, Fun Facts), tagged with the consoles they are about and listed on each console page; speculations are labelled as unconfirmed.
+
 ### Repair and Restoration Requests
 * step-by-step wizard: console, model, symptoms and description
 * request tracking (pending → in progress → resolved) with replies
@@ -54,7 +68,7 @@ All guide content comes from hands-on testing and manual verification. Content i
 * console ratings
 
 ### My Space
-Per-user console shelf with photos, a games shelf and drag-to-rank ordering, plus favorite and owned console tracking.
+Per-user console shelf with photos, a games shelf and drag-to-rank ordering, plus favorite and owned console tracking — down to the hardware line (PS2 / PS2 Slim, PS4 Pro, Xbox 360 S…) and the exact revision.
 
 ### Devices
 * PS2 pairing with a short code
@@ -138,7 +152,8 @@ The app is configured entirely through environment variables. `backend/.env.exam
 * fill the Care and Modding guides with real per-model content (more teardown photos and step-by-step write-ups)
 * verify more rows of the PS3 CFW compatibility chart
 * dedicated gaming server
-* grow the marketplace into a storefront for restored and refurbished consoles, tied to the repair request flow — the long-term direction of the platform
+* grow the CNote Shop (now live) and tie it to the repair request flow — the long-term direction of the platform
+* show each owned console's hardware line on public profiles
 
 Marketplace sync with external services (eBay, OLX) was removed from the codebase.
 
