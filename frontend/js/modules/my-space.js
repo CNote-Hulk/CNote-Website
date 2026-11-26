@@ -13,8 +13,8 @@
  * single interpolated string becomes someone else's script.
  */
 import { API_BASE_URL } from '../config.js';
-import { I18nModule } from './i18n.js?v=20261126g';
-import { openImageViewer } from './image-viewer.js?v=20261126g';
+import { I18nModule } from './i18n.js?v=20261126h';
+import { openImageViewer } from './image-viewer.js?v=20261126h';
 
 const t = (key, fallback) => {
     const value = I18nModule && typeof I18nModule.t === 'function' ? I18nModule.t(key) : null;

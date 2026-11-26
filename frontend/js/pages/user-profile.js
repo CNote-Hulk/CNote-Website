@@ -6,7 +6,7 @@
 import { AuthModule } from '/js/modules/auth.js?v=20261005';
 import { API_BASE_URL } from '/js/config.js';
 import { AchievementsModule } from '/js/modules/achievements.js';
-import { I18nModule } from '/js/modules/i18n.js?v=20261126g';
+import { I18nModule } from '/js/modules/i18n.js?v=20261126h';
 import { shareOrCopy } from '/js/utils/share.js';
 import { certT, certName, certDate } from '/js/modules/cert-i18n.js?v=20261029c';
 import { confirmModal, promptModal } from '/js/utils/confirm-modal.js';
@@ -947,6 +947,8 @@ const t = key => I18nModule.t(key);
             return confirmModal(message, { ok: 'Confirm' });
         }
 
+const focusPct = f => (Number.isInteger(f) && f >= 0 && f <= 100 ? f : 50);
+
 /** Full-page profile background (game artwork) — see the call in the profile loader. */
 function applyProfileBackground(bg) {
     const page = document.getElementById('user-profile-page');
@@ -959,7 +961,8 @@ function applyProfileBackground(bg) {
     layer.setAttribute('aria-hidden', 'true');
     Object.assign(layer.style, {
         position: 'fixed', inset: '0', zIndex: '-1', pointerEvents: 'none',
-        background: `linear-gradient(180deg, rgba(10,9,7,.55) 0%, rgba(10,9,7,.78) 55%, rgba(10,9,7,.92) 100%), url("${bg.url}") center / cover no-repeat`,
+        // focus 0-100 = which part of the cropped image stays in view, on both axes.
+        background: `linear-gradient(180deg, rgba(10,9,7,.55) 0%, rgba(10,9,7,.78) 55%, rgba(10,9,7,.92) 100%), url("${bg.url}") ${focusPct(bg.focus)}% ${focusPct(bg.focus)}% / cover no-repeat`,
     });
     page.prepend(layer);
     if (bg.game) {

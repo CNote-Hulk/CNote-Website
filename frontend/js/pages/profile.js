@@ -8,7 +8,7 @@ import { AchievementsModule } from '../../js/modules/achievements.js';
 import { SearchModule } from '../../js/modules/search.js';
 import { API_BASE_URL } from '../../js/config.js';
 import { confirmModal, promptModal } from '../../js/utils/confirm-modal.js';
-import { I18nModule } from '../../js/modules/i18n.js?v=20261126g';
+import { I18nModule } from '../../js/modules/i18n.js?v=20261126h';
 import { createDatePicker } from '../../js/utils/date-picker.js';
 import { MODEL_DIRECTORY_GROUPS } from '../../js/data/console-models.js?v=20260909d';
 import { openAvatarCropper } from '../../js/modules/avatar-cropper.js';
@@ -2328,8 +2328,10 @@ async function initOwnedConsolesSelect() {
 initSettings();
 
 /**
- * Profile background (2026-11-26): pick an artwork or screenshot of a game (IGDB) to show
- * behind the whole public profile. Search a game, click an image, it is saved at once;
+ * Profile background (2026-11-26): pick an image of a game (IGDB) to show behind the whole
+ * public profile. The game's portrait cover comes first (made for a phone held upright), then
+ * landscape artwork and screenshots. Clicking an image previews it in a phone-shaped frame; the
+ * position slider sets which part of the cropped image stays in view; Save stores it.
  * "Remove" goes back to the default. API: routes/profileBackground.js.
  */
 async function initProfileBackground() {
@@ -2349,30 +2351,56 @@ async function initProfileBackground() {
         msg.style.display = text ? 'block' : 'none';
     };
 
-    function renderCurrent(bg) {
-        current.innerHTML = '';
-        if (!bg) {
+    let saved = null;   // what the server has
+    let picked = null;  // { imageId, url, game } chosen but not saved yet
+    let focus = 50;
+
+    function renderPreview() {
+        const shown = picked || saved;
+        if (!shown) {
             current.innerHTML = `<p style="color:var(--text-gray);font-size:.85rem;margin:0 0 10px">${escapeHtml(t('settings_bg_none'))}</p>`;
             return;
         }
+        const changed = !!picked || (saved && focus !== saved.focus);
         current.innerHTML = `
-            <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px;flex-wrap:wrap">
-                <img src="${escapeHtml(bg.url.replace('/t_1080p/', '/t_screenshot_med/'))}" alt="" style="width:200px;aspect-ratio:16/9;object-fit:cover;border-radius:10px;border:1px solid var(--border-color)">
-                <div style="display:flex;flex-direction:column;gap:8px">
-                    <span style="font-size:.85rem;color:var(--text-light)">🎮 ${escapeHtml(bg.game || '')}</span>
-                    <button type="button" class="auth-btn settings-row__btn" id="profile-bg-remove" style="margin:0">${escapeHtml(t('settings_bg_remove'))}</button>
+            <div style="display:flex;gap:16px;align-items:flex-start;margin-bottom:12px;flex-wrap:wrap">
+                <div id="profile-bg-phone" style="width:120px;aspect-ratio:9/19.5;border-radius:16px;border:1px solid var(--border-color);
+                    background:linear-gradient(rgba(10,9,7,.4),rgba(10,9,7,.4)),url('${escapeHtml(shown.url)}') ${focus}% ${focus}% / cover no-repeat"></div>
+                <div style="display:flex;flex-direction:column;gap:8px;min-width:180px;flex:1">
+                    <span style="font-size:.85rem;color:var(--text-light)">🎮 ${escapeHtml(shown.game || '')}</span>
+                    <label style="font-size:.8rem;color:var(--text-gray)">${escapeHtml(t('settings_bg_position'))}
+                        <input type="range" min="0" max="100" value="${focus}" id="profile-bg-focus" style="width:100%">
+                    </label>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap">
+                        <button type="button" class="auth-btn settings-row__btn" id="profile-bg-save" style="margin:0;${changed ? '' : 'display:none'}">${escapeHtml(t('settings_bg_save'))}</button>
+                        ${saved ? `<button type="button" class="auth-btn settings-row__btn" id="profile-bg-remove" style="margin:0">${escapeHtml(t('settings_bg_remove'))}</button>` : ''}
+                    </div>
                 </div>
             </div>`;
-        current.querySelector('#profile-bg-remove').addEventListener('click', async () => {
+        current.querySelector('#profile-bg-focus').addEventListener('input', e => {
+            focus = +e.target.value;
+            current.querySelector('#profile-bg-phone').style.backgroundPosition = `0 0, ${focus}% ${focus}%`;
+            // Shown once something differs from what is saved; no re-render, so the drag goes on.
+            current.querySelector('#profile-bg-save').style.display = (picked || !saved || focus !== saved.focus) ? '' : 'none';
+        });
+        current.querySelector('#profile-bg-save').addEventListener('click', async () => {
+            const target = picked || saved;
+            const r = await api('PUT', '/me/profile-background', { imageId: target.imageId, game: target.game, focus }).then(x => x.json()).catch(() => null);
+            if (r && r.success) { saved = r.background; picked = null; focus = saved.focus; renderPreview(); say(t('settings_bg_saved'), true); }
+            else say(t('settings_bg_error'), false);
+        });
+        current.querySelector('#profile-bg-remove')?.addEventListener('click', async () => {
             const r = await api('PUT', '/me/profile-background', { imageId: null }).then(x => x.json()).catch(() => null);
-            if (r && r.success) { renderCurrent(null); say(t('settings_bg_removed'), true); } else say(t('settings_bg_error'), false);
+            if (r && r.success) { saved = null; picked = null; focus = 50; renderPreview(); say(t('settings_bg_removed'), true); }
+            else say(t('settings_bg_error'), false);
         });
     }
 
     try {
         const r = await api('GET', '/me/profile-background').then(x => x.json());
-        renderCurrent(r.success ? r.background : null);
-    } catch { renderCurrent(null); }
+        if (r.success && r.background) { saved = r.background; focus = saved.focus ?? 50; }
+    } catch { /* keep the default */ }
+    renderPreview();
 
     let timer = null;
     let seq = 0;
@@ -2396,19 +2424,23 @@ async function initProfileBackground() {
         if (mine !== seq) return; // a newer search is on its way
         if (!res || !res.success) { results.innerHTML = ''; say(t('settings_bg_error'), false); return; }
         if (!res.games.length) { results.innerHTML = `<p style="color:var(--text-gray);font-size:.85rem">${escapeHtml(t('settings_bg_no_results'))}</p>`; return; }
+        const thumb = (im, gi, ii) => `<button type="button" data-g="${gi}" data-i="${ii}" title="${escapeHtml(t('settings_bg_pick'))}"
+            style="position:relative;padding:0;border:1px solid var(--border-color);border-radius:8px;overflow:hidden;cursor:pointer;background:none;aspect-ratio:${im.portrait ? '3/4' : '16/9'}">
+            <img src="${escapeHtml(im.thumb)}" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block">
+            ${im.portrait ? `<span style="position:absolute;left:6px;bottom:6px;padding:2px 8px;border-radius:999px;background:rgba(0,0,0,.65);color:#fff;font-size:.68rem;font-weight:700">${escapeHtml(t('settings_bg_portrait'))}</span>` : ''}
+        </button>`;
         results.innerHTML = res.games.map((g, gi) => `
             <div style="margin:14px 0 6px;font-weight:600;color:var(--text-light);font-size:.9rem">${escapeHtml(g.name)}${g.year ? ` <span style="color:var(--text-gray);font-weight:400">(${g.year})</span>` : ''}</div>
-            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px">
-                ${g.images.map((im, ii) => `<button type="button" data-g="${gi}" data-i="${ii}" title="${escapeHtml(t('settings_bg_pick'))}"
-                    style="padding:0;border:1px solid var(--border-color);border-radius:8px;overflow:hidden;cursor:pointer;background:none;aspect-ratio:16/9">
-                    <img src="${escapeHtml(im.thumb)}" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block"></button>`).join('')}
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;align-items:start">
+                ${g.images.map((im, ii) => thumb(im, gi, ii)).join('')}
             </div>`).join('');
-        results.querySelectorAll('button[data-g]').forEach(b => b.addEventListener('click', async () => {
+        results.querySelectorAll('button[data-g]').forEach(b => b.addEventListener('click', () => {
             const g = res.games[+b.dataset.g], im = g.images[+b.dataset.i];
-            b.disabled = true;
-            const r = await api('PUT', '/me/profile-background', { imageId: im.imageId, game: g.name }).then(x => x.json()).catch(() => null);
-            b.disabled = false;
-            if (r && r.success) { renderCurrent(r.background); say(t('settings_bg_saved'), true); } else say(t('settings_bg_error'), false);
+            picked = { imageId: im.imageId, url: im.url, game: g.name };
+            focus = 50;
+            say('', true);
+            renderPreview();
+            current.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }));
     }
 }
