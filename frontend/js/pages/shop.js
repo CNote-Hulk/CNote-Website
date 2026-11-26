@@ -12,7 +12,7 @@
  * API: backend/routes/shop.js.
  */
 import { AuthModule } from '../modules/auth.js?v=20261005';
-import { I18nModule } from '../modules/i18n.js?v=20261126b';
+import { I18nModule } from '../modules/i18n.js?v=20261126c';
 import { API_BASE_URL } from '../config.js';
 import { getConsoleById, getConsolesSorted, resolveImagePath } from '../data/data-loader.js';
 import { confirmModal } from '../utils/confirm-modal.js';
@@ -43,6 +43,11 @@ function esc(str) {
     return div.innerHTML;
 }
 const ron = n => `${Number(n).toFixed(0)} RON`;
+// Cosmetic grade of a piece on sale (shop_units.condition): fixed values, translated, each with
+// a one-line description. Anything else (an older free-text condition) is shown as written.
+const GRADES = ['ca_nou', 'foarte_bun', 'bun'];
+const gradeLabel = c => (GRADES.includes(c) ? t('shop_grade_' + c) : c);
+const gradeDesc = c => (GRADES.includes(c) ? t('shop_grade_' + c + '_desc') : '');
 const user = () => AuthModule.getCurrentUser();
 const isAdmin = () => user()?.role === 'admin';
 
@@ -281,10 +286,11 @@ function renderBuilder(panel, consola, units, extras) {
                 t('shop_units_in_stock').replace('{n}', list.length))).join('');
         const unitsEl = document.getElementById('shop-units');
         const list = pick.model ? byModel.get(pick.model) : [];
-        unitsEl.hidden = list.length < 2;
-        unitsEl.innerHTML = list.length < 2 ? '' :
+        // Shown even for a single piece: its grade and description are what the buyer judges by.
+        unitsEl.hidden = !list.length;
+        unitsEl.innerHTML = !list.length ? '' :
             `<p class="shop-step__hint">${esc(t('shop_pick_unit'))}</p>` +
-            list.map(u => radio('unit', u.id, pick.unitId === u.id, u.condition || `#${u.id}`, ron(u.price), u.notes)).join('');
+            list.map(u => radio('unit', u.id, pick.unitId === u.id, gradeLabel(u.condition) || `#${u.id}`, ron(u.price), [gradeDesc(u.condition), u.notes].filter(Boolean).join(' · '))).join('');
     }
     function drawMods() {
         const box = document.getElementById('shop-mods');
@@ -326,7 +332,7 @@ function renderBuilder(panel, consola, units, extras) {
     function drawSummary() {
         const u = unit();
         const lines = [];
-        if (u) lines.push([`${name} ${u.model_code}${u.condition ? ` · ${u.condition}` : ''}`, u.price]);
+        if (u) lines.push([`${name} ${u.model_code}${u.condition ? ` · ${gradeLabel(u.condition)}` : ''}`, u.price]);
         const mod = mods.find(m => m.id === pick.mod);
         if (mod) lines.push([mod.name, mod.price]);
         const st = storage.find(s => s.id === pick.storage);
@@ -539,7 +545,10 @@ async function drawStock() {
     const unitRow = u => `
         <form class="shop-row" data-unit="${u.id || ''}">
             <input class="hub-form-input" name="model_code" list="shop-codes" placeholder="${esc(t('shop_f_model'))}" value="${esc(u.model_code || '')}" maxlength="40">
-            <input class="hub-form-input" name="condition" placeholder="${esc(t('shop_f_condition'))}" value="${esc(u.condition || '')}" maxlength="120">
+            <select class="hub-form-input" name="condition" title="${esc(t('shop_f_condition'))}">
+                ${GRADES.map(g => `<option value="${g}"${g === u.condition ? ' selected' : ''}>${esc(gradeLabel(g))}</option>`).join('')}
+                ${u.condition && !GRADES.includes(u.condition) ? `<option value="${esc(u.condition)}" selected>${esc(u.condition)}</option>` : ''}
+            </select>
             <input class="hub-form-input" name="notes" placeholder="${esc(t('shop_f_notes'))}" value="${esc(u.notes || '')}" maxlength="500">
             <input class="hub-form-input shop-row__num" name="price" type="number" min="0" step="1" placeholder="RON" value="${u.price ?? ''}" required>
             <select class="hub-form-input" name="status">${statusOpts(u.status || 'available')}</select>

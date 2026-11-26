@@ -150,6 +150,12 @@ const INV_COLS = `id, category, name, model, quantity, unit, condition, location
 // console_id (2026-11-26): the console page an item belongs to ("playstation-2"), so it
 // lands on the right page/model when sent to the CNote shop (see POST /inventory/:id/sell).
 const CONSOLE_ID = /^[a-z0-9-]{1,40}$/;
+// (2026-11-26) Inventory condition = technical state, fixed values (the app shows them
+// translated, with a one-line description): nou, ca_nou, functional, incomplet, defect,
+// de_piese. Only the first three can go on sale - CNote does not sell faulty consoles.
+const SELLABLE = new Set(['nou', 'ca_nou', 'functional']);
+// What the buyer sees: the cosmetic grade of a piece on sale (shop_units.condition).
+const GRADES = new Set(['ca_nou', 'foarte_bun', 'bun']);
 
 function optText(v, max) {
     if (v === undefined || v === null) return [null, false];
@@ -339,7 +345,8 @@ async function onSaleMap() {
 
 // POST /api/personal/inventory/:id/sell — put an item on sale in the CNote shop.
 // Body: console_id, price, kind ('unit' for a console, 'accessory'), and for a unit
-// model_code / condition / notes / qty (how many of the item's pieces; default 1).
+// grade (ca_nou / foarte_bun / bun) / model_code / notes / qty (how many pieces; default 1).
+// Refused unless the item's condition is nou / ca_nou / functional.
 // An accessory is one shop extra whose stock follows the item's quantity; sending it
 // again just updates its price/console.
 router.post('/inventory/:id/sell', async (req, res) => {
@@ -355,6 +362,14 @@ router.post('/inventory/:id/sell', async (req, res) => {
         const { rows } = await client.query(`SELECT ${INV_COLS} FROM personal_inventory_items WHERE id = $1 FOR UPDATE`, [req.params.id]);
         const item = rows[0];
         if (!item) { await client.query('ROLLBACK'); return res.status(404).json({ success: false, error: 'Not found.' }); }
+        if (!SELLABLE.has(item.condition)) {
+            await client.query('ROLLBACK');
+            return res.status(409).json({ success: false, error: 'Only new, like-new or working items can be sold.' });
+        }
+        if (kind === 'unit' && !GRADES.has(b.grade)) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({ success: false, error: 'Choose the cosmetic grade.' });
+        }
         await client.query('UPDATE personal_inventory_items SET console_id = $1 WHERE id = $2', [consoleId, item.id]);
 
         if (kind === 'unit') {
@@ -371,7 +386,7 @@ router.post('/inventory/:id/sell', async (req, res) => {
                 await client.query(
                     `INSERT INTO shop_units (console_id, model_code, condition, notes, price, inventory_item_id)
                      VALUES ($1, $2, $3, $4, $5, $6)`,
-                    [consoleId, text(b.model_code, 40, item.model), text(b.condition, 120, item.condition), text(b.notes, 500, ''), price, item.id]);
+                    [consoleId, text(b.model_code, 40, item.model), b.grade, text(b.notes, 500, ''), price, item.id]);
             }
         } else {
             const name = String(b.name ?? item.name).trim().slice(0, 120) || item.name;
