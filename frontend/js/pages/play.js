@@ -40,6 +40,12 @@ function describe(e) {
         const rounds = Array.isArray(d.rounds) ? ` <span class="pl-dim">${d.rounds[0]}–${d.rounds[1]}</span>` : '';
         return `<b>${esc(winner)}</b> beat ${esc(loser)}${rounds}`;
     }
+    if (e.kind === 'race' && d.winner) {
+        const winner = d.winner === 1 ? p1 : (e.p2_name || 'P2');
+        const loser = d.winner === 1 ? (e.p2_name || 'P2') : p1;
+        return `🏁 <b>${esc(winner)}</b> beat ${esc(loser)} in a race`;
+    }
+    if (e.kind === 'race' && d.position) return `🏁 <b>${esc(p1)}</b> finished #${d.position}`;
     if (e.kind === 'arcade_run') {
         const who = (d.player === 2 ? e.p2_name : e.p1_name) || 'P' + (d.player || 1);
         const ch = d.char ? ` <span class="pl-dim">(${esc(d.char)})</span>` : '';
@@ -81,6 +87,11 @@ function renderSession(res) {
         <span class="pl-row__extra">${r.losses} L</span>`);
     $('pl-board-cpu').hidden = !b.vs_cpu.length;
     $('pl-cpu').innerHTML = rows(b.vs_cpu, (r) => `
+        <span class="pl-row__name">${esc(r.name)}</span>
+        <span class="pl-row__score">${r.wins} W</span>
+        <span class="pl-row__extra">${r.losses} L</span>`);
+    $('pl-board-races').hidden = !(b.races && b.races.length);
+    $('pl-races').innerHTML = rows(b.races || [], (r) => `
         <span class="pl-row__name">${esc(r.name)}</span>
         <span class="pl-row__score">${r.wins} W</span>
         <span class="pl-row__extra">${r.losses} L</span>`);

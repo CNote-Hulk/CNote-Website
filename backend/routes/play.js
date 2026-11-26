@@ -123,6 +123,7 @@ function cleanData(kind, d) {
         out.cleared = !!src.cleared;
         if (src.char) out.char = cleanText(src.char, 30);
     } else {
+        if (kind === 'race' && src.winner != null) { out.winner = int(src.winner, 1, 2); return out; }
         out.player = int(src.player, 1, 2) ?? 1;
         if (src.score != null) out.score = int(src.score, 0, 2147483647);
         if (src.position != null) out.position = int(src.position, 1, 99);
@@ -136,6 +137,7 @@ function buildBoards(events) {
     const versus = new Map();   // name -> { name, wins, losses }
     const arcade = new Map();   // name -> best run
     const cpu = new Map();      // name -> { wins, losses } against the CPU outside arcade runs
+    const races = new Map();    // name -> { wins, losses } in split-screen races
     const bump = (map, name) => {
         if (!map.has(name)) map.set(name, { name, wins: 0, losses: 0 });
         return map.get(name);
@@ -154,6 +156,11 @@ function buildBoards(events) {
                 bump(versus, winner).wins++;
                 bump(versus, loser).losses++;
             }
+        } else if (e.kind === 'race' && (d.winner === 1 || d.winner === 2)) {
+            const p1 = e.p1_name || 'P1';
+            const p2 = e.p2_name || 'P2';
+            bump(races, d.winner === 1 ? p1 : p2).wins++;
+            bump(races, d.winner === 1 ? p2 : p1).losses++;
         } else if (e.kind === 'arcade_run') {
             const name = (d.player === 2 ? e.p2_name : e.p1_name) || ('P' + (d.player || 1));
             const run = { name, reached: d.reached || 1, cleared: !!d.cleared, char: d.char || '', game: e.game, at: e.occurred_at };
@@ -170,6 +177,7 @@ function buildBoards(events) {
         versus: [...versus.values()].sort(byWins),
         arcade: [...arcade.values()].sort((a, b) => (b.cleared - a.cleared) || (b.reached - a.reached) || a.name.localeCompare(b.name)),
         vs_cpu: [...cpu.values()].sort(byWins),
+        races: [...races.values()].sort(byWins),
     };
 }
 

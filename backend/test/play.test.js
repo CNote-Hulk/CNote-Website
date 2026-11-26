@@ -36,7 +36,10 @@ test('boards: versus wins, CPU fights apart, best arcade run per player', () => 
         ev('arcade_run', { player: 1, reached: 4 }),
         ev('arcade_run', { player: 1, reached: 2 }),
         ev('arcade_run', { player: 2, reached: 9, cleared: true }),
+        ev('race', { winner: 1 }),
+        ev('race', { winner: 1 }),
     ]);
+    assert.deepEqual(b.races.map((r) => [r.name, r.wins, r.losses]), [['Andrei', 2, 0], ['Mihai', 0, 2]]);
     assert.deepEqual(b.versus.map((r) => [r.name, r.wins, r.losses]), [['Mihai', 2, 1], ['Andrei', 1, 2]]);
     assert.deepEqual(b.vs_cpu.map((r) => [r.name, r.wins, r.losses]), [['Andrei', 1, 0]]);
     assert.deepEqual(b.arcade.map((r) => [r.name, r.reached, r.cleared, r.runs]), [['Mihai', 9, true, 1], ['Andrei', 4, false, 2]]);
