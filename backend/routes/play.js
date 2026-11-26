@@ -15,6 +15,7 @@
      PATCH  /api/play/sessions/:id        (owner) rename, swap players, end
      GET    /api/play/s/:slug             (public) session + events + boards
      GET    /api/play/device/current      (device) the open session, for the emulator's toast
+     POST   /api/play/device/session      (device) a game started: open a session named after it
      POST   /api/play/device/events       (device) batch of events, idempotent by client id
    ───────────────────────────────────────── */
 /* ── REQUIRED IMPORTS — DO NOT REMOVE ──────
@@ -44,6 +45,7 @@ const KINDS = new Set(['fight', 'arcade_run', 'race', 'score']);
             created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
             ended_at   TIMESTAMPTZ
         )`,
+        `ALTER TABLE play_sessions ADD COLUMN IF NOT EXISTS game_serial TEXT NOT NULL DEFAULT ''`,
         `CREATE INDEX IF NOT EXISTS idx_play_sessions_user ON play_sessions(user_id, created_at DESC)`,
         `CREATE TABLE IF NOT EXISTS play_events (
             id              SERIAL PRIMARY KEY,
@@ -293,6 +295,45 @@ router.get('/device/current', deviceAuth, async (req, res) => {
         return res.json({ success: true, session: rows.length ? publicSession(rows[0]) : null });
     } catch (err) {
         console.error('[play] current:', err.message);
+        return res.status(503).json({ success: false, error: 'Database unavailable', retryable: true });
+    }
+});
+
+/**
+ * POST /api/play/device/session — a game started in the emulator: open a session named after it
+ * (closing the open one), unless the open one is already this game and less than 6 h old — a
+ * restart or a crash mid-night keeps the same scoreboard. Body: { game, serial }.
+ */
+router.post('/device/session', deviceAuth, async (req, res) => {
+    const game = cleanText(req.body && req.body.game, 60) || 'Game night';
+    const serial = cleanText(req.body && req.body.serial, 20);
+    try {
+        const open = await pool.query(
+            `SELECT s.* FROM play_sessions s
+              WHERE s.user_id = $1 AND s.ended_at IS NULL ORDER BY s.created_at DESC LIMIT 1`,
+            [req.device.user_id]
+        );
+        const cur = open.rows[0];
+        if (cur && cur.game_serial === serial && serial && Date.now() - new Date(cur.created_at).getTime() < 6 * 3600 * 1000) {
+            return res.json({ success: true, session: publicSession(cur), reused: true });
+        }
+        const user = await pool.query(`SELECT username FROM users WHERE id = $1`, [req.device.user_id]);
+        const p1 = cur ? cur.p1_name : ((user.rows[0] && user.rows[0].username) || '');
+        const p2 = cur ? cur.p2_name : '';
+        await pool.query(`UPDATE play_sessions SET ended_at = NOW() WHERE user_id = $1 AND ended_at IS NULL`, [req.device.user_id]);
+        let row = null;
+        for (let attempt = 0; attempt < 5 && !row; attempt++) {
+            const { rows } = await pool.query(
+                `INSERT INTO play_sessions (user_id, slug, title, p1_name, p2_name, game_serial)
+                 VALUES ($1, $2, $3, $4, $5, $6) ON CONFLICT (slug) DO NOTHING RETURNING *`,
+                [req.device.user_id, newSlug(), game, p1, p2, serial]
+            );
+            row = rows[0] || null;
+        }
+        if (!row) return res.status(503).json({ success: false, error: 'Try again', retryable: true });
+        return res.json({ success: true, session: publicSession(row) });
+    } catch (err) {
+        console.error('[play] device session:', err.message);
         return res.status(503).json({ success: false, error: 'Database unavailable', retryable: true });
     }
 });

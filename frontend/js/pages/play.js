@@ -163,8 +163,29 @@ $('pl-link').addEventListener('submit', async (ev) => {
 
 /* ── start ───────────────────────────────── */
 
-const slug = new URLSearchParams(location.search).get('s');
-if (slug) {
+const params = new URLSearchParams(location.search);
+const slug = params.get('s');
+const linkCode = params.get('link');
+
+/** ArmSX2 → "Sign in with CNote" opens play.html?link=<code>: confirm it with this browser's login. */
+async function confirmLink(code) {
+    $('pl-home').hidden = false;
+    $('pl-link-code').value = code;
+    const res = await AuthModule._api('POST', '/devices/pair/confirm', { user_code: code });
+    $('pl-link-msg').textContent = res.success
+        ? '✓ Emulator connected. Go back to ArmSX2 — a session opens by itself when you start a game.'
+        : (res.error || 'Could not link') + ' — start the sign-in again in the emulator.';
+    history.replaceState(null, '', location.pathname);
+    loadHome();
+}
+
+if (linkCode && AuthModule.isLoggedIn()) {
+    confirmLink(linkCode);
+} else if (linkCode) {
+    $('pl-login').hidden = false;
+    $('pl-login').querySelector('.pl-header__subtitle').textContent =
+        'Log in, then tap “Sign in with CNote” in the emulator again.';
+} else if (slug) {
     wireOwnerButtons();
     loadSession(slug);
     setInterval(() => { if (!document.hidden && (!session || session.open)) loadSession(slug); }, REFRESH_MS);
