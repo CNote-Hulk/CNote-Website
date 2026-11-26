@@ -71,35 +71,40 @@ async function main() {
 		listed.get(r.console_id).add(norm(r.title)).add(loose(r.title));
 	}
 
-	// One IGDB lookup per (title, console); multiquery takes 10 at a time.
-	const jobs = [];
+	// IGDB's multiquery silently returns [] for `search` queries, so instead the
+	// planned titles are looked up by name (case-insensitive) in bulk: as a
+	// game's main name and as one of its alternative names.
+	const titles = [...new Set(plan.map(p => p.title))];
+	const byTitle = new Map(); // lower title → [{ platforms, names }]
+	const add = (t, g) => {
+		if (!g || !g.name) return;
+		const names = [g.name, ...(g.alternative_names || []).map(a => a.name), ...(g.game_localizations || []).map(a => a.name)].filter(Boolean);
+		const k = t.toLowerCase();
+		if (!byTitle.has(k)) byTitle.set(k, []);
+		byTitle.get(k).push({ platforms: g.platforms || [], names });
+	};
+	const F = 'name,platforms,alternative_names.name,game_localizations.name';
+	for (let k = 0; k < titles.length; k += 40) {
+		const chunk = titles.slice(k, k + 40);
+		const cond = chunk.map(t => `name ~ ${q(t)}`).join(' | ');
+		try {
+			for (const g of await igdb('games', `fields ${F}; where ${cond}; limit 500;`)) add(g.name, g);
+			const alts = await igdb('alternative_names', `fields name,game.${F.split(',').join(',game.')}; where ${cond}; limit 500;`);
+			for (const a of alts) add(a.name, a.game);
+		} catch (e) { console.error('chunk failed, kept as is:', e.message); }
+		if (k % 4000 === 0) console.log(k, '/', titles.length);
+	}
+
+	const drop = new Set();
 	plan.forEach((p, i) => p.platforms.forEach((pl, j) => {
 		const pid = platId.get(IGDB_NAMES[pl.console_id]);
-		if (pid) jobs.push({ i, j, title: p.title, console: pl.console_id, pid });
-	}));
-	const drop = new Set();
-	let done = 0;
-	for (let k = 0; k < jobs.length; k += 10) {
-		const batch = jobs.slice(k, k + 10);
-		const body = batch.map((b, n) =>
-			`query games "q${n}" { search ${q(b.title)}; fields name,alternative_names.name,game_localizations.name; where platforms = (${b.pid}); limit 5; };`
-		).join('\n');
-		let res;
-		try { res = await igdb('multiquery', body); } catch (e) { console.error('batch failed, kept as is:', e.message); continue; }
-		for (const r of res) {
-			const b = batch[parseInt(r.name.slice(1), 10)];
-			const want = norm(b.title);
-			const have = listed.get(b.console) || new Set();
-			for (const g of r.result || []) {
-				const gn = [g.name, ...(g.alternative_names || []).map(a => a.name), ...(g.game_localizations || []).map(a => a.name)].filter(Boolean);
-				// Same work as the planned title, and known to us under one of its names.
-				if (!gn.some(n => norm(n) === want || loose(n) === loose(b.title))) continue;
-				if (gn.some(n => have.has(norm(n)) || have.has(loose(n)))) { drop.add(`${b.i}|${b.j}`); break; }
-			}
+		const have = listed.get(pl.console_id) || new Set();
+		for (const g of byTitle.get(p.title.toLowerCase()) || []) {
+			if (pid && !g.platforms.includes(pid)) continue;
+			if (g.names.some(n => have.has(norm(n)) || have.has(loose(n)))) { drop.add(`${i}|${j}`); break; }
 		}
-		done += batch.length;
-		if (done % 2000 < 10) console.log(done, '/', jobs.length, 'dropped', drop.size);
-	}
+	}));
+	const jobs = plan.flatMap(p => p.platforms);
 
 	const out = [];
 	for (const [i, p] of plan.entries()) {

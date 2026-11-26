@@ -25,7 +25,7 @@
    Usage:
      TGDB_DIMS=dims.json node scripts/seed-releases-tgdb.js db.json           # dry run → os.tmpdir()/seed-releases-tgdb.json
      TGDB_DIMS=dims.json node scripts/seed-releases-tgdb.js db.json --apply
-     node scripts/seed-releases-tgdb.js - --apply --plan <plan.json>   # apply a saved/deduped plan
+     [TGDB_DUMP=db.json] node scripts/seed-releases-tgdb.js - --apply --plan <plan.json>   # apply a saved/deduped plan (TGDB_DUMP re-checks it for unofficial releases)
    Needs DATABASE_URL in backend/.env.
    ───────────────────────────────────────── */
 require('dotenv').config();
@@ -66,6 +66,16 @@ const display = s => unescape(s).replace(REGION_TAG, '')
 	.replace(/\s*\[([^\]]+)\]\s*/g, ' ($1)').replace(/\s+/g, ' ').replace(/\s*-\s*$/, '').trim();
 // Films on UMD / Game Boy Advance cartridges: physical, but not games.
 const NOT_A_GAME = /^(umd video|game boy advance video)\b/i;
+// Fan-made ROM hacks / translations / homebrew: TheGamesDB lists them with
+// fan art, but there is no retail box (".hack//" games are kept).
+const FAN_MADE = /(?<![.\w])hack\b|rom ?hack|\b(fan|english) translation|\(homebrew\)|^homebrew\b/i;
+// TheGamesDB genre 28 = hacks, bootlegs and other unofficial releases; genre
+// 29 = films/video (UMD Video, GBA Video) - not games. Hacks
+// it did not tag still give themselves away: no publisher, no developer, and
+// the name of a franchise people hack.
+const HACKED_FRANCHISE = /^(pok[eé]mon|mario|super mario|sonic|zelda|the legend of zelda|mega ?man|rockman|fire emblem|final fantasy|kirby|metroid|donkey kong|street fighter|castlevania)\b/i;
+const unofficial = g => (g.genres || []).includes(28) || (g.genres || []).includes(29) ||
+	(!(g.publishers || []).length && !(g.developers || []).length && HACKED_FRANCHISE.test(display(g.game_title)));
 
 function regionRank(g) {
 	if ((g.region_id === 1 || g.region_id === 2) && (g.country_id === 50 || g.country_id === 0)) return 0;
@@ -132,7 +142,7 @@ const BLU_RAY = new Set([12, 4919, 4980]);
 		if (!file) continue;
 		const title = display(g.game_title);
 		const key = norm(title);
-		if (!key || NOT_A_GAME.test(title)) continue;
+		if (!key || NOT_A_GAME.test(title) || FAN_MADE.test(title) || unofficial(g)) continue;
 		const names = [title, ...(g.alternates || [])];
 		for (const consoleId of consoles) {
 			const have = listed.get(consoleId) || new Set();
@@ -171,6 +181,15 @@ const BLU_RAY = new Set([12, 4919, 4980]);
 
 // A plan is what the dry run writes (optionally filtered by dedupe-releases-igdb.js).
 async function applyPlan(plan, apply) {
+	// Plans written before a filter existed: re-check them against the dump when it is at hand.
+	if (process.env.TGDB_DUMP) {
+		const byId = new Map(JSON.parse(fs.readFileSync(process.env.TGDB_DUMP, 'utf8')).data.games.map(g => [g.id, g]));
+		plan = plan.map(p => ({ ...p, platforms: p.platforms.filter(pl => !byId.has(pl.tgdb_id) || !unofficial(byId.get(pl.tgdb_id))) }))
+			.filter(p => p.platforms.length);
+	}
+	const fan = plan.filter(p => FAN_MADE.test(p.title));
+	if (fan.length) console.log('skipping', fan.length, 'fan-made entries, e.g.', fan.slice(0, 5).map(p => p.title));
+	plan = plan.filter(p => !FAN_MADE.test(p.title));
 	const rowsTotal = plan.reduce((n, p) => n + p.platforms.length, 0);
 	console.log('plan:', plan.length, 'entries,', rowsTotal, 'platform rows', apply ? '' : '(dry run)');
 	if (!apply) return;
@@ -179,21 +198,26 @@ async function applyPlan(plan, apply) {
 		const client = await pool.connect();
 		try {
 			await client.query('BEGIN');
-			for (const p of plan) {
-				let id = p.link;
-				if (!id) {
-					const r = await client.query(
-						`INSERT INTO games (wikidata_id, title, release_year) VALUES ($1, $2, $3)
-						 ON CONFLICT (wikidata_id) DO UPDATE SET title = EXCLUDED.title RETURNING id`,
-						[p.wikidata_id, p.title, p.year]);
-					id = r.rows[0].id;
-				}
-				for (const pl of p.platforms) {
-					await client.query(
-						`INSERT INTO game_platforms (game_id, console_id, cover_key) VALUES ($1, $2, $3)
-						 ON CONFLICT (game_id, console_id) DO NOTHING`,
-						[id, pl.console_id, pl.key]);
-				}
+			// Bulk, in chunks: one round trip per 2000 rows instead of one per row.
+			const idOf = new Map();
+			const fresh = plan.filter(p => !p.link);
+			for (let k = 0; k < fresh.length; k += 2000) {
+				const c = fresh.slice(k, k + 2000);
+				const r = await client.query(
+					`INSERT INTO games (wikidata_id, title, release_year)
+					 SELECT * FROM unnest($1::text[], $2::text[], $3::int[])
+					 ON CONFLICT (wikidata_id) DO UPDATE SET title = EXCLUDED.title RETURNING id, wikidata_id`,
+					[c.map(p => p.wikidata_id), c.map(p => p.title), c.map(p => p.year)]);
+				for (const row of r.rows) idOf.set(row.wikidata_id, row.id);
+			}
+			const rows = plan.flatMap(p => p.platforms.map(pl => [p.link || idOf.get(p.wikidata_id), pl.console_id, pl.key]));
+			for (let k = 0; k < rows.length; k += 2000) {
+				const c = rows.slice(k, k + 2000);
+				await client.query(
+					`INSERT INTO game_platforms (game_id, console_id, cover_key)
+					 SELECT * FROM unnest($1::int[], $2::text[], $3::text[])
+					 ON CONFLICT (game_id, console_id) DO NOTHING`,
+					[c.map(x => x[0]), c.map(x => x[1]), c.map(x => x[2])]);
 			}
 			await client.query('COMMIT');
 			console.log('applied', plan.length, 'entries,', rowsTotal, 'platform rows');
