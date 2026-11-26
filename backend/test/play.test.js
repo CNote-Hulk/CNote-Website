@@ -101,3 +101,24 @@ test('duel: a key opens only its own side; join names the side and the session',
         assert.deepEqual(updates.map((u) => u[0]), ['play_matches', 'play_sessions']);
     });
 });
+
+test('live: now state is cleaned, frames must be JPEG', async () => {
+    const { cleanNow } = playRoutes._test;
+    const s = cleanNow({ serial: 'slus-215.43', title: 'MK', presence: 'Arcade Mode (Match 3)', ach: [3, 118], inputs: [16, 99999999], evil: 1 });
+    assert.equal(s.serial, 'SLUS21543');
+    assert.deepEqual(s.ach, [3, 118]);
+    assert.deepEqual(s.inputs, [16, 0xffff]);
+    assert.equal(s.evil, undefined);
+
+    mockPool.query = async (sql, params = []) => {
+        if (/UPDATE connected_consoles SET last_seen_at/.test(sql)) return { rows: [{ id: 3, user_id: 7 }] };
+        return { rows: [] };
+    };
+    await withServer(async (base) => {
+        const notJpeg = await fetch(`${base}/api/play/device/frame`, { method: 'POST', headers: { 'Content-Type': 'image/jpeg', 'X-Device-Token': TOKEN }, body: Buffer.alloc(200, 1) });
+        assert.equal(notJpeg.status, 400);
+        const jpeg = Buffer.concat([Buffer.from([0xff, 0xd8]), Buffer.alloc(200, 1)]);
+        const ok = await fetch(`${base}/api/play/device/frame`, { method: 'POST', headers: { 'Content-Type': 'image/jpeg', 'X-Device-Token': TOKEN }, body: jpeg });
+        assert.equal(ok.status, 200);
+    });
+});

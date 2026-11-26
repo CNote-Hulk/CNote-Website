@@ -100,10 +100,94 @@ function renderSession(res) {
     $('pl-feed').innerHTML = res.events.map((e) => `<li><span class="pl-dim">${when(e.occurred_at)}</span> ${describe(e)}${e.game ? ` <span class="pl-dim">· ${esc(e.game)}</span>` : ''}</li>`).join('');
 }
 
+/* ── live, every game ────────────────────── */
+
+let liveWired = false;
+let iconFor = '';
+let iconTimer = 0;
+let lastAch = null;
+let frameAt = 0;
+
+async function showIcon(serial) {
+    if (!serial || serial === iconFor) return;
+    iconFor = serial;
+    clearInterval(iconTimer);
+    const el = $('pl-icon');
+    try {
+        const res = await fetch(`/api/play/icon/${encodeURIComponent(serial)}`);
+        if (!res.ok) throw new Error('none');
+        const frames = Math.max(1, parseInt(res.headers.get('X-Frames') || '1', 10));
+        const url = URL.createObjectURL(await res.blob());
+        el.classList.remove('none');
+        el.style.backgroundImage = `url(${url})`;
+        el.style.backgroundSize = `${frames * 100}% 100%`;
+        let i = 0;
+        // The PS2 browser turns every save icon; the strip is that turn, frame by frame.
+        if (frames > 1 && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            iconTimer = setInterval(() => { i = (i + 1) % frames; el.style.backgroundPosition = `${(i / (frames - 1)) * 100}% 0`; }, 1000 / 12);
+        }
+    } catch {
+        el.classList.add('none');
+        el.style.backgroundImage = '';
+    }
+}
+
+function toast(text) {
+    const t = $('pl-toast');
+    t.textContent = text;
+    t.hidden = false;
+    clearTimeout(toast.timer);
+    toast.timer = setTimeout(() => { t.hidden = true; }, 4000);
+}
+
+function renderNow(n) {
+    $('pl-tv').hidden = false;
+    $('pl-now-title').textContent = n.title || 'Playing';
+    $('pl-now-serial').textContent = n.serial || '';
+    $('pl-tv-led').classList.toggle('on', !n.paused);
+    showIcon(n.serial);
+    const ach = $('pl-now-ach');
+    if (n.ach && n.ach[1]) {
+        ach.hidden = false;
+        ach.textContent = `🏆 ${n.ach[0]}/${n.ach[1]}`;
+        if (lastAch !== null && n.ach[0] > lastAch) toast(n.unlocked ? `🏆 ${n.unlocked}` : '🏆 Achievement unlocked!');
+        lastAch = n.ach[0];
+    } else ach.hidden = true;
+    $('pl-ticker').hidden = !n.presence;
+    if (n.presence && $('pl-presence').textContent !== n.presence) $('pl-presence').textContent = n.presence;
+    for (const p of [1, 2]) {
+        const mask = (n.inputs && n.inputs[p - 1]) || 0;
+        for (const b of document.querySelectorAll(`#pl-pad${p} .b`)) b.classList.toggle('on', !!(mask & (1 << Number(b.dataset.bit))));
+    }
+}
+
+function showFrame(slug) {
+    const img = $('pl-tv-img');
+    const next = new Image();
+    next.onload = () => { img.src = next.src; $('pl-tv-nosig').hidden = true; frameAt = Date.now(); };
+    next.src = `/api/play/s/${encodeURIComponent(slug)}/frame?t=${Date.now()}`;
+}
+
+function wireLive(slug) {
+    if (liveWired || typeof io !== 'function') return;
+    liveWired = true;
+    const socket = io({ transports: ['websocket', 'polling'] });
+    socket.on('connect', () => socket.emit('live:watch', slug));
+    socket.on('live:now', renderNow);
+    socket.on('live:frame', () => showFrame(slug));
+    setInterval(() => { if (frameAt && Date.now() - frameAt > 20000) $('pl-tv-nosig').hidden = false; }, 5000);
+}
+
 async function loadSession(slug) {
     try {
         const res = await AuthModule._api('GET', `/play/s/${encodeURIComponent(slug)}`);
         if (!res.success) throw new Error(res.error);
+        if (res.session.open) {
+            wireLive(slug);
+            if (res.now && $('pl-tv').hidden) { renderNow(res.now); showFrame(slug); }
+        }
+        $('pl-pad1-name').textContent = res.session.p1_name || '';
+        $('pl-pad2-name').textContent = res.session.p2_name || '';
         const stamp = JSON.stringify([res.total_events, res.session]);
         if (stamp !== lastStamp) {
             lastStamp = stamp;

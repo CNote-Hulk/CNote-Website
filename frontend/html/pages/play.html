@@ -20,10 +20,10 @@
     <link rel="manifest" href="../../manifest.json">
     <link rel="canonical" href="https://consolenotebook.com/html/pages/play.html" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,700&family=DM+Sans:wght@300;400;500;600;700&family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
     <title>Play — Console Notebook</title>
     <link rel="stylesheet" href="../../css/main.css?v=20261126j">
-    <link rel="stylesheet" href="../../css/pages/play.css?v=20261126">
+    <link rel="stylesheet" href="../../css/pages/play.css?v=20261127">
 </head>
 <body class="has-mbn">
     <div id="navbar-placeholder"></div>
@@ -37,6 +37,61 @@
                 <p class="pl-header__subtitle" id="pl-sub"></p>
                 <div class="pl-pads" id="pl-pads"></div>
             </header>
+
+            <!-- Live, every game (2026-11-27): the emulator's picture, the game's own save icon,
+                 RetroAchievements rich presence and both controllers — fed over socket.io. -->
+            <section class="pl-live-tv" id="pl-tv" hidden>
+                <div class="pl-tv">
+                    <div class="pl-tv__screen">
+                        <img id="pl-tv-img" alt="Live picture from the emulator">
+                        <div class="pl-tv__nosig" id="pl-tv-nosig">NO SIGNAL</div>
+                        <div class="pl-tv__scan" aria-hidden="true"></div>
+                    </div>
+                    <div class="pl-tv__chin"><span class="pl-tv__brand">CNOTE&nbsp;LIVE</span><span class="pl-tv__led" id="pl-tv-led"></span></div>
+                </div>
+                <div class="pl-now">
+                    <div class="pl-icon" id="pl-icon" aria-hidden="true"></div>
+                    <div class="pl-now__text">
+                        <p class="pl-now__title" id="pl-now-title">—</p>
+                        <p class="pl-now__serial" id="pl-now-serial"></p>
+                    </div>
+                    <p class="pl-now__ach" id="pl-now-ach" hidden></p>
+                </div>
+                <div class="pl-ticker" id="pl-ticker" hidden><span id="pl-presence"></span></div>
+                <div class="pl-pads2">
+                    <figure class="pl-pad2 pl-pad2--p1" aria-label="Controller 1">
+                        <figcaption>P1 <span id="pl-pad1-name"></span></figcaption>
+                        <svg viewBox="0 0 240 150" id="pl-pad1">
+                            <rect class="b" data-bit="10" x="30" y="2" width="44" height="12" rx="5"/><rect class="b" data-bit="8" x="30" y="16" width="44" height="10" rx="4"/>
+                            <rect class="b" data-bit="11" x="166" y="2" width="44" height="12" rx="5"/><rect class="b" data-bit="9" x="166" y="16" width="44" height="10" rx="4"/>
+                            <path class="body" d="M40 30 H200 C232 30 240 70 236 110 C232 142 206 148 192 128 L172 100 H68 L48 128 C34 148 8 142 4 110 C0 70 8 30 40 30 Z"/>
+                            <rect class="b" data-bit="0" x="44" y="46" width="14" height="16" rx="2"/><rect class="b" data-bit="1" x="44" y="78" width="14" height="16" rx="2"/>
+                            <rect class="b" data-bit="2" x="26" y="63" width="16" height="14" rx="2"/><rect class="b" data-bit="3" x="60" y="63" width="16" height="14" rx="2"/>
+                            <rect class="b sm" data-bit="13" x="96" y="66" width="16" height="7" rx="3"/><rect class="b sm" data-bit="12" x="128" y="66" width="16" height="7" rx="3"/>
+                            <circle class="b tri" data-bit="7" cx="190" cy="50" r="10"/><circle class="b cir" data-bit="5" cx="210" cy="70" r="10"/>
+                            <circle class="b crs" data-bit="4" cx="190" cy="90" r="10"/><circle class="b sqr" data-bit="6" cx="170" cy="70" r="10"/>
+                            <text x="190" y="54" class="sym">△</text><text x="210" y="74" class="sym">○</text><text x="190" y="94" class="sym">✕</text><text x="170" y="74" class="sym">□</text>
+                            <circle class="stick" cx="88" cy="108" r="14"/><circle class="stick" cx="152" cy="108" r="14"/>
+                        </svg>
+                    </figure>
+                    <figure class="pl-pad2 pl-pad2--p2" aria-label="Controller 2">
+                        <figcaption>P2 <span id="pl-pad2-name"></span></figcaption>
+                        <svg viewBox="0 0 240 150" id="pl-pad2">
+                            <rect class="b" data-bit="10" x="30" y="2" width="44" height="12" rx="5"/><rect class="b" data-bit="8" x="30" y="16" width="44" height="10" rx="4"/>
+                            <rect class="b" data-bit="11" x="166" y="2" width="44" height="12" rx="5"/><rect class="b" data-bit="9" x="166" y="16" width="44" height="10" rx="4"/>
+                            <path class="body" d="M40 30 H200 C232 30 240 70 236 110 C232 142 206 148 192 128 L172 100 H68 L48 128 C34 148 8 142 4 110 C0 70 8 30 40 30 Z"/>
+                            <rect class="b" data-bit="0" x="44" y="46" width="14" height="16" rx="2"/><rect class="b" data-bit="1" x="44" y="78" width="14" height="16" rx="2"/>
+                            <rect class="b" data-bit="2" x="26" y="63" width="16" height="14" rx="2"/><rect class="b" data-bit="3" x="60" y="63" width="16" height="14" rx="2"/>
+                            <rect class="b sm" data-bit="13" x="96" y="66" width="16" height="7" rx="3"/><rect class="b sm" data-bit="12" x="128" y="66" width="16" height="7" rx="3"/>
+                            <circle class="b tri" data-bit="7" cx="190" cy="50" r="10"/><circle class="b cir" data-bit="5" cx="210" cy="70" r="10"/>
+                            <circle class="b crs" data-bit="4" cx="190" cy="90" r="10"/><circle class="b sqr" data-bit="6" cx="170" cy="70" r="10"/>
+                            <text x="190" y="54" class="sym">△</text><text x="210" y="74" class="sym">○</text><text x="190" y="94" class="sym">✕</text><text x="170" y="74" class="sym">□</text>
+                            <circle class="stick" cx="88" cy="108" r="14"/><circle class="stick" cx="152" cy="108" r="14"/>
+                        </svg>
+                    </figure>
+                </div>
+                <div class="pl-toast" id="pl-toast" hidden></div>
+            </section>
 
             <div class="pl-owner" id="pl-owner" hidden>
                 <button type="button" class="pl-btn" id="pl-swap">⇄ Swap controllers</button>
@@ -118,7 +173,7 @@
 
     <script src="../../js/data/consoles-data.js"></script>
     <script type="module" src="../../js/main.js?v=20261126j"></script>
-    <script type="module" src="../../js/pages/play.js?v=20261126d"></script>
+    <script type="module" src="../../js/pages/play.js?v=20261127"></script>
     <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
     <script src="../../js/fallback/search-profile.js"></script>
     <script src="/js/cookie-consent.js"></script>

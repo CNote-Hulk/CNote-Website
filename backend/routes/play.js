@@ -23,6 +23,15 @@
      POST   /api/play/device/match        (device) new match → {id, k1, k2} for the QR codes
      GET    /api/play/device/match/:id    (device) the names typed so far
      POST   /api/play/device/live         (device) live state of a match → phones (socket.io)
+   Live, every game (2026-11-27): what the emulator sees, with no per-game code — the game's
+   save icon (from its own files), RetroAchievements rich presence and achievement count, the
+   buttons held on each controller, and a frame of the picture every few seconds.
+     POST   /api/play/device/now          (device) {serial,title,presence,ach,inputs} each second
+     POST   /api/play/device/frame        (device) image/jpeg body, the latest picture
+     GET    /api/play/icon/:serial        (public) the icon strip (PNG); 404 → the device uploads it
+     PUT    /api/play/device/icon/:serial (device) image/png body, ?frames=N
+     GET    /api/play/s/:slug/frame       (public) the latest picture of that session's game
+   socket.io: 'live:watch' slug joins 'live:<slug>' → 'live:now', 'live:frame'.
      GET    /api/play/join?m=&k=          (public, with a key) which side, game, names
      POST   /api/play/join                (public, with a key) { m, k, name }
    socket.io: 'duel:watch' {m, k} joins the match room; the room gets 'duel:live',
@@ -85,6 +94,15 @@ const KINDS = new Set(['fight', 'arcade_run', 'race', 'score']);
             p1_name    TEXT NOT NULL DEFAULT '',
             p2_name    TEXT NOT NULL DEFAULT '',
             created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        )`,
+        // Live (2026-11-27): a game's own save icon, rendered by the emulator from the game's files
+        // (memory card / disc) as a strip of `frames` square frames turning around — the PS2 browser's
+        // spinning icon. One per serial, shared by everyone.
+        `CREATE TABLE IF NOT EXISTS play_icons (
+            serial     TEXT PRIMARY KEY,
+            frames     INTEGER NOT NULL DEFAULT 1,
+            png        BYTEA NOT NULL,
+            updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
         )`,
     ];
     for (const sql of statements) {
@@ -286,6 +304,7 @@ router.get('/s/:slug', async (req, res) => {
         return res.json({
             success: true,
             session: { ...publicSession(session), host: session.username },
+            now: session.ended_at ? null : nowFor(session.user_id),
             boards: buildBoards(ev.rows),
             events: ev.rows.slice(-100).reverse(),
             total_events: ev.rows.length,
@@ -524,6 +543,11 @@ router.post('/join', async (req, res) => {
 /** socket.io: a phone that scanned a code watches its match. Called once from server.js. */
 function attachSockets(io) {
     io.on('connection', (socket) => {
+        socket.on('live:watch', (slug) => {
+            if (typeof slug !== 'string' || !/^[A-Za-z0-9_-]{4,16}$/.test(slug)) return;
+            for (const room of socket.rooms) if (room.startsWith('live:')) socket.leave(room);
+            socket.join('live:' + slug);
+        });
         socket.on('duel:watch', async (msg) => {
             try {
                 const m = await loadMatch(msg && msg.m);
@@ -535,7 +559,119 @@ function attachSockets(io) {
     });
 }
 
-router._test = { buildBoards, cleanData, sideOf };
+/* ── live, every game ────────────────────── */
+
+const liveNow = new Map();      // user_id -> { state, at }
+const liveFrame = new Map();    // user_id -> { jpeg, at }
+const openSlug = new Map();     // user_id -> { slug, at } (open session, cached 20 s)
+
+async function slugFor(userId) {
+    const c = openSlug.get(userId);
+    if (c && Date.now() - c.at < 20000) return c.slug;
+    const { rows } = await pool.query(
+        `SELECT slug FROM play_sessions WHERE user_id = $1 AND ended_at IS NULL ORDER BY created_at DESC LIMIT 1`, [userId]
+    );
+    const slug = rows[0] ? rows[0].slug : '';
+    openSlug.set(userId, { slug, at: Date.now() });
+    return slug;
+}
+
+function cleanNow(b) {
+    const s = {
+        serial: cleanText(b.serial, 20).toUpperCase().replace(/[^A-Z0-9]/g, ''),
+        title: cleanText(b.title, 80),
+        presence: cleanText(b.presence, 200),
+        ach: Array.isArray(b.ach) ? [int(b.ach[0], 0, 9999) ?? 0, int(b.ach[1], 0, 9999) ?? 0] : null,
+        inputs: Array.isArray(b.inputs) ? [int(b.inputs[0], 0, 0xffff) ?? 0, int(b.inputs[1], 0, 0xffff) ?? 0] : [0, 0],
+        paused: !!b.paused,
+    };
+    if (b.unlocked && typeof b.unlocked === 'string') s.unlocked = cleanText(b.unlocked, 80);
+    return s;
+}
+
+router.post('/device/now', deviceAuth, async (req, res) => {
+    const state = cleanNow(req.body || {});
+    liveNow.set(req.device.user_id, { state, at: Date.now() });
+    try {
+        const slug = await slugFor(req.device.user_id);
+        const io = req.app.get('io');
+        if (io && slug) io.to('live:' + slug).volatile.emit('live:now', state);
+        return res.json({ success: true });
+    } catch (err) {
+        return res.status(503).json({ success: false, retryable: true });
+    }
+});
+
+router.post('/device/frame', express.raw({ type: 'image/jpeg', limit: '400kb' }), deviceAuth, async (req, res) => {
+    if (!Buffer.isBuffer(req.body) || req.body.length < 100 || req.body[0] !== 0xff || req.body[1] !== 0xd8) {
+        return res.status(400).json({ success: false, error: 'JPEG body required' });
+    }
+    liveFrame.set(req.device.user_id, { jpeg: req.body, at: Date.now() });
+    try {
+        const slug = await slugFor(req.device.user_id);
+        const io = req.app.get('io');
+        if (io && slug) io.to('live:' + slug).volatile.emit('live:frame', { t: Date.now() });
+        return res.json({ success: true });
+    } catch (err) {
+        return res.status(503).json({ success: false, retryable: true });
+    }
+});
+
+router.put('/device/icon/:serial', express.raw({ type: 'image/png', limit: '1mb' }), deviceAuth, async (req, res) => {
+    const serial = String(req.params.serial || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 20);
+    const frames = int(req.query.frames, 1, 64) ?? 1;
+    if (!serial || !Buffer.isBuffer(req.body) || req.body.length < 8 || req.body.readUInt32BE(0) !== 0x89504e47) {
+        return res.status(400).json({ success: false, error: 'PNG body and serial required' });
+    }
+    try {
+        await pool.query(
+            `INSERT INTO play_icons (serial, frames, png) VALUES ($1, $2, $3)
+             ON CONFLICT (serial) DO UPDATE SET frames = $2, png = $3, updated_at = NOW()`,
+            [serial, frames, req.body]
+        );
+        return res.json({ success: true });
+    } catch (err) {
+        console.error('[play] icon:', err.message);
+        return res.status(503).json({ success: false, retryable: true });
+    }
+});
+
+router.get('/icon/:serial', async (req, res) => {
+    const serial = String(req.params.serial || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 20);
+    try {
+        const { rows } = await pool.query(`SELECT frames, png FROM play_icons WHERE serial = $1`, [serial]);
+        if (!rows.length) return res.status(404).json({ success: false });
+        res.set('Content-Type', 'image/png');
+        res.set('X-Frames', String(rows[0].frames));
+        res.set('Cache-Control', 'public, max-age=3600');
+        return res.send(rows[0].png);
+    } catch (err) {
+        return res.status(503).json({ success: false });
+    }
+});
+
+router.get('/s/:slug/frame', async (req, res) => {
+    const slug = String(req.params.slug || '');
+    if (!/^[A-Za-z0-9_-]{4,16}$/.test(slug)) return res.status(404).end();
+    try {
+        const { rows } = await pool.query(`SELECT user_id, ended_at FROM play_sessions WHERE slug = $1`, [slug]);
+        const f = rows[0] && !rows[0].ended_at ? liveFrame.get(rows[0].user_id) : null;
+        if (!f || Date.now() - f.at > 5 * 60 * 1000) return res.status(404).end();
+        res.set('Content-Type', 'image/jpeg');
+        res.set('Cache-Control', 'no-store');
+        return res.send(f.jpeg);
+    } catch (err) {
+        return res.status(503).end();
+    }
+});
+
+/** The latest live state of a session's game, for the first paint of play.html (null if stale). */
+function nowFor(userId) {
+    const n = liveNow.get(userId);
+    return n && Date.now() - n.at < 30000 ? n.state : null;
+}
+
+router._test = { buildBoards, cleanData, sideOf, cleanNow };
 router.attachSockets = attachSockets;
 
 module.exports = router;
