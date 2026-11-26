@@ -145,6 +145,8 @@ const BLU_RAY = new Set([12, 4919, 4980]);
 		if (!key || NOT_A_GAME.test(title) || FAN_MADE.test(title) || unofficial(g)) continue;
 		const names = [title, ...(g.alternates || [])];
 		for (const consoleId of consoles) {
+			// Famicom shares TheGamesDB's NES platform: only Japanese copies belong there.
+			if (consoleId === 'famicom' && g.region_id !== 4 && g.platform !== 4936) continue;
 			const have = listed.get(consoleId) || new Set();
 			if (names.some(n => have.has(norm(n)) || have.has(loose(n)))) continue;
 			if (!additions.has(key)) additions.set(key, { title, year: null, tgdbIds: [], platforms: {} });

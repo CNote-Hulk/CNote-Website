@@ -53,7 +53,12 @@ const TGDB_PLATFORMS = {
 	'atari-lynx': [4924], 'atari-jaguar': [28], '3do': [25], 'philips-cd-i': [4917],
 	'wonderswan': [4925], 'colecovision': [31], 'intellivision': [32], 'sega-sg-1000': [4949],
 	'neo-geo-pocket-color': [4923], 'vectrex': [4939],
+	// TheGamesDB files Famicom cartridges under NES (7), Japanese region.
+	'famicom': [7, 4936], 'neo-geo-pocket': [4922], 'magnavox-odyssey': [4961],
+	'magnavox-odyssey-2': [4927], 'microvision': [4972],
 };
+// Consoles sold in Japan only: their box is the Japanese one.
+const JAPAN_FIRST = new Set(['famicom']);
 
 const ROMAN = { ii: '2', iii: '3', iv: '4', v: '5', vi: '6', vii: '7', viii: '8', ix: '9', x: '10' };
 const norm = s => String(s).toLowerCase()
@@ -94,6 +99,11 @@ const isPortrait = (file, platform) => {
 const ALIASES = process.env.TITLE_ALIASES ? JSON.parse(fs.readFileSync(process.env.TITLE_ALIASES, 'utf8')) : {};
 const PREFIX = /^(tom clancy s|sid meier s|disney pixar|disney s|disney|marvel s|dreamworks|nickelodeon|clive barker s|american mcgee s|james cameron s|peter jackson s|robert ludlum s|bram stoker s|tim burton s) /;
 const loose = s => norm(s).replace(PREFIX, '');
+// Names in another script (Japanese, Korean, Chinese, Cyrillic...) normalize to
+// what is left of them - "わくわく7" becomes "7", "Mass Effect 2: Повелитель"
+// becomes "mass effect 2" - and would match unrelated games, so only Latin
+// names are used as alternates/aliases.
+const latin = s => !/[^\u0000-\u024F\u1E00-\u1EFF\u2000-\u22FF]/.test(String(s));
 
 const yearOf = g => (g.release_date ? parseInt(g.release_date.slice(0, 4), 10) : null);
 
@@ -116,7 +126,7 @@ async function main() {
 		if (!file) continue;
 		if (!index.has(g.platform)) index.set(g.platform, new Map());
 		const byTitle = index.get(g.platform);
-		const titles = new Set([g.game_title, ...(g.alternates || [])].flatMap(t => [norm(t), loose(t)]));
+		const titles = new Set([g.game_title, ...(g.alternates || []).filter(latin)].flatMap(t => [norm(t), loose(t)]));
 		for (const t of titles) {
 			if (!t) continue;
 			if (!byTitle.has(t)) byTitle.set(t, []);
@@ -144,7 +154,7 @@ async function main() {
 			return out;
 		};
 		let hits = lookup([norm(r.title), loose(r.title)]);
-		if (!hits.length) hits = lookup((ALIASES[`${r.console_id}|${r.title}`] || []).flatMap(n => [norm(n), loose(n)]));
+		if (!hits.length) hits = lookup((ALIASES[`${r.console_id}|${r.title}`] || []).filter(latin).flatMap(n => [norm(n), loose(n)]));
 		if (!hits.length) continue;
 		if (DIMS) {
 			for (const h of hits) if (!DIMS[h.file]) needDims.add(h.file);
@@ -164,6 +174,11 @@ async function main() {
 				const ys = hits.map(yearOf).filter(Boolean);
 				if (ys.length && Math.max(...ys) - Math.min(...ys) > 2) { stats.ambiguous++; continue; }
 			}
+		}
+		if (JAPAN_FIRST.has(r.console_id)) {
+			// Never an American/European NES box on a Famicom.
+			hits = hits.filter(h => h.region_id === 4 || h.platform === 4936);
+			if (!hits.length) continue;
 		}
 		hits.sort((a, b) => regionRank(a) - regionRank(b) || a.id - b.id);
 		const best = hits[0];
