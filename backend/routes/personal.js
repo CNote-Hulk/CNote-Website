@@ -191,7 +191,9 @@ function validateItem(body) {
         if (bad) return [null, key];
         out[key] = val;
     }
-    if (b.console_id === undefined || b.console_id === null || b.console_id === '') out.console_id = null;
+    // Not sent = keep what the item has (the app's edit form does not carry it).
+    if (b.console_id === undefined) out.console_id = undefined;
+    else if (b.console_id === null || b.console_id === '') out.console_id = null;
     else if (typeof b.console_id === 'string' && CONSOLE_ID.test(b.console_id)) out.console_id = b.console_id;
     else return [null, 'console_id'];
     const [unit, badUnit] = optText(b.unit, 30);
@@ -252,7 +254,7 @@ router.post('/inventory', async (req, res) => {
             `INSERT INTO personal_inventory_items
                  (category, name, model, quantity, unit, condition, location, min_quantity, vault_note, notes, console_id)
              VALUES ($1, $2, $3, 0, $4, $5, $6, $7, $8, $9, $10) RETURNING id`,
-            [v.category, v.name, v.model, v.unit, v.condition, v.location, v.min_quantity, v.vault_note, v.notes, v.console_id]
+            [v.category, v.name, v.model, v.unit, v.condition, v.location, v.min_quantity, v.vault_note, v.notes, v.console_id ?? null]
         );
         if (qty > 0) {
             await client.query(
@@ -283,9 +285,10 @@ router.put('/inventory/:id', async (req, res) => {
         const { rows } = await pool.query(
             `UPDATE personal_inventory_items
              SET category = $1, name = $2, model = $3, unit = $4, condition = $5,
-                 location = $6, min_quantity = $7, vault_note = $8, notes = $9, console_id = $10
+                 location = $6, min_quantity = $7, vault_note = $8, notes = $9,
+                 console_id = CASE WHEN $12 THEN console_id ELSE $10 END
              WHERE id = $11 RETURNING ${INV_COLS}`,
-            [v.category, v.name, v.model, v.unit, v.condition, v.location, v.min_quantity, v.vault_note, v.notes, v.console_id, req.params.id]
+            [v.category, v.name, v.model, v.unit, v.condition, v.location, v.min_quantity, v.vault_note, v.notes, v.console_id ?? null, req.params.id, v.console_id === undefined]
         );
         if (!rows.length) return res.status(404).json({ success: false, error: 'Not found.' });
         res.json({ success: true, item: toItem(rows[0]) });
