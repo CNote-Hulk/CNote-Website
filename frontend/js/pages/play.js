@@ -38,7 +38,8 @@ function describe(e) {
         const winner = d.winner === 1 ? p1 : p2;
         const loser = d.winner === 1 ? p2 : p1;
         const rounds = Array.isArray(d.rounds) ? ` <span class="pl-dim">${d.rounds[0]}–${d.rounds[1]}</span>` : '';
-        return `<b>${esc(winner)}</b> beat ${esc(loser)}${rounds}`;
+        const chars = d.p1_char && d.p2_char ? ` <span class="pl-dim">(${esc(d.p1_char)} vs ${esc(d.p2_char)})</span>` : '';
+        return `<b>${esc(winner)}</b> beat ${esc(loser)}${rounds}${chars}`;
     }
     if (e.kind === 'race' && d.winner) {
         const winner = d.winner === 1 ? p1 : (e.p2_name || 'P2');
