@@ -3660,6 +3660,15 @@ button.hub-action-pill:hover {
     color: var(--accent-color);
 }
 
+/* (2026-11-26) The selected delivery method rendered white on white in the noir
+   theme (accent = white): filled pill with inverted text, readable in every theme.
+   Also used by the CNote shop checkout (shop.js). */
+.order-method-toggle .order-method-btn.order-method-btn--active {
+    background: var(--text-light);
+    border-color: var(--text-light);
+    color: var(--dark-bg);
+}
+
 .order-summary {
     display: flex;
     flex-direction: column;
@@ -3956,6 +3965,24 @@ body.community-navbar-page {
     height: 100svh;
     min-height: 0;
     isolation: auto;
+}
+
+/* (2026-11-26) Desktop/tablet: a black band showed under the hub in Samsung DeX's
+   resizable browser window - 100svh above is the *smallest* viewport, and in a DeX window
+   it comes out shorter than the window, so body's black showed below the page. Pinning
+   the page to the window (fixed, inset 0) matches the real viewport with no viewport-unit
+   math at all, the same fix as the mobile fullscreen views below; the hub then fills
+   what is left under the 64px navbar (the navbar stays above: z-index 1000). */
+@media (min-width: 769px) {
+    .community-page--hub {
+        position: fixed;
+        inset: 0;
+        height: auto;
+    }
+
+    .community-page--hub .community-hub {
+        height: 100%;
+    }
 }
 
 .community-page--hub::before {
