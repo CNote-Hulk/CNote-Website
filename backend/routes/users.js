@@ -16,7 +16,7 @@ const { authRequired, authOptional } = require('../middleware/auth');
 const { awardXP, getLevelFromXP } = require('../utils/gamification');
 const { publicUrlForKey, deleteAttachment } = require('../utils/objectStorage');
 const { baseVariant, parseVariant, variantOfGroup } = require('../utils/consoleVariants');
-const { toPublic: profileBackgroundOf } = require('./profileBackground');
+const { toPublic: profileBackgroundOf, mobileOf: profileBackgroundMobileOf } = require('./profileBackground');
 
 const router = express.Router();
 
@@ -79,7 +79,7 @@ router.get('/users/:username', async (req, res) => {
     try {
         const { username } = req.params;
         const result = await pool.query(
-            `SELECT id, username, email, bio, avatar, favorite_consoles, owned_consoles, role, created_at, profile_background, profile_background_game, profile_background_focus,
+            `SELECT id, username, email, bio, avatar, favorite_consoles, owned_consoles, role, created_at, profile_background, profile_background_game, profile_background_focus, profile_background_mobile, profile_background_mobile_game, profile_background_mobile_focus,
                     social_discord, social_twitter, social_youtube, social_instagram,
                     show_email, show_stats, show_friends, show_social_links, xp
              FROM users WHERE LOWER(username) = LOWER($1)`,
@@ -124,6 +124,8 @@ router.get('/users/:username', async (req, res) => {
                 owned_variants: variantResult.rows.map(r => r.variant),
                 // (2026-11-26) full-page background of the profile: game artwork, or null
                 profile_background: profileBackgroundOf(user),
+                // portrait slot for phones; null = use profile_background there too
+                profile_background_mobile: profileBackgroundMobileOf(user),
                 friend_count: user.show_friends !== false ? parseInt(friendCount.rows[0].count) : null,
                 role: user.role || 'user',
                 created_at: user.created_at,

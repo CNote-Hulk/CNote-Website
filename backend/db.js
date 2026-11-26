@@ -761,6 +761,10 @@ async function initializeSchema() {
 		`ALTER TABLE users ADD COLUMN IF NOT EXISTS profile_background TEXT`,
 		`ALTER TABLE users ADD COLUMN IF NOT EXISTS profile_background_game TEXT`,
 		`ALTER TABLE users ADD COLUMN IF NOT EXISTS profile_background_focus SMALLINT`,
+		// Second slot: the portrait background for phones (2026-11-26).
+		`ALTER TABLE users ADD COLUMN IF NOT EXISTS profile_background_mobile TEXT`,
+		`ALTER TABLE users ADD COLUMN IF NOT EXISTS profile_background_mobile_game TEXT`,
+		`ALTER TABLE users ADD COLUMN IF NOT EXISTS profile_background_mobile_focus SMALLINT`,
 		`CREATE TABLE IF NOT EXISTS user_owned_variants (
 			user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
 			console_id TEXT NOT NULL,

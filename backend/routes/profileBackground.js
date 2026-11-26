@@ -1,12 +1,14 @@
 /* ─────────────────────────────────────────
    FILE: profileBackground.js
    DESCRIPTION: The profile background (2026-11-26): a full-page image behind a
-   user's profile, chosen from game artwork only (IGDB artworks and screenshots).
+   user's profile, chosen from game artwork only (IGDB covers, artworks, screenshots).
    Shown on the public profile page (site) and the profile screen (app), nowhere else.
+   Two slots: `desktop` (landscape, the site on a wide screen) and `mobile` (portrait,
+   the app and the site on a narrow/upright screen). One set alone serves both.
 
      GET  /api/profile-background/search?q=   games with artwork (auth, rate-limited)
-     GET  /api/me/profile-background          what the signed-in user has chosen
-     PUT  /api/me/profile-background          { imageId, game, focus } | { imageId: null or "" } to remove
+     GET  /api/me/profile-background          { background (desktop), mobile } of the signed-in user
+     PUT  /api/me/profile-background          { slot: desktop|mobile, imageId, game, focus } | imageId null/"" removes that slot
 
    Only the IGDB image id is stored (users.profile_background) - the URL is always
    built here, so a stored value can never point anywhere but images.igdb.com.
@@ -24,10 +26,14 @@ const quote = s => '"' + String(s).replace(/[\\"]/g, ' ') + '"';
 // left/right for a landscape image on a portrait phone, top/bottom for a portrait one on a
 // wide screen; used as both background-position percentages / Compose alignment biases.
 const focusOf = v => (Number.isInteger(v) && v >= 0 && v <= 100 ? v : 50);
-const toPublic = row => (row && row.profile_background && IMAGE_ID.test(row.profile_background)
-    ? { imageId: row.profile_background, url: imageUrl(row.profile_background), game: row.profile_background_game || '',
-        focus: focusOf(row.profile_background_focus) }
+const slotOf = (row, prefix) => (row && row[prefix] && IMAGE_ID.test(row[prefix])
+    ? { imageId: row[prefix], url: imageUrl(row[prefix]), game: row[prefix + '_game'] || '', focus: focusOf(row[prefix + '_focus']) }
     : null);
+// Desktop slot; the mobile one is mobileOf(). Each is null when unset.
+const toPublic = row => slotOf(row, 'profile_background');
+const mobileOf = row => slotOf(row, 'profile_background_mobile');
+const COLS = `profile_background, profile_background_game, profile_background_focus,
+    profile_background_mobile, profile_background_mobile_game, profile_background_mobile_focus`;
 
 // Search results stay the same for a while; one IGDB call per distinct query per hour.
 const cache = new Map();
@@ -70,8 +76,8 @@ router.get('/profile-background/search', authRequired, async (req, res) => {
 
 router.get('/me/profile-background', authRequired, async (req, res) => {
     try {
-        const { rows } = await pool.query('SELECT profile_background, profile_background_game, profile_background_focus FROM users WHERE id = $1', [req.user.id]);
-        res.json({ success: true, background: toPublic(rows[0]) });
+        const { rows } = await pool.query(`SELECT ${COLS} FROM users WHERE id = $1`, [req.user.id]);
+        res.json({ success: true, background: toPublic(rows[0]), mobile: mobileOf(rows[0]) });
     } catch (err) {
         console.error('Profile background GET error:', err);
         res.status(500).json({ success: false, error: 'Internal error.' });
@@ -88,11 +94,13 @@ router.put('/me/profile-background', authRequired, async (req, res) => {
         return res.status(400).json({ success: false, error: 'Invalid image.' });
     }
     try {
+        // Column names come from this fixed choice, never from the request.
+        const prefix = req.body?.slot === 'mobile' ? 'profile_background_mobile' : 'profile_background';
         const { rows } = await pool.query(
-            `UPDATE users SET profile_background = $1, profile_background_game = $2, profile_background_focus = $3 WHERE id = $4
-             RETURNING profile_background, profile_background_game, profile_background_focus`,
+            `UPDATE users SET ${prefix} = $1, ${prefix}_game = $2, ${prefix}_focus = $3 WHERE id = $4
+             RETURNING ${COLS}`,
             [imageId, imageId ? game : null, focus, req.user.id]);
-        res.json({ success: true, background: toPublic(rows[0]) });
+        res.json({ success: true, background: toPublic(rows[0]), mobile: mobileOf(rows[0]) });
     } catch (err) {
         console.error('Profile background PUT error:', err);
         res.status(500).json({ success: false, error: 'Internal error.' });
@@ -101,3 +109,4 @@ router.put('/me/profile-background', authRequired, async (req, res) => {
 
 module.exports = router;
 module.exports.toPublic = toPublic;
+module.exports.mobileOf = mobileOf;
