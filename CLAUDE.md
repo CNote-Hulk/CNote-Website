@@ -184,6 +184,22 @@ ar fi șters muncă necomisă.
 - Actualizarea Jurnalului și a notelor de proiect **prin GitHub API** nu are problema asta și
   rămâne varianta implicită.
 
+### Unde se lucrează pe tabletă: `/root/Projects/` (Andrei, 2026-11-26)
+
+Andrei: „nu le mai înșira pe toate tableta unde te apucă, ai un folder în root Projects, acolo se întâmplă tot”.
+
+Tot ce produce lucrul pe tabletă și nu e sursă din repo merge în **`/root/Projects/<proiect>/`**: capturi de test
+(ss-uri din emulator / aplicație), dump-uri de memorie, log-uri, build-uri și copii de build, binare de test, unelte
+descărcate, scripturi de o zi. **Nu** în `/tmp`, nu în scratchpad-ul sesiunii Claude, nu în `/root/Documents`, nu în
+`Download/` sau alte foldere ale tabletei. Excepție: doar ce cere Andrei explicit în alt loc (ex. `CNOTE.ELF` în
+`Documents/PlayStation 2/Games`, APK-ul de instalat).
+
+- Folderele: `ps2/` = CNote-PS2-ModdingTool, `vscode-s11/` = VSCode-S11; restul `/root/Projects/<Nume-Proiect>/`,
+  create la nevoie.
+- În folder, pe tipuri: `screenshots/`, `dumps/`, `logs/`, `build/` (copii de build), `scripts/`, `tools/`.
+- Copiile de build care nu se pot face pe SSD (exFAT: fără symlink-uri, noexec — ex. ViceCity-Debugger/ARMSX2) stau
+  tot aici, în `/root/Projects/<proiect>/build/`, nu în `/root/Documents`.
+
 ### La finalul oricărui task
 
 - **Jurnal**: `03 Jurnal/YYYY-MM-DD.md` în `CNote-Hulk/Mind-Tree-Vault` — brut, detaliat, fără

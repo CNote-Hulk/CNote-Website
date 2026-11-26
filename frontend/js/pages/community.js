@@ -1441,6 +1441,11 @@ async function openListingDetail(id) {
         const l = data.listing, u = user(), own = u && u.id === l.seller_id;
         const imgs = Array.isArray(l.images) ? l.images : [];
         const isFavDetail = S.favoriteIds.has(l.id);
+        // (2026-11-26) A CNote listing (seller is an admin) is bought through the CNote shop:
+        // the buyer builds the package (model, mod, extras) from the live stock of that console
+        // instead of ordering this listing as one fixed item. Applies to every CNote listing,
+        // old or new, as long as it names its console.
+        const cnoteShop = !!l.seller_is_official && /^[a-z0-9-]{1,40}$/.test(l.console_type || '');
         console.log('[Marketplace] Listing detail:', l);
 
         // Increment view count (non-owners only, fire-and-forget)
@@ -1483,11 +1488,14 @@ async function openListingDetail(id) {
                                 <div class="hub-detail-price">${Number(l.price).toFixed(0)} RON</div>
                             </div>
                             <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:8px">
-                                ${u && !own && !l.sold ? `<button class="hub-btn hub-btn--primary" id="listing-buy-btn">🛒 ${esc(t('order_buy_button'))}</button>` : '<span></span>'}
+                                ${cnoteShop && !l.sold
+                                    ? `<a class="hub-btn hub-btn--primary" href="shop.html?console=${encodeURIComponent(l.console_type)}">🛒 ${esc(t('console_shop_buy'))}</a>`
+                                    : u && !own && !l.sold ? `<button class="hub-btn hub-btn--primary" id="listing-buy-btn">🛒 ${esc(t('order_buy_button'))}</button>` : '<span></span>'}
                                 <button class="hub-detail-fav-btn${isFavDetail ? ' hub-detail-fav-btn--active' : ''}" id="detail-fav-btn" title="${u ? (isFavDetail ? 'Remove from favorites' : 'Add to favorites') : 'Log in for favorites'}">
                                     ${isFavDetail ? '❤️' : '🤍'}
                                 </button>
                             </div>
+                            ${cnoteShop ? '<div id="listing-shop-stock" style="margin-top:14px"></div>' : ''}
                             <div class="hub-detail-desc" style="margin-top:16px">${esc(l.description)}</div>
                             ${l.location ? `<div class="hub-detail-location" style="margin-top:10px">📍 ${esc(cityLabel(l.location))}</div>` : ''}
                             <div class="hub-detail-date" style="margin-top:6px">Publicat ${timeAgo(l.created_at)}</div>
@@ -1659,6 +1667,8 @@ async function openListingDetail(id) {
         v.querySelector('#listing-buy-btn')?.addEventListener('click', () => {
             openBuyListingModal(l);
         });
+
+        if (cnoteShop) renderListingShopStock(l.console_type, v.querySelector('#listing-shop-stock'));
 
         // Favorite toggle on detail page
         v.querySelector('#detail-fav-btn')?.addEventListener('click', async () => {
@@ -2104,6 +2114,29 @@ const ROMANIAN_COUNTIES = [
     'Suceava', 'Teleorman', 'Timiș', 'Tulcea', 'Vaslui', 'Vâlcea', 'Vrancea'
 ];
 const ORDER_SHIPPING_PRICE = { address: 25, easybox: 20 };
+
+/** CNote listing: what the shop has of that console right now, by model (+ accessories). */
+async function renderListingShopStock(consoleId, el) {
+    if (!el) return;
+    const res = await api('GET', `/shop/${encodeURIComponent(consoleId)}`).catch(() => null);
+    if (!res || !res.success) return;
+    const pill = txt => `<span style="padding:4px 12px;border-radius:999px;border:1px solid var(--border-color);font-size:.8rem;color:var(--text-light)">${esc(txt)}</span>`;
+    if (!res.units.length) {
+        el.innerHTML = `<div class="order-summary"><span style="color:var(--text-gray);font-size:.85rem">${esc(t('shop_none_for_console'))}</span></div>`;
+        return;
+    }
+    const models = {};
+    for (const u of res.units) { const m = u.model_code || '—'; models[m] = (models[m] || 0) + 1; }
+    const acc = res.extras.filter(e => e.kind === 'accessory');
+    el.innerHTML = `
+        <div class="order-summary">
+            <span style="font-size:.7rem;letter-spacing:.22em;text-transform:uppercase;color:var(--text-gray)">${esc(t('console_shop_kicker'))} · ${esc(t('shop_units_in_stock').replace('{n}', res.units.length))}</span>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">
+                ${Object.entries(models).map(([m, n]) => pill(`${m} ×${n}`)).join('')}
+                ${acc.map(a => pill(a.name + (a.stock !== null ? ` ×${a.stock}` : ''))).join('')}
+            </div>
+        </div>`;
+}
 
 /**
  * Buy modal — no-payment checkout ported to the app's mirror feature request:
