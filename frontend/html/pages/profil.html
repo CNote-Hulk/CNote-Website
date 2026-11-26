@@ -26,7 +26,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../../css/main.css?v=20261126f">
+    <link rel="stylesheet" href="../../css/main.css?v=20261126g">
     <link rel="stylesheet" href="../../css/components/date-picker.css?v=2">
     <link rel="stylesheet" href="../../css/components/report-modal.css?v=4">
     <link rel="stylesheet" href="../../css/components/levels.css?v=2">
@@ -322,6 +322,21 @@
                             <input type="hidden" id="set-owned-consoles" value="">
                             <button type="button" class="auth-btn settings-row__btn" id="save-owned-consoles-btn" data-i18n="settings_save_consoles">Save consoles</button>
                             <div class="auth-error" id="owned-consoles-msg" style="display:none;margin-top:8px;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Profile background row (2026-11-26): game artwork behind the public profile.
+                         Logic: initProfileBackground() in pages/profile.js, API routes/profileBackground.js. -->
+                    <div class="settings-row" id="profile-bg-row">
+                        <div class="settings-row__meta">
+                            <div class="settings-row__title" data-i18n="settings_bg_title">Profile background</div>
+                            <div class="settings-row__desc" data-i18n="settings_bg_desc">Artwork from a game, shown behind your whole profile.</div>
+                        </div>
+                        <div class="settings-row__body">
+                            <div class="profile-bg-current" id="profile-bg-current"></div>
+                            <input type="text" class="owned-consoles-search" id="profile-bg-search" placeholder="Search a game..." autocomplete="off" data-i18n="settings_bg_search" data-i18n-attr="placeholder">
+                            <div class="profile-bg-results" id="profile-bg-results"></div>
+                            <div class="auth-error" id="profile-bg-msg" style="display:none;margin-top:8px;"></div>
                         </div>
                     </div>
 
@@ -662,8 +677,8 @@
     <script src="../../js/data/location-data.js"></script>
     <script src="../../js/data/city-name-overrides.js"></script>
     <script src="../../js/modules/gamification-data.js?v=2"></script>
-    <script type="module" src="../../js/main.js?v=20261126f"></script>
-    <script type="module" src="../../js/pages/profile.js?v=20261126f"></script>
+    <script type="module" src="../../js/main.js?v=20261126g"></script>
+    <script type="module" src="../../js/pages/profile.js?v=20261126g"></script>
     <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
     <script src="../../js/fallback/search-profile.js"></script>
 

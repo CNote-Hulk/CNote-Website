@@ -8,7 +8,7 @@ import { AchievementsModule } from '../../js/modules/achievements.js';
 import { SearchModule } from '../../js/modules/search.js';
 import { API_BASE_URL } from '../../js/config.js';
 import { confirmModal, promptModal } from '../../js/utils/confirm-modal.js';
-import { I18nModule } from '../../js/modules/i18n.js?v=20261126f';
+import { I18nModule } from '../../js/modules/i18n.js?v=20261126g';
 import { createDatePicker } from '../../js/utils/date-picker.js';
 import { MODEL_DIRECTORY_GROUPS } from '../../js/data/console-models.js?v=20260909d';
 import { openAvatarCropper } from '../../js/modules/avatar-cropper.js';
@@ -345,6 +345,7 @@ function initSettings() {
     }
 
     initOwnedConsolesSelect();
+    initProfileBackground();
 
     // Password section toggle for Google-only users
     const passwordSectionInfo = document.getElementById('password-section-info');
@@ -2325,3 +2326,89 @@ async function initOwnedConsolesSelect() {
 }());
 
 initSettings();
+
+/**
+ * Profile background (2026-11-26): pick an artwork or screenshot of a game (IGDB) to show
+ * behind the whole public profile. Search a game, click an image, it is saved at once;
+ * "Remove" goes back to the default. API: routes/profileBackground.js.
+ */
+async function initProfileBackground() {
+    const current = document.getElementById('profile-bg-current');
+    const search = document.getElementById('profile-bg-search');
+    const results = document.getElementById('profile-bg-results');
+    const msg = document.getElementById('profile-bg-msg');
+    if (!current || !search || !results) return;
+    const t = k => I18nModule.t(k);
+    const token = localStorage.getItem('cn_token');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers.Authorization = 'Bearer ' + token;
+    const api = (method, path, body) => fetch(API_BASE_URL + path, { method, headers, credentials: 'include', body: body ? JSON.stringify(body) : undefined });
+    const say = (text, ok) => {
+        msg.textContent = text;
+        msg.style.color = ok ? 'var(--success, #4ade80)' : 'var(--error, #e57373)';
+        msg.style.display = text ? 'block' : 'none';
+    };
+
+    function renderCurrent(bg) {
+        current.innerHTML = '';
+        if (!bg) {
+            current.innerHTML = `<p style="color:var(--text-gray);font-size:.85rem;margin:0 0 10px">${escapeHtml(t('settings_bg_none'))}</p>`;
+            return;
+        }
+        current.innerHTML = `
+            <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px;flex-wrap:wrap">
+                <img src="${escapeHtml(bg.url.replace('/t_1080p/', '/t_screenshot_med/'))}" alt="" style="width:200px;aspect-ratio:16/9;object-fit:cover;border-radius:10px;border:1px solid var(--border-color)">
+                <div style="display:flex;flex-direction:column;gap:8px">
+                    <span style="font-size:.85rem;color:var(--text-light)">🎮 ${escapeHtml(bg.game || '')}</span>
+                    <button type="button" class="auth-btn settings-row__btn" id="profile-bg-remove" style="margin:0">${escapeHtml(t('settings_bg_remove'))}</button>
+                </div>
+            </div>`;
+        current.querySelector('#profile-bg-remove').addEventListener('click', async () => {
+            const r = await api('PUT', '/me/profile-background', { imageId: null }).then(x => x.json()).catch(() => null);
+            if (r && r.success) { renderCurrent(null); say(t('settings_bg_removed'), true); } else say(t('settings_bg_error'), false);
+        });
+    }
+
+    try {
+        const r = await api('GET', '/me/profile-background').then(x => x.json());
+        renderCurrent(r.success ? r.background : null);
+    } catch { renderCurrent(null); }
+
+    let timer = null;
+    let seq = 0;
+    search.addEventListener('input', () => {
+        clearTimeout(timer);
+        timer = setTimeout(run, 450);
+    });
+
+    async function run() {
+        const q = search.value.trim();
+        const mine = ++seq;
+        say('', true);
+        if (q.length < 2) { results.innerHTML = ''; return; }
+        results.innerHTML = '<p style="color:var(--text-gray);font-size:.85rem">…</p>';
+        let res;
+        try {
+            const r = await api('GET', `/profile-background/search?q=${encodeURIComponent(q)}`);
+            res = await r.json();
+            if (r.status === 503) { results.innerHTML = ''; say(t('settings_bg_unavailable'), false); return; }
+        } catch { res = null; }
+        if (mine !== seq) return; // a newer search is on its way
+        if (!res || !res.success) { results.innerHTML = ''; say(t('settings_bg_error'), false); return; }
+        if (!res.games.length) { results.innerHTML = `<p style="color:var(--text-gray);font-size:.85rem">${escapeHtml(t('settings_bg_no_results'))}</p>`; return; }
+        results.innerHTML = res.games.map((g, gi) => `
+            <div style="margin:14px 0 6px;font-weight:600;color:var(--text-light);font-size:.9rem">${escapeHtml(g.name)}${g.year ? ` <span style="color:var(--text-gray);font-weight:400">(${g.year})</span>` : ''}</div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px">
+                ${g.images.map((im, ii) => `<button type="button" data-g="${gi}" data-i="${ii}" title="${escapeHtml(t('settings_bg_pick'))}"
+                    style="padding:0;border:1px solid var(--border-color);border-radius:8px;overflow:hidden;cursor:pointer;background:none;aspect-ratio:16/9">
+                    <img src="${escapeHtml(im.thumb)}" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block"></button>`).join('')}
+            </div>`).join('');
+        results.querySelectorAll('button[data-g]').forEach(b => b.addEventListener('click', async () => {
+            const g = res.games[+b.dataset.g], im = g.images[+b.dataset.i];
+            b.disabled = true;
+            const r = await api('PUT', '/me/profile-background', { imageId: im.imageId, game: g.name }).then(x => x.json()).catch(() => null);
+            b.disabled = false;
+            if (r && r.success) { renderCurrent(r.background); say(t('settings_bg_saved'), true); } else say(t('settings_bg_error'), false);
+        }));
+    }
+}

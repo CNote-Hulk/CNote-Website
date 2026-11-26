@@ -6,7 +6,7 @@
 import { AuthModule } from '/js/modules/auth.js?v=20261005';
 import { API_BASE_URL } from '/js/config.js';
 import { AchievementsModule } from '/js/modules/achievements.js';
-import { I18nModule } from '/js/modules/i18n.js?v=20261126f';
+import { I18nModule } from '/js/modules/i18n.js?v=20261126g';
 import { shareOrCopy } from '/js/utils/share.js';
 import { certT, certName, certDate } from '/js/modules/cert-i18n.js?v=20261029c';
 import { confirmModal, promptModal } from '/js/utils/confirm-modal.js';
@@ -359,6 +359,12 @@ const t = key => I18nModule.t(key);
 
                 const profile = data.user;
                 loadingEl.hidden = true;
+
+                // (2026-11-26) The background the user picked from game artwork: a fixed
+                // full-page layer under a dark gradient (text stays readable), with the
+                // game's name in a corner. Only ever an images.igdb.com URL built by the
+                // server (routes/profileBackground.js).
+                applyProfileBackground(profile.profile_background);
 
                 // Update page title
                 document.title = `${profile.username} — Console Notebook`;
@@ -940,3 +946,30 @@ const t = key => I18nModule.t(key);
         async function confirmOrNativeConfirm(message) {
             return confirmModal(message, { ok: 'Confirm' });
         }
+
+/** Full-page profile background (game artwork) — see the call in the profile loader. */
+function applyProfileBackground(bg) {
+    const page = document.getElementById('user-profile-page');
+    if (!page) return;
+    page.querySelector('.up-bg')?.remove();
+    page.querySelector('.up-bg-credit')?.remove();
+    if (!bg || !/^https:\/\/images\.igdb\.com\//.test(bg.url || '')) return;
+    const layer = document.createElement('div');
+    layer.className = 'up-bg';
+    layer.setAttribute('aria-hidden', 'true');
+    Object.assign(layer.style, {
+        position: 'fixed', inset: '0', zIndex: '-1', pointerEvents: 'none',
+        background: `linear-gradient(180deg, rgba(10,9,7,.55) 0%, rgba(10,9,7,.78) 55%, rgba(10,9,7,.92) 100%), url("${bg.url}") center / cover no-repeat`,
+    });
+    page.prepend(layer);
+    if (bg.game) {
+        const credit = document.createElement('div');
+        credit.className = 'up-bg-credit';
+        credit.textContent = '🎮 ' + bg.game;
+        Object.assign(credit.style, {
+            position: 'fixed', right: '16px', bottom: '14px', zIndex: '1', pointerEvents: 'none',
+            fontSize: '.72rem', letterSpacing: '.08em', color: 'rgba(255,255,255,.55)',
+        });
+        page.appendChild(credit);
+    }
+}
