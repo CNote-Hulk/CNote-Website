@@ -1489,7 +1489,7 @@ async function openListingDetail(id) {
                             </div>
                             <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:8px">
                                 ${cnoteShop && !l.sold
-                                    ? `<a class="hub-btn hub-btn--primary" href="shop.html?console=${encodeURIComponent(l.console_type)}">🛒 ${esc(t('console_shop_buy'))}</a>`
+                                    ? `<a class="hub-btn hub-btn--primary" id="listing-shop-btn" hidden href="shop.html?console=${encodeURIComponent(l.console_type)}">🛒 ${esc(t('console_shop_buy'))}</a>`
                                     : u && !own && !l.sold ? `<button class="hub-btn hub-btn--primary" id="listing-buy-btn">🛒 ${esc(t('order_buy_button'))}</button>` : '<span></span>'}
                                 <button class="hub-detail-fav-btn${isFavDetail ? ' hub-detail-fav-btn--active' : ''}" id="detail-fav-btn" title="${u ? (isFavDetail ? 'Remove from favorites' : 'Add to favorites') : 'Log in for favorites'}">
                                     ${isFavDetail ? '❤️' : '🤍'}
@@ -2115,16 +2115,19 @@ const ROMANIAN_COUNTIES = [
 ];
 const ORDER_SHIPPING_PRICE = { address: 25, easybox: 20 };
 
-/** CNote listing: what the shop has of that console right now, by model (+ accessories). */
+/** CNote listing: what the shop has of that console right now, by model (+ accessories).
+ *  The "Build your package" button (#listing-shop-btn) is shown only when there is stock. */
 async function renderListingShopStock(consoleId, el) {
     if (!el) return;
     const res = await api('GET', `/shop/${encodeURIComponent(consoleId)}`).catch(() => null);
     if (!res || !res.success) return;
     const pill = txt => `<span style="padding:4px 12px;border-radius:999px;border:1px solid var(--border-color);font-size:.8rem;color:var(--text-light)">${esc(txt)}</span>`;
+    // Out of stock: the listing stays, it just says so in red and has no buy button.
     if (!res.units.length) {
-        el.innerHTML = `<div class="order-summary"><span style="color:var(--text-gray);font-size:.85rem">${esc(t('shop_none_for_console'))}</span></div>`;
+        el.innerHTML = `<span style="color:#E06B58;font-weight:600;font-size:.9rem">${esc(t('shop_none_for_console'))}</span>`;
         return;
     }
+    document.getElementById('listing-shop-btn')?.removeAttribute('hidden');
     const models = {};
     for (const u of res.units) { const m = u.model_code || '—'; models[m] = (models[m] || 0) + 1; }
     const acc = res.extras.filter(e => e.kind === 'accessory');
