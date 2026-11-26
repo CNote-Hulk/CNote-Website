@@ -80,6 +80,7 @@ const shopRoutes = require('./routes/shop');
 const profileBackgroundRoutes = require('./routes/profileBackground');
 const devicesRoutes = require('./routes/devices');
 const remoteRoutes = require('./routes/remote');
+const playRoutes = require('./routes/play');
 
 /* ── Environment validation ── */
 
@@ -527,6 +528,7 @@ app.use('/api', profileBackgroundRoutes);
 app.use('/api/devices/pair', devicePairLimiter);
 app.use('/api/devices', devicesRoutes);
 app.use('/api/remote', remoteRoutes);
+app.use('/api/play', playRoutes);
 
 /* ── Static files & redirects ── */
 
