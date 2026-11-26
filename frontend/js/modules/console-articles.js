@@ -9,12 +9,12 @@
  * console pages don't link that stylesheet.
  */
 import { AuthModule } from './auth.js?v=20261005';
-import { I18nModule } from './i18n.js?v=20261126h';
+import { I18nModule } from './i18n.js?v=20261126i';
 import { API_BASE_URL } from '../config.js';
-import { ARTICLE_CATEGORIES, categoryLabel, categoryBadgeHtml } from './article-meta.js?v=20261126h';
+import { ARTICLE_CATEGORIES, categoryLabel, categoryBadgeHtml } from './article-meta.js?v=20261126i';
 
 const PER_TAB = 6;
-const ARTICLES_CSS = '/css/pages/articles.css?v=20261126h';
+const ARTICLES_CSS = '/css/pages/articles.css?v=20261126i';
 
 function escapeHtml(str) {
     const div = document.createElement('div');

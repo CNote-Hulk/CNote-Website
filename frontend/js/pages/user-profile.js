@@ -6,7 +6,7 @@
 import { AuthModule } from '/js/modules/auth.js?v=20261005';
 import { API_BASE_URL } from '/js/config.js';
 import { AchievementsModule } from '/js/modules/achievements.js';
-import { I18nModule } from '/js/modules/i18n.js?v=20261126h';
+import { I18nModule } from '/js/modules/i18n.js?v=20261126i';
 import { shareOrCopy } from '/js/utils/share.js';
 import { certT, certName, certDate } from '/js/modules/cert-i18n.js?v=20261029c';
 import { confirmModal, promptModal } from '/js/utils/confirm-modal.js';
@@ -364,7 +364,12 @@ const t = key => I18nModule.t(key);
                 // full-page layer under a dark gradient (text stays readable), with the
                 // game's name in a corner. Only ever an images.igdb.com URL built by the
                 // server (routes/profileBackground.js).
-                applyProfileBackground(profile.profile_background);
+                // Two slots: landscape for a wide screen, portrait for a phone; one alone serves both.
+                const bgDesktop = profile.profile_background, bgMobile = profile.profile_background_mobile;
+                const narrow = window.matchMedia('(max-width: 768px), (orientation: portrait)');
+                const pickBg = () => applyProfileBackground(narrow.matches ? (bgMobile || bgDesktop) : (bgDesktop || bgMobile));
+                pickBg();
+                narrow.addEventListener?.('change', pickBg);
 
                 // Update page title
                 document.title = `${profile.username} — Console Notebook`;

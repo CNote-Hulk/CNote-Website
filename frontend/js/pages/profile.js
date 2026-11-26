@@ -8,7 +8,7 @@ import { AchievementsModule } from '../../js/modules/achievements.js';
 import { SearchModule } from '../../js/modules/search.js';
 import { API_BASE_URL } from '../../js/config.js';
 import { confirmModal, promptModal } from '../../js/utils/confirm-modal.js';
-import { I18nModule } from '../../js/modules/i18n.js?v=20261126h';
+import { I18nModule } from '../../js/modules/i18n.js?v=20261126i';
 import { createDatePicker } from '../../js/utils/date-picker.js';
 import { MODEL_DIRECTORY_GROUPS } from '../../js/data/console-models.js?v=20260909d';
 import { openAvatarCropper } from '../../js/modules/avatar-cropper.js';
@@ -2351,9 +2351,27 @@ async function initProfileBackground() {
         msg.style.display = text ? 'block' : 'none';
     };
 
-    let saved = null;   // what the server has
+    // Two slots (2026-11-26): desktop = landscape, the site on a wide screen; mobile = portrait,
+    // the app and the site on a phone. Each has its own image and position.
+    let slot = 'desktop';
+    const savedBySlot = { desktop: null, mobile: null };
+    let saved = null;   // what the server has for the current slot
     let picked = null;  // { imageId, url, game } chosen but not saved yet
     let focus = 50;
+    const tabs = document.createElement('div');
+    tabs.style.cssText = 'display:flex;gap:8px;margin-bottom:12px';
+    current.before(tabs);
+    function renderTabs() {
+        tabs.innerHTML = ['desktop', 'mobile'].map(k => `<button type="button" data-slot="${k}"
+            style="padding:6px 14px;border-radius:999px;border:1px solid var(--border-color);cursor:pointer;font:inherit;font-size:.82rem;
+            ${k === slot ? 'background:var(--text-light);color:var(--dark-bg)' : 'background:transparent;color:var(--text-light)'}">
+            ${escapeHtml(t(k === 'desktop' ? 'settings_bg_desktop' : 'settings_bg_mobile'))}</button>`).join('');
+        tabs.querySelectorAll('button').forEach(b => b.addEventListener('click', () => switchSlot(b.dataset.slot)));
+    }
+    function switchSlot(k) {
+        slot = k; saved = savedBySlot[k]; picked = null; focus = saved ? saved.focus : 50;
+        renderTabs(); renderPreview();
+    }
 
     function renderPreview() {
         const shown = picked || saved;
@@ -2364,7 +2382,7 @@ async function initProfileBackground() {
         const changed = !!picked || (saved && focus !== saved.focus);
         current.innerHTML = `
             <div style="display:flex;gap:16px;align-items:flex-start;margin-bottom:12px;flex-wrap:wrap">
-                <div id="profile-bg-phone" style="width:120px;aspect-ratio:9/19.5;border-radius:16px;border:1px solid var(--border-color);
+                <div id="profile-bg-phone" style="${slot === 'mobile' ? 'width:120px;aspect-ratio:9/19.5;border-radius:16px' : 'width:260px;aspect-ratio:16/9;border-radius:10px'};border:1px solid var(--border-color);
                     background:linear-gradient(rgba(10,9,7,.4),rgba(10,9,7,.4)),url('${escapeHtml(shown.url)}') ${focus}% ${focus}% / cover no-repeat"></div>
                 <div style="display:flex;flex-direction:column;gap:8px;min-width:180px;flex:1">
                     <span style="font-size:.85rem;color:var(--text-light)">🎮 ${escapeHtml(shown.game || '')}</span>
@@ -2385,22 +2403,28 @@ async function initProfileBackground() {
         });
         current.querySelector('#profile-bg-save').addEventListener('click', async () => {
             const target = picked || saved;
-            const r = await api('PUT', '/me/profile-background', { imageId: target.imageId, game: target.game, focus }).then(x => x.json()).catch(() => null);
-            if (r && r.success) { saved = r.background; picked = null; focus = saved.focus; renderPreview(); say(t('settings_bg_saved'), true); }
+            const r = await api('PUT', '/me/profile-background', { slot, imageId: target.imageId, game: target.game, focus }).then(x => x.json()).catch(() => null);
+            if (r && r.success) {
+                savedBySlot.desktop = r.background; savedBySlot.mobile = r.mobile;
+                saved = savedBySlot[slot]; picked = null; focus = saved.focus; renderPreview(); say(t('settings_bg_saved'), true);
+            }
             else say(t('settings_bg_error'), false);
         });
         current.querySelector('#profile-bg-remove')?.addEventListener('click', async () => {
-            const r = await api('PUT', '/me/profile-background', { imageId: null }).then(x => x.json()).catch(() => null);
-            if (r && r.success) { saved = null; picked = null; focus = 50; renderPreview(); say(t('settings_bg_removed'), true); }
+            const r = await api('PUT', '/me/profile-background', { slot, imageId: null }).then(x => x.json()).catch(() => null);
+            if (r && r.success) {
+                savedBySlot.desktop = r.background; savedBySlot.mobile = r.mobile;
+                saved = null; picked = null; focus = 50; renderPreview(); say(t('settings_bg_removed'), true);
+            }
             else say(t('settings_bg_error'), false);
         });
     }
 
     try {
         const r = await api('GET', '/me/profile-background').then(x => x.json());
-        if (r.success && r.background) { saved = r.background; focus = saved.focus ?? 50; }
-    } catch { /* keep the default */ }
-    renderPreview();
+        if (r.success) { savedBySlot.desktop = r.background || null; savedBySlot.mobile = r.mobile || null; }
+    } catch { /* keep the defaults */ }
+    switchSlot('desktop');
 
     let timer = null;
     let seq = 0;
