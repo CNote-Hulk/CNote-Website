@@ -14,7 +14,7 @@
  */
 import { API_BASE_URL } from '../config.js';
 import { I18nModule } from './i18n.js?v=20261126c';
-import { openImageViewer } from './image-viewer.js?v=20261009';
+import { openImageViewer } from './image-viewer.js?v=20261126e';
 
 const t = (key, fallback) => {
     const value = I18nModule && typeof I18nModule.t === 'function' ? I18nModule.t(key) : null;

@@ -753,6 +753,16 @@ async function initializeSchema() {
 		`ALTER TABLE IF EXISTS personal_inventory_items ADD COLUMN IF NOT EXISTS console_id TEXT`,
 		`ALTER TABLE shop_units ADD COLUMN IF NOT EXISTS inventory_item_id UUID`,
 		`ALTER TABLE shop_extras ADD COLUMN IF NOT EXISTS inventory_item_id UUID`,
+		// Which hardware line of a console a user owns (2026-11-26): PS2 vs PS2 Slim, PS4 Pro...
+		// `variant` = "<console id>|<console_models group>" (or just the console id when it has no
+		// lines) - see utils/consoleVariants.js. user_owned_consoles keeps the console page itself.
+		`CREATE TABLE IF NOT EXISTS user_owned_variants (
+			user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+			console_id TEXT NOT NULL,
+			variant    TEXT NOT NULL,
+			created_at TIMESTAMP DEFAULT NOW(),
+			PRIMARY KEY (user_id, variant)
+		)`,
 
 		// (2026-10-22) Connected consoles — a PS2 running CNote under PSBBN links
 		// itself to an account with a pairing code (routes/devices.js). user_id is

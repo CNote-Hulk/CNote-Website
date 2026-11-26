@@ -3,6 +3,6 @@
 // console-care.js) — same MODELS data, links into console-model.html's
 // "Modding Guide" section instead of the disassembly tutorial.
 
-import { initModelDirectory } from '../modules/model-directory.js?v=20261006';
+import { initModelDirectory } from '../modules/model-directory.js?v=20261126e';
 
 initModelDirectory({ fromParam: 'modding' });

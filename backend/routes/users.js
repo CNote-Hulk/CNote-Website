@@ -15,6 +15,7 @@ const pool = require('../db');
 const { authRequired, authOptional } = require('../middleware/auth');
 const { awardXP, getLevelFromXP } = require('../utils/gamification');
 const { publicUrlForKey, deleteAttachment } = require('../utils/objectStorage');
+const { baseVariant, parseVariant, variantOfGroup } = require('../utils/consoleVariants');
 
 const router = express.Router();
 
@@ -99,6 +100,8 @@ router.get('/users/:username', async (req, res) => {
         const ownedResult = await pool.query(
             'SELECT console_id FROM user_owned_consoles WHERE user_id = $1 ORDER BY position NULLS LAST, id',
             [user.id]);
+        const variantResult = await pool.query(
+            'SELECT variant FROM user_owned_variants WHERE user_id = $1 ORDER BY created_at', [user.id]);
         const friendCount = await pool.query(
             'SELECT COUNT(*) AS count FROM friends WHERE user1_id = $1 OR user2_id = $1',
             [user.id]
@@ -116,6 +119,8 @@ router.get('/users/:username', async (req, res) => {
                 owned_consoles: user.owned_consoles || '',
                 favorite_console_ids: favResult.rows.map(r => r.console_id),
                 owned_console_ids: ownedResult.rows.map(r => r.console_id),
+                // (2026-11-26) the lines owned: "playstation-2|PS2 Slim" (utils/consoleVariants.js)
+                owned_variants: variantResult.rows.map(r => r.variant),
                 friend_count: user.show_friends !== false ? parseInt(friendCount.rows[0].count) : null,
                 role: user.role || 'user',
                 created_at: user.created_at,
@@ -253,7 +258,9 @@ router.get('/consoles/list', async (req, res) => {
 router.get('/owned-consoles', authRequired, async (req, res) => {
     try {
         const result = await pool.query('SELECT console_id FROM user_owned_consoles WHERE user_id = $1', [req.user.id]);
-        res.json({ success: true, consoles: result.rows.map(r => r.console_id) });
+        const variants = await pool.query('SELECT variant FROM user_owned_variants WHERE user_id = $1 ORDER BY created_at', [req.user.id]);
+        // variants (2026-11-26): which line of each console - "playstation-2|PS2 Slim".
+        res.json({ success: true, consoles: result.rows.map(r => r.console_id), variants: variants.rows.map(r => r.variant) });
     } catch (err) {
         console.error('Owned consoles GET error:', err);
         res.status(500).json({ success: false, error: 'Internal error.' });
@@ -269,6 +276,27 @@ router.get('/owned-consoles', authRequired, async (req, res) => {
 // Rather than teach each writer to update both, every mutation of the table calls this and the
 // text column is derived from it. A mirror that gets rebuilt cannot drift; two writers kept in
 // step by hand eventually always do.
+// Every owned console has at least one line recorded: its base line when nothing more specific
+// is known (an older client ticked the console, or My Space marked it owned).
+async function ensureBaseVariants(userId) {
+    const { rows } = await pool.query(
+        `SELECT c.console_id FROM user_owned_consoles c
+          WHERE c.user_id = $1
+            AND NOT EXISTS (SELECT 1 FROM user_owned_variants v WHERE v.user_id = c.user_id AND v.console_id = c.console_id)`,
+        [userId]);
+    for (const r of rows) {
+        await pool.query(
+            'INSERT INTO user_owned_variants (user_id, console_id, variant) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING',
+            [userId, r.console_id, baseVariant(r.console_id)]);
+    }
+}
+
+/** The line a console_models code belongs to, as a variant key (null if unknown). */
+async function variantOfModel(consoleId, code) {
+    const { rows } = await pool.query('SELECT console FROM console_models WHERE code = $1 LIMIT 1', [code]);
+    return rows.length ? variantOfGroup(consoleId, rows[0].console) : null;
+}
+
 async function syncOwnedCsv(userId) {
     await pool.query(
         `UPDATE users SET owned_consoles = COALESCE((
@@ -460,6 +488,13 @@ router.put('/my-space/:consoleId', authRequired, async (req, res) => {
                     'INSERT INTO user_owned_models (user_id, console_id, model_code) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING',
                     [req.user.id, consoleId, code]
                 );
+                // Owning a revision means owning its line (SCPH-90004 -> PS2 Slim).
+                const v = await variantOfModel(consoleId, code);
+                if (v) {
+                    await pool.query(
+                        'INSERT INTO user_owned_variants (user_id, console_id, variant) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING',
+                        [req.user.id, consoleId, v]);
+                }
             }
         }
         // Present-or-absent, like every other field here: omitting it leaves what is stored
@@ -486,7 +521,10 @@ router.put('/my-space/:consoleId', authRequired, async (req, res) => {
         if (owned === false) {
             await pool.query('DELETE FROM user_owned_models WHERE user_id = $1 AND console_id = $2',
                 [req.user.id, consoleId]);
+            await pool.query('DELETE FROM user_owned_variants WHERE user_id = $1 AND console_id = $2',
+                [req.user.id, consoleId]);
         }
+        if (owned === true) await ensureBaseVariants(req.user.id);
         if (typeof owned === 'boolean') await syncOwnedCsv(req.user.id);
         res.json({ success: true });
     } catch (err) {
@@ -498,7 +536,15 @@ router.put('/my-space/:consoleId', authRequired, async (req, res) => {
 // PUT /api/owned-consoles — Replace the user’s entire owned-consoles list
 router.put('/owned-consoles', authRequired, async (req, res) => {
     try {
-        const { consoles } = req.body;
+        // (2026-11-26) `variants` = the lines owned ("playstation-2|PS2 Slim"); the consoles follow
+        // from them. Older clients send only `consoles`: their lines are kept, new consoles get
+        // their base line.
+        const variantList = Array.isArray(req.body.variants)
+            ? req.body.variants.map(parseVariant).filter(Boolean) : null;
+        let consoles = req.body.consoles;
+        if (variantList) {
+            consoles = [...new Set([...(Array.isArray(consoles) ? consoles : []), ...variantList.map(v => v.consoleId)])];
+        }
         if (!Array.isArray(consoles)) {
             return res.status(400).json({ success: false, error: 'Format invalid.' });
         }
@@ -549,6 +595,18 @@ router.put('/owned-consoles', authRequired, async (req, res) => {
                 [req.user.id, dropped]
             );
         }
+        if (variantList) {
+            await pool.query('DELETE FROM user_owned_variants WHERE user_id = $1', [req.user.id]);
+            for (const v of variantList) {
+                await pool.query(
+                    'INSERT INTO user_owned_variants (user_id, console_id, variant) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING',
+                    [req.user.id, v.consoleId, v.key]);
+            }
+        } else {
+            await pool.query('DELETE FROM user_owned_variants WHERE user_id = $1 AND NOT (console_id = ANY($2::text[]))',
+                [req.user.id, keep]);
+        }
+        await ensureBaseVariants(req.user.id);
 
         await syncOwnedCsv(req.user.id);
         res.json({ success: true });

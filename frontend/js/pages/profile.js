@@ -10,6 +10,7 @@ import { API_BASE_URL } from '../../js/config.js';
 import { confirmModal, promptModal } from '../../js/utils/confirm-modal.js';
 import { I18nModule } from '../../js/modules/i18n.js?v=20261126c';
 import { createDatePicker } from '../../js/utils/date-picker.js';
+import { MODEL_DIRECTORY_GROUPS } from '../../js/data/console-models.js?v=20260909d';
 import { openAvatarCropper } from '../../js/modules/avatar-cropper.js';
 // Same URL as main.js's import on purpose — one module instance, one shared on/off state.
 import { isPixelArtOn, setPixelArt } from '../../js/modules/pixel-emoji.js?v=20261005d';
@@ -572,7 +573,7 @@ function initSettings() {
             if (token) headers['Authorization'] = 'Bearer ' + token;
             await fetch(API_BASE_URL + '/owned-consoles', {
                 method: 'PUT', headers, credentials: 'include',
-                body: JSON.stringify({ consoles: ownedList })
+                body: JSON.stringify({ consoles: ownedList, variants: JSON.parse(document.getElementById('set-owned-consoles').dataset.variants || 'null') || undefined })
             });
             window.dispatchEvent(new CustomEvent('cn:owned-changed'));
         } catch { /* ignore */ }
@@ -649,7 +650,7 @@ function initSettings() {
                 if (token) headers['Authorization'] = 'Bearer ' + token;
                 const res = await fetch(API_BASE_URL + '/owned-consoles', {
                     method: 'PUT', headers, credentials: 'include',
-                    body: JSON.stringify({ consoles: ownedList })
+                    body: JSON.stringify({ consoles: ownedList, variants: JSON.parse(document.getElementById('set-owned-consoles').dataset.variants || 'null') || undefined })
                 });
                 const data = await res.json().catch(() => ({}));
                 if (res.ok && data.success !== false) {
@@ -2188,6 +2189,7 @@ async function initOwnedConsolesSelect() {
 
     let allConsoles = [];
     let selectedIds = new Set();
+    let ownedVariants = null;
 
     try {
         const token = localStorage.getItem('cn_token');
@@ -2200,7 +2202,10 @@ async function initOwnedConsolesSelect() {
         const consolesData = await consolesRes.json();
         const ownedData = await ownedRes.json();
         if (consolesData.success) allConsoles = consolesData.consoles;
-        if (ownedData.success) ownedData.consoles.forEach(id => selectedIds.add(id));
+        if (ownedData.success) {
+            ownedData.consoles.forEach(id => selectedIds.add(id));
+            if (Array.isArray(ownedData.variants)) ownedVariants = ownedData.variants;
+        }
     } catch { }
 
     if (allConsoles.length === 0 && window.CONSOLES_DATA && window.CONSOLES_DATA.length > 0) {
@@ -2216,17 +2221,38 @@ async function initOwnedConsolesSelect() {
         user.owned_consoles.split(',').map(s => s.trim()).filter(Boolean).forEach(id => selectedIds.add(id));
     }
 
-    function updateHidden() { hiddenInput.value = Array.from(selectedIds).join(','); }
+    // (2026-11-26) Every hardware line, not just the console page: PS2 / PS2 Slim, PS4 / Slim /
+    // Pro... (MODEL_DIRECTORY_GROUPS, same as the app and backend/utils/consoleVariants.js).
+    // Key "<console id>|<group>"; a console without lines is just its id.
+    const variantsOf = c => {
+        const g = MODEL_DIRECTORY_GROUPS[c.id] || [];
+        if (!g.length) return [{ key: c.id, consoleId: c.id, name: c.name || c.id }];
+        if (g.length === 1) return [{ key: `${c.id}|${g[0]}`, consoleId: c.id, name: c.name || c.id }];
+        return g.map(name => ({ key: `${c.id}|${name}`, consoleId: c.id, name }));
+    };
+    const allVariants = allConsoles.flatMap(variantsOf);
+    const baseKey = id => (variantsOf({ id })[0] || {}).key;
+    const selectedVariants = new Set(ownedVariants || []);
+    // An owned console with no line recorded shows its base line ticked.
+    selectedIds.forEach(id => {
+        if (![...selectedVariants].some(k => k.split('|')[0] === id) && baseKey(id)) selectedVariants.add(baseKey(id));
+    });
+
+    function updateHidden() {
+        const consoles = [...new Set([...selectedVariants].map(k => k.split('|')[0]))];
+        hiddenInput.value = consoles.join(',');
+        hiddenInput.dataset.variants = JSON.stringify([...selectedVariants]);
+    }
 
     function renderList(filter = '') {
         const normalizedFilter = String(filter || '').trim().toLowerCase();
         const filtered = filter
-            ? allConsoles.filter(c => {
-                const idText = String(c.id || '').toLowerCase();
-                const nameText = formatConsoleDisplayName(c.name || c.id || '').toLowerCase();
+            ? allVariants.filter(v => {
+                const idText = String(v.consoleId || '').toLowerCase();
+                const nameText = formatConsoleDisplayName(v.name || '').toLowerCase();
                 return idText.includes(normalizedFilter) || nameText.includes(normalizedFilter);
             })
-            : allConsoles;
+            : allVariants;
 
         if (filtered.length === 0) {
             listEl.innerHTML = '<p style="color:var(--text-gray);font-size:0.85rem;padding:8px;">No consoles found.</p>';
@@ -2234,10 +2260,10 @@ async function initOwnedConsolesSelect() {
         }
 
         listEl.innerHTML = filtered.map(c => {
-            const checked = selectedIds.has(c.id);
-            const displayName = formatConsoleDisplayName(c.name || c.id);
+            const checked = selectedVariants.has(c.key);
+            const displayName = formatConsoleDisplayName(c.name);
             return `<label class="owned-console-item${checked ? ' checked' : ''}">
-                <input type="checkbox" value="${escapeHtml(c.id)}" ${checked ? 'checked' : ''}>
+                <input type="checkbox" value="${escapeHtml(c.key)}" ${checked ? 'checked' : ''}>
                 <span class="owned-console-check">${checked ? '☑' : '☐'}</span>
                 <span class="owned-console-name">${escapeHtml(displayName)}</span>
             </label>`;
@@ -2245,8 +2271,8 @@ async function initOwnedConsolesSelect() {
 
         listEl.querySelectorAll('input[type="checkbox"]').forEach(cb => {
             cb.addEventListener('change', () => {
-                if (cb.checked) selectedIds.add(cb.value);
-                else selectedIds.delete(cb.value);
+                if (cb.checked) selectedVariants.add(cb.value);
+                else selectedVariants.delete(cb.value);
                 updateHidden();
                 renderList(searchEl.value);
             });
