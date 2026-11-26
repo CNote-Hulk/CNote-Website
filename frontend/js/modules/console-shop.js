@@ -7,7 +7,7 @@
  * API: GET /api/shop/:consoleId (backend/routes/shop.js).
  */
 import { AuthModule } from './auth.js?v=20261005';
-import { I18nModule } from './i18n.js?v=20261126i';
+import { I18nModule } from './i18n.js?v=20261126j';
 import { API_BASE_URL } from '../config.js';
 
 const t = key => I18nModule.t(key);
@@ -22,7 +22,7 @@ function ensureStylesheet() {
     if (document.querySelector('link[data-shop-css]')) return;
     const link = document.createElement('link');
     link.rel = 'stylesheet';
-    link.href = '/css/pages/shop.css?v=20261126i';
+    link.href = '/css/pages/shop.css?v=20261126j';
     link.dataset.shopCss = '';
     document.head.appendChild(link);
 }

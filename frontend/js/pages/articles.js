@@ -5,9 +5,9 @@
  * "Articles" section), both kept in the URL.
  */
 import { AuthModule } from '../modules/auth.js?v=20261005';
-import { I18nModule } from '../modules/i18n.js?v=20261126i';
+import { I18nModule } from '../modules/i18n.js?v=20261126j';
 import { API_BASE_URL } from '../config.js';
-import { ARTICLE_CATEGORIES, categoryLabel, categoryBadgeHtml, fillCategorySelect, mountConsolePicker, loadConsoleNames } from '../modules/article-meta.js?v=20261126i';
+import { ARTICLE_CATEGORIES, categoryLabel, categoryBadgeHtml, fillCategorySelect, mountConsolePicker, loadConsoleNames } from '../modules/article-meta.js?v=20261126j';
 
 const PAGE_SIZE = 12;
 

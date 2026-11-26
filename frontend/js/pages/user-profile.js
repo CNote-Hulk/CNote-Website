@@ -6,7 +6,7 @@
 import { AuthModule } from '/js/modules/auth.js?v=20261005';
 import { API_BASE_URL } from '/js/config.js';
 import { AchievementsModule } from '/js/modules/achievements.js';
-import { I18nModule } from '/js/modules/i18n.js?v=20261126i';
+import { I18nModule } from '/js/modules/i18n.js?v=20261126j';
 import { shareOrCopy } from '/js/utils/share.js';
 import { certT, certName, certDate } from '/js/modules/cert-i18n.js?v=20261029c';
 import { confirmModal, promptModal } from '/js/utils/confirm-modal.js';
@@ -960,7 +960,7 @@ function applyProfileBackground(bg) {
     if (!page) return;
     page.querySelector('.up-bg')?.remove();
     page.querySelector('.up-bg-credit')?.remove();
-    if (!bg || !/^https:\/\/images\.igdb\.com\//.test(bg.url || '')) return;
+    if (!bg || !/^https:\/\/(images\.igdb\.com|cdn\.thegamesdb\.net)\//.test(bg.url || '')) return;
     const layer = document.createElement('div');
     layer.className = 'up-bg';
     layer.setAttribute('aria-hidden', 'true');

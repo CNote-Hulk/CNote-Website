@@ -4,14 +4,14 @@
  */
 
 // Import modules
-import { NavigationModule } from './modules/navigation.js?v=20261126i';
+import { NavigationModule } from './modules/navigation.js?v=20261126j';
 import { AnimationsModule } from './modules/animations.js';
 import { ContactFormModule } from './modules/contact-form.js';
 import { DiacriticsModule } from './modules/diacritics.js';
 import { SearchModule } from './modules/search.js';
-import { ProfileDropdownModule } from './modules/profile-dropdown.js?v=20261126i';
+import { ProfileDropdownModule } from './modules/profile-dropdown.js?v=20261126j';
 import { AuthModule } from './modules/auth.js?v=20261005';
-import { I18nModule } from './modules/i18n.js?v=20261126i';
+import { I18nModule } from './modules/i18n.js?v=20261126j';
 import { initAchievementSocket } from './modules/achievement-socket.js';
 import { NotificationsModule } from './modules/notifications.js';
 import { initPixelEmoji } from './modules/pixel-emoji.js?v=20261005d';

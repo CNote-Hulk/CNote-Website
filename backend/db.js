@@ -763,6 +763,10 @@ async function initializeSchema() {
 		`ALTER TABLE users ADD COLUMN IF NOT EXISTS profile_background_focus SMALLINT`,
 		// Second slot: the portrait background for phones (2026-11-26).
 		`ALTER TABLE users ADD COLUMN IF NOT EXISTS profile_background_mobile TEXT`,
+		// TheGamesDB fanart/screenshots by normalized title, for the background search;
+		// filled by scripts/seed-tgdb-artwork.js.
+		`CREATE TABLE IF NOT EXISTS tgdb_artwork (title_norm TEXT NOT NULL, file TEXT PRIMARY KEY, kind TEXT NOT NULL)`,
+		`CREATE INDEX IF NOT EXISTS idx_tgdb_artwork_title ON tgdb_artwork(title_norm)`,
 		`ALTER TABLE users ADD COLUMN IF NOT EXISTS profile_background_mobile_game TEXT`,
 		`ALTER TABLE users ADD COLUMN IF NOT EXISTS profile_background_mobile_focus SMALLINT`,
 		`CREATE TABLE IF NOT EXISTS user_owned_variants (
