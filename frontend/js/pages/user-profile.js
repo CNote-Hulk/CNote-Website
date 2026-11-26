@@ -6,7 +6,7 @@
 import { AuthModule } from '/js/modules/auth.js?v=20261005';
 import { API_BASE_URL } from '/js/config.js';
 import { AchievementsModule } from '/js/modules/achievements.js';
-import { I18nModule } from '/js/modules/i18n.js?v=20261126';
+import { I18nModule } from '/js/modules/i18n.js?v=20261126b';
 import { shareOrCopy } from '/js/utils/share.js';
 import { certT, certName, certDate } from '/js/modules/cert-i18n.js?v=20261029c';
 import { confirmModal, promptModal } from '/js/utils/confirm-modal.js';

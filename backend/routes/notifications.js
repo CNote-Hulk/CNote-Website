@@ -15,7 +15,7 @@ const { sendPushToUser } = require('../services/firebaseAdmin');
 
 const router = express.Router();
 
-const VALID_TYPES = ['forum_reply', 'new_dm', 'listing_interest', 'listing_sold', 'repair_accepted', 'upvote', 'friend_request', 'friend_accepted', 'achievement_unlocked'];
+const VALID_TYPES = ['forum_reply', 'new_dm', 'listing_interest', 'listing_sold', 'repair_accepted', 'upvote', 'friend_request', 'friend_accepted', 'achievement_unlocked', 'shop_order'];
 
 // ── GET /api/notifications ───────────────────────────────
 router.get('/', authRequired, async (req, res) => {

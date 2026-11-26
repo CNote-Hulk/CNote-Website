@@ -1,0 +1,535 @@
+/* ─────────────────────────────────────────
+   FILE: shop.css
+   DESCRIPTION: CNote Shop (shop.html): console list, package builder (steps +
+   sticky summary/checkout), order cards, admin stock rows. Also the
+   "From the CNote shelf" block on the console pages (.console-shop*), which
+   console-shop.js loads this file for. Form controls and the order summary
+   reuse community-hub.css's .hub-form-* / .order-* (global via main.css).
+   ───────────────────────────────────────── */
+
+.shop-page {
+    padding: 48px 0 80px;
+}
+
+.shop-hero {
+    margin-bottom: 24px;
+}
+
+.shop-hero__kicker {
+    font-size: 0.72rem;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--text-gray);
+    margin: 0 0 6px;
+}
+
+.shop-hero__title {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: clamp(1.9rem, 4vw, 2.6rem);
+    color: var(--text-light);
+    margin: 0 0 8px;
+}
+
+.shop-hero__subtitle {
+    color: var(--text-gray);
+    margin: 0;
+    max-width: 640px;
+}
+
+.shop-muted {
+    color: var(--text-gray);
+}
+
+.shop-empty {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    padding: 32px 24px;
+    border: 1px dashed var(--border-color);
+    border-radius: 14px;
+    color: var(--text-gray);
+}
+
+.shop-empty p {
+    margin: 0;
+    flex-basis: 100%;
+}
+
+/* ── Tabs ─────────────────────────────────── */
+.shop-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 28px;
+}
+
+.shop-tab {
+    padding: 7px 16px;
+    border-radius: 999px;
+    border: 1px solid var(--border-color);
+    background: transparent;
+    color: var(--text-light);
+    font: inherit;
+    font-size: 0.86rem;
+    cursor: pointer;
+}
+
+.shop-tab:hover {
+    border-color: var(--accent-color);
+}
+
+.shop-tab.is-active {
+    background: var(--text-light);
+    color: var(--dark-bg);
+    border-color: var(--text-light);
+}
+
+.shop-tab[hidden] {
+    display: none;
+}
+
+/* ── Console list ─────────────────────────── */
+.shop-console-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 16px;
+}
+
+.shop-console-card {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 16px;
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    background: var(--card-bg);
+    text-decoration: none;
+    transition: border-color var(--transition-fast), transform var(--transition-fast);
+}
+
+.shop-console-card:hover {
+    border-color: var(--accent-color);
+    transform: translateY(-2px);
+}
+
+.shop-console-card img {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: contain;
+}
+
+.shop-console-card__name {
+    font-weight: 600;
+    color: var(--text-light);
+}
+
+.shop-console-card__meta {
+    font-size: 0.82rem;
+    color: var(--text-gray);
+}
+
+/* ── Builder ──────────────────────────────── */
+.shop-builder {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 360px;
+    gap: 32px;
+    align-items: start;
+}
+
+@media (max-width: 900px) {
+    .shop-builder {
+        grid-template-columns: 1fr;
+    }
+}
+
+.shop-step {
+    margin-bottom: 28px;
+}
+
+.shop-step__title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.05rem;
+    color: var(--text-light);
+    margin: 0 0 12px;
+}
+
+.shop-step__title span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: 1px solid var(--border-color);
+    font-size: 0.8rem;
+    color: var(--text-gray);
+}
+
+.shop-step__hint {
+    font-size: 0.82rem;
+    color: var(--text-gray);
+    margin: 8px 0;
+}
+
+.shop-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 10px;
+}
+
+.shop-options--units {
+    margin-top: 12px;
+}
+
+.shop-options[hidden] {
+    display: none;
+}
+
+.shop-option,
+.shop-acc {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    background: var(--card-bg);
+    cursor: pointer;
+    transition: border-color var(--transition-fast);
+}
+
+.shop-acc {
+    cursor: default;
+    margin-bottom: 8px;
+}
+
+.shop-option input {
+    accent-color: var(--accent-color);
+}
+
+.shop-option:hover {
+    border-color: var(--accent-color);
+}
+
+.shop-option.is-checked,
+.shop-acc.is-checked {
+    border-color: var(--text-light);
+}
+
+.shop-option.is-disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.shop-option__main {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+    min-width: 0;
+}
+
+.shop-option__label {
+    color: var(--text-light);
+    font-weight: 600;
+}
+
+.shop-option__sub {
+    font-size: 0.78rem;
+    color: var(--text-gray);
+}
+
+.shop-option__price {
+    font-size: 0.86rem;
+    color: var(--text-light);
+    white-space: nowrap;
+}
+
+.shop-qty {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.shop-qty button {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 1px solid var(--border-color);
+    background: transparent;
+    color: var(--text-light);
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+.shop-qty button:disabled {
+    opacity: 0.35;
+    cursor: default;
+}
+
+.shop-qty span {
+    min-width: 1.2em;
+    text-align: center;
+    color: var(--text-light);
+}
+
+.shop-included {
+    color: var(--text-gray);
+    font-size: 0.88rem;
+}
+
+.shop-summary {
+    position: sticky;
+    top: 90px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 20px;
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    background: var(--card-bg);
+}
+
+.shop-summary__title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem;
+    color: var(--text-light);
+    margin: 0;
+}
+
+.shop-checkout {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.shop-checkout[hidden],
+.shop-order-btn[hidden] {
+    display: none;
+}
+
+.shop-order-btn {
+    width: 100%;
+    justify-content: center;
+}
+
+/* ── Orders ───────────────────────────────── */
+.shop-order {
+    padding: 16px 18px;
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    background: var(--card-bg);
+    margin-bottom: 14px;
+}
+
+.shop-order--cancelled {
+    opacity: 0.6;
+}
+
+.shop-order__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.shop-order__id {
+    font-weight: 700;
+    color: var(--text-light);
+}
+
+.shop-order__status {
+    padding: 2px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--border-color);
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-gray);
+}
+
+.shop-order--new .shop-order__status {
+    border-color: var(--accent-color);
+    color: var(--text-light);
+}
+
+.shop-order__date {
+    margin-left: auto;
+    font-size: 0.8rem;
+    color: var(--text-gray);
+}
+
+.shop-order__items {
+    list-style: none;
+    margin: 0 0 10px;
+    padding: 0;
+}
+
+.shop-order__items li {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 3px 0;
+    font-size: 0.88rem;
+    color: var(--text-gray);
+}
+
+.shop-order__items li strong {
+    color: var(--text-light);
+}
+
+.shop-order__total {
+    border-top: 1px solid var(--border-color);
+    margin-top: 4px;
+    padding-top: 6px !important;
+    font-weight: 700;
+    color: var(--text-light) !important;
+}
+
+.shop-order__ship {
+    font-size: 0.85rem;
+    color: var(--text-gray);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.shop-order__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+/* ── Admin stock ──────────────────────────── */
+.shop-stock__console {
+    max-width: 320px;
+    margin-bottom: 20px;
+}
+
+.shop-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 28px;
+}
+
+.shop-row {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr 1.6fr 90px 130px auto auto;
+    gap: 8px;
+    align-items: center;
+}
+
+.shop-row--extra {
+    grid-template-columns: 120px 1.2fr 1.5fr 90px 80px 1fr auto auto auto;
+}
+
+.shop-row__num {
+    min-width: 0;
+}
+
+.shop-row__check {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.82rem;
+    color: var(--text-gray);
+    white-space: nowrap;
+}
+
+@media (max-width: 1000px) {
+    .shop-row,
+    .shop-row--extra {
+        grid-template-columns: 1fr 1fr;
+        padding: 12px;
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+    }
+}
+
+/* ── Console page block ───────────────────── */
+.console-shop {
+    padding-top: 8px;
+    padding-bottom: 8px;
+}
+
+.console-shop__card {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 22px 24px;
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    background: var(--card-bg);
+}
+
+.console-shop__card--admin {
+    border-style: dashed;
+    color: var(--text-gray);
+}
+
+.console-shop__kicker {
+    font-size: 0.7rem;
+    letter-spacing: 0.26em;
+    text-transform: uppercase;
+    color: var(--text-gray);
+    margin: 0 0 6px;
+}
+
+.console-shop__title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem;
+    color: var(--text-light);
+    margin: 0 0 10px;
+}
+
+.console-shop__from {
+    font-family: inherit;
+    font-size: 0.9rem;
+    color: var(--text-gray);
+    margin-left: 8px;
+}
+
+.console-shop__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.console-shop__chip {
+    padding: 4px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--border-color);
+    font-size: 0.8rem;
+    color: var(--text-light);
+}
+
+.console-shop__chip--acc {
+    color: var(--text-gray);
+}
+
+.console-shop__note {
+    font-size: 0.82rem;
+    color: var(--text-gray);
+    margin: 10px 0 0;
+}
+
+.console-shop__actions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+}
+
+.console-shop__manage {
+    font-size: 0.82rem;
+    color: var(--text-gray);
+}

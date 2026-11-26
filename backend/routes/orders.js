@@ -11,55 +11,23 @@
 const express = require('express');
 const pool = require('../db');
 const { authRequired } = require('../middleware/auth');
+// Shipping fields + flat Sameday fee, shared with the CNote shop (routes/shop.js).
+const { parseShipping } = require('../utils/shipping');
 
 const router = express.Router();
 
-const VALID_METHODS = ['address', 'easybox'];
 const VALID_STATUSES = ['new', 'shipped'];
-// Flat shipping fee by method — matches Sameday's own current pricing, set
-// manually here since there's no live Sameday API integration.
-const SHIPPING_PRICE = { address: 25, easybox: 20 };
 
 // ── POST /api/orders ─────────────────────────────────────
 // Buyer places an order on a listing. Marks the listing sold immediately so
 // it can't be bought twice — if the order falls through, the seller can
 // revert it with the existing sold/active toggle (PATCH listings/:id/status).
 router.post('/', authRequired, async (req, res) => {
-    const {
-        listing_id, delivery_method, recipient_first_name, recipient_last_name,
-        recipient_phone, recipient_email, county, city, address, address_line2,
-        easybox_name, notes
-    } = req.body;
-
-    const listingId = parseInt(listing_id);
+    const listingId = parseInt(req.body.listing_id);
     if (isNaN(listingId)) return res.status(400).json({ success: false, error: 'Invalid listing.' });
-    if (!VALID_METHODS.includes(delivery_method)) return res.status(400).json({ success: false, error: 'Invalid delivery method.' });
-
-    const safeFirstName = String(recipient_first_name || '').trim().slice(0, 100);
-    const safeLastName = String(recipient_last_name || '').trim().slice(0, 100);
-    const safeName = `${safeFirstName} ${safeLastName}`.trim(); // kept for backward-compat (recipient_name is NOT NULL, still read by the seller queue)
-    const safePhone = String(recipient_phone || '').trim().slice(0, 30);
-    const safeEmail = String(recipient_email || '').trim().slice(0, 150);
-    if (!safeFirstName || !safeLastName || !safePhone) {
-        return res.status(400).json({ success: false, error: 'First name, last name and phone are required.' });
-    }
-    if (safeEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(safeEmail)) {
-        return res.status(400).json({ success: false, error: 'Invalid email.' });
-    }
-
-    const safeCounty = String(county || '').trim().slice(0, 100);
-    const safeCity = String(city || '').trim().slice(0, 100);
-    const safeAddress = String(address || '').trim().slice(0, 300);
-    const safeAddress2 = String(address_line2 || '').trim().slice(0, 150);
-    const safeEasybox = String(easybox_name || '').trim().slice(0, 200);
-    const safeNotes = String(notes || '').trim().slice(0, 500);
-
-    if (delivery_method === 'address' && (!safeCounty || !safeCity || !safeAddress)) {
-        return res.status(400).json({ success: false, error: 'County, city and address are required for address delivery.' });
-    }
-    if (delivery_method === 'easybox' && !safeEasybox) {
-        return res.status(400).json({ success: false, error: 'Easybox location is required.' });
-    }
+    const shipping = parseShipping(req.body);
+    if (shipping.error) return res.status(400).json({ success: false, error: shipping.error });
+    const d = shipping.data;
 
     try {
         const listingRes = await pool.query('SELECT id, title, price, user_id, sold, status FROM listings WHERE id = $1', [listingId]);
@@ -74,7 +42,7 @@ router.post('/', authRequired, async (req, res) => {
         }
 
         const productPrice = parseFloat(listing.price);
-        const shippingPrice = SHIPPING_PRICE[delivery_method];
+        const shippingPrice = d.shipping_price;
         const totalPrice = productPrice + shippingPrice;
 
         const result = await pool.query(`
@@ -90,9 +58,9 @@ router.post('/', authRequired, async (req, res) => {
                       county, city, address, address_line2, easybox_name, notes, product_price,
                       shipping_price, total_price, status, created_at
         `, [
-            listingId, listing.title, req.user.id, listing.user_id, delivery_method,
-            safeName, safeFirstName, safeLastName, safePhone, safeEmail,
-            safeCounty, safeCity, safeAddress, safeAddress2, safeEasybox, safeNotes,
+            listingId, listing.title, req.user.id, listing.user_id, d.delivery_method,
+            d.recipient_name, d.recipient_first_name, d.recipient_last_name, d.recipient_phone, d.recipient_email,
+            d.county, d.city, d.address, d.address_line2, d.easybox_name, d.notes,
             productPrice, shippingPrice, totalPrice
         ]);
 

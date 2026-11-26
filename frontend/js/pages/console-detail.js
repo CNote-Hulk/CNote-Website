@@ -7,11 +7,12 @@ import { getConsoleById, getConsoleIdFromUrl, resolveImagePath, invalidateCache 
 import { MODEL_DIRECTORY_GROUPS } from '../data/console-models.js?v=20260909d';
 import { AchievementsModule } from '../modules/achievements.js';
 import { AuthModule } from '../modules/auth.js?v=20261005';
-import { I18nModule } from '../modules/i18n.js?v=20261126';
+import { I18nModule } from '../modules/i18n.js?v=20261126b';
 import { API_BASE_URL } from '../config.js';
 import { MySpaceModule } from '../modules/my-space.js?v=20261009d';
 import { openImageViewer } from '../modules/image-viewer.js?v=20261009';
-import { ConsoleArticlesModule } from '../modules/console-articles.js?v=20261126';
+import { ConsoleArticlesModule } from '../modules/console-articles.js?v=20261126b';
+import { ConsoleShopModule } from '../modules/console-shop.js?v=20261126b';
 
 /** Remove leftover Chrome UI elements from page template */
 function cleanupConsolePageChrome() {
@@ -1175,8 +1176,10 @@ async function init() {
     // Read-only here by design: the app is the only editor of My Space. Not awaited - it makes
     // two network calls and the page should not hold its first paint for someone else's shelf.
     MySpaceModule.render(consoleId);
-    // Not awaited either: the articles section appears below the specs once loaded.
+    // Not awaited either: the articles section appears below the specs once loaded,
+    // the CNote stock block right under the hero.
     ConsoleArticlesModule.render(consoleId);
+    ConsoleShopModule.render(consoleId);
     initAdminEditButton();
     injectStructuredData(currentConsole, consoleId);
 
@@ -1212,6 +1215,7 @@ async function init() {
         loadRating(consoleId);
         MySpaceModule.render(consoleId);
         ConsoleArticlesModule.render(consoleId);
+        ConsoleShopModule.render(consoleId);
     });
 
     AchievementsModule.trackConsoleVisit(consoleId);

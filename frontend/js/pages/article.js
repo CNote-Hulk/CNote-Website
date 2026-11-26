@@ -3,9 +3,9 @@
  * Admin sees Edit/Delete buttons (reusing the same modal markup as articles.js).
  */
 import { AuthModule } from '../modules/auth.js?v=20261005';
-import { I18nModule } from '../modules/i18n.js?v=20261126';
+import { I18nModule } from '../modules/i18n.js?v=20261126b';
 import { API_BASE_URL } from '../config.js';
-import { categoryBadgeHtml, fillCategorySelect, mountConsolePicker, loadConsoleNames } from '../modules/article-meta.js?v=20261126';
+import { categoryBadgeHtml, fillCategorySelect, mountConsolePicker, loadConsoleNames } from '../modules/article-meta.js?v=20261126b';
 import { confirmModal } from '../utils/confirm-modal.js';
 
 async function api(method, path, body) {

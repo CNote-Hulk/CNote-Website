@@ -4,7 +4,7 @@
  *
  * The category ids must match backend/routes/articles.js's CATEGORIES.
  */
-import { I18nModule } from './i18n.js?v=20261126';
+import { I18nModule } from './i18n.js?v=20261126b';
 import { getConsolesSorted } from '../data/data-loader.js';
 
 export const ARTICLE_CATEGORIES = [

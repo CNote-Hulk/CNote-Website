@@ -76,6 +76,7 @@ const consoleModelsRoutes = require('./routes/console-models');
 const gamesRoutes = require('./routes/games');
 const articlesRoutes = require('./routes/articles');
 const ordersRoutes = require('./routes/orders');
+const shopRoutes = require('./routes/shop');
 const devicesRoutes = require('./routes/devices');
 const remoteRoutes = require('./routes/remote');
 
@@ -391,6 +392,15 @@ const devicePairLimiter = rateLimit({
 	message: { success: false, error: 'Too many attempts, please try again later.' }
 });
 
+// CNote shop orders reserve stock: keep one account from locking the shelf.
+const shopOrderLimiter = rateLimit({
+	windowMs: 15 * 60 * 1000,
+	max: 10,
+	standardHeaders: true,
+	legacyHeaders: false,
+	message: { success: false, error: 'Too many orders, please try again later.' }
+});
+
 const marketplaceListingLimiter = rateLimit({
 	windowMs: 15 * 60 * 1000,
 	max: 20,
@@ -507,6 +517,8 @@ app.use('/api/console-models', consoleModelsRoutes);
 app.use('/api/games', gamesRoutes);
 app.use('/api/articles', articlesRoutes);
 app.use('/api/orders', ordersRoutes);
+app.post('/api/shop/orders', shopOrderLimiter);
+app.use('/api/shop', shopRoutes);
 app.use('/api/devices/pair', devicePairLimiter);
 app.use('/api/devices', devicesRoutes);
 app.use('/api/remote', remoteRoutes);

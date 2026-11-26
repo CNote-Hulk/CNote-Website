@@ -681,6 +681,70 @@ async function initializeSchema() {
 		`ALTER TABLE orders ADD COLUMN IF NOT EXISTS recipient_email TEXT DEFAULT ''`,
 		`ALTER TABLE orders ADD COLUMN IF NOT EXISTS address_line2 TEXT DEFAULT ''`,
 
+		// ── CNote shop (2026-11-26) ────────────────────────────────────────────
+		// CNote's own stock, sold by order instead of by message: each console
+		// is one physical unit (its own model code, condition and price); extras
+		// are what the buyer adds to it - accessories with a stock count, and
+		// paid services (a mod, a storage upgrade) offered per console. Cables
+		// always come with the console, so they are not an extra.
+		`CREATE TABLE IF NOT EXISTS shop_units (
+			id          SERIAL PRIMARY KEY,
+			console_id  TEXT NOT NULL,
+			model_code  TEXT NOT NULL DEFAULT '',
+			condition   TEXT NOT NULL DEFAULT '',
+			notes       TEXT NOT NULL DEFAULT '',
+			price       DECIMAL(10,2) NOT NULL,
+			status      TEXT NOT NULL DEFAULT 'available',
+			created_at  TIMESTAMP DEFAULT NOW(),
+			updated_at  TIMESTAMP DEFAULT NOW()
+		)`,
+		`CREATE INDEX IF NOT EXISTS idx_shop_units_console ON shop_units(console_id, status)`,
+		`CREATE TABLE IF NOT EXISTS shop_extras (
+			id          SERIAL PRIMARY KEY,
+			console_id  TEXT NOT NULL,
+			kind        TEXT NOT NULL,
+			name        TEXT NOT NULL,
+			description TEXT NOT NULL DEFAULT '',
+			price       DECIMAL(10,2) NOT NULL DEFAULT 0,
+			stock       INTEGER DEFAULT NULL,
+			active      BOOLEAN NOT NULL DEFAULT TRUE,
+			sort        INTEGER NOT NULL DEFAULT 0,
+			-- model codes the extra works with (a mod that a late SCPH-9000x
+			-- cannot take); empty = every model of the console
+			models      TEXT[] NOT NULL DEFAULT '{}',
+			created_at  TIMESTAMP DEFAULT NOW()
+		)`,
+		`CREATE INDEX IF NOT EXISTS idx_shop_extras_console ON shop_extras(console_id, kind)`,
+		`CREATE TABLE IF NOT EXISTS shop_orders (
+			id                   SERIAL PRIMARY KEY,
+			buyer_id             INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+			unit_id              INTEGER REFERENCES shop_units(id) ON DELETE SET NULL,
+			console_id           TEXT NOT NULL,
+			model_code           TEXT NOT NULL DEFAULT '',
+			items                JSONB NOT NULL DEFAULT '[]',
+			unit_price           DECIMAL(10,2) NOT NULL,
+			extras_price         DECIMAL(10,2) NOT NULL DEFAULT 0,
+			shipping_price       DECIMAL(10,2) NOT NULL,
+			total_price          DECIMAL(10,2) NOT NULL,
+			delivery_method      TEXT NOT NULL,
+			recipient_name       TEXT NOT NULL,
+			recipient_first_name TEXT DEFAULT '',
+			recipient_last_name  TEXT DEFAULT '',
+			recipient_phone      TEXT NOT NULL,
+			recipient_email      TEXT DEFAULT '',
+			county               TEXT DEFAULT '',
+			city                 TEXT DEFAULT '',
+			address              TEXT DEFAULT '',
+			address_line2        TEXT DEFAULT '',
+			easybox_name         TEXT DEFAULT '',
+			notes                TEXT DEFAULT '',
+			status               TEXT NOT NULL DEFAULT 'new',
+			created_at           TIMESTAMP DEFAULT NOW(),
+			updated_at           TIMESTAMP DEFAULT NOW()
+		)`,
+		`CREATE INDEX IF NOT EXISTS idx_shop_orders_status ON shop_orders(status, created_at DESC)`,
+		`CREATE INDEX IF NOT EXISTS idx_shop_orders_buyer ON shop_orders(buyer_id, created_at DESC)`,
+
 		// (2026-10-22) Connected consoles — a PS2 running CNote under PSBBN links
 		// itself to an account with a pairing code (routes/devices.js). user_id is
 		// NULL until the owner confirms the code; only hashes of the console's
