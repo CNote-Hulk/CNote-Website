@@ -1489,7 +1489,7 @@ async function openListingDetail(id) {
                             </div>
                             <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:8px">
                                 ${cnoteShop && !l.sold
-                                    ? `<a class="hub-btn hub-btn--primary" id="listing-shop-btn" hidden href="shop.html?console=${encodeURIComponent(l.console_type)}">🛒 ${esc(t('console_shop_buy'))}</a>`
+                                    ? `<a class="hub-btn hub-btn--primary" id="listing-shop-btn" style="display:none" href="shop.html?console=${encodeURIComponent(l.console_type)}">🛒 ${esc(t('console_shop_buy'))}</a>`
                                     : u && !own && !l.sold ? `<button class="hub-btn hub-btn--primary" id="listing-buy-btn">🛒 ${esc(t('order_buy_button'))}</button>` : '<span></span>'}
                                 <button class="hub-detail-fav-btn${isFavDetail ? ' hub-detail-fav-btn--active' : ''}" id="detail-fav-btn" title="${u ? (isFavDetail ? 'Remove from favorites' : 'Add to favorites') : 'Log in for favorites'}">
                                     ${isFavDetail ? '❤️' : '🤍'}
@@ -2127,7 +2127,8 @@ async function renderListingShopStock(consoleId, el) {
         el.innerHTML = `<span style="color:#E06B58;font-weight:600;font-size:.9rem">${esc(t('shop_none_for_console'))}</span>`;
         return;
     }
-    document.getElementById('listing-shop-btn')?.removeAttribute('hidden');
+    const shopBtn = document.getElementById('listing-shop-btn');
+    if (shopBtn) shopBtn.style.display = '';
     const models = {};
     for (const u of res.units) { const m = u.model_code || '—'; models[m] = (models[m] || 0) + 1; }
     const acc = res.extras.filter(e => e.kind === 'accessory');
