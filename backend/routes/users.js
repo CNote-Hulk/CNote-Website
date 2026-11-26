@@ -16,6 +16,7 @@ const { authRequired, authOptional } = require('../middleware/auth');
 const { awardXP, getLevelFromXP } = require('../utils/gamification');
 const { publicUrlForKey, deleteAttachment } = require('../utils/objectStorage');
 const { baseVariant, parseVariant, variantOfGroup } = require('../utils/consoleVariants');
+const { toPublic: profileBackgroundOf } = require('./profileBackground');
 
 const router = express.Router();
 
@@ -78,7 +79,7 @@ router.get('/users/:username', async (req, res) => {
     try {
         const { username } = req.params;
         const result = await pool.query(
-            `SELECT id, username, email, bio, avatar, favorite_consoles, owned_consoles, role, created_at,
+            `SELECT id, username, email, bio, avatar, favorite_consoles, owned_consoles, role, created_at, profile_background, profile_background_game,
                     social_discord, social_twitter, social_youtube, social_instagram,
                     show_email, show_stats, show_friends, show_social_links, xp
              FROM users WHERE LOWER(username) = LOWER($1)`,
@@ -121,6 +122,8 @@ router.get('/users/:username', async (req, res) => {
                 owned_console_ids: ownedResult.rows.map(r => r.console_id),
                 // (2026-11-26) the lines owned: "playstation-2|PS2 Slim" (utils/consoleVariants.js)
                 owned_variants: variantResult.rows.map(r => r.variant),
+                // (2026-11-26) full-page background of the profile: game artwork, or null
+                profile_background: profileBackgroundOf(user),
                 friend_count: user.show_friends !== false ? parseInt(friendCount.rows[0].count) : null,
                 role: user.role || 'user',
                 created_at: user.created_at,

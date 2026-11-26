@@ -77,6 +77,7 @@ const gamesRoutes = require('./routes/games');
 const articlesRoutes = require('./routes/articles');
 const ordersRoutes = require('./routes/orders');
 const shopRoutes = require('./routes/shop');
+const profileBackgroundRoutes = require('./routes/profileBackground');
 const devicesRoutes = require('./routes/devices');
 const remoteRoutes = require('./routes/remote');
 
@@ -519,6 +520,10 @@ app.use('/api/articles', articlesRoutes);
 app.use('/api/orders', ordersRoutes);
 app.post('/api/shop/orders', shopOrderLimiter);
 app.use('/api/shop', shopRoutes);
+// Each search is one IGDB call; 30 a minute is plenty for typing with a debounce.
+app.use('/api/profile-background/search', rateLimit({ windowMs: 60 * 1000, max: 30, standardHeaders: true, legacyHeaders: false,
+	message: { success: false, error: 'Too many searches, slow down a little.' } }));
+app.use('/api', profileBackgroundRoutes);
 app.use('/api/devices/pair', devicePairLimiter);
 app.use('/api/devices', devicesRoutes);
 app.use('/api/remote', remoteRoutes);

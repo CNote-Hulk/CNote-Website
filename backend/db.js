@@ -756,6 +756,10 @@ async function initializeSchema() {
 		// Which hardware line of a console a user owns (2026-11-26): PS2 vs PS2 Slim, PS4 Pro...
 		// `variant` = "<console id>|<console_models group>" (or just the console id when it has no
 		// lines) - see utils/consoleVariants.js. user_owned_consoles keeps the console page itself.
+		// Profile background (2026-11-26): an IGDB artwork/screenshot id + the game's name;
+		// see routes/profileBackground.js.
+		`ALTER TABLE users ADD COLUMN IF NOT EXISTS profile_background TEXT`,
+		`ALTER TABLE users ADD COLUMN IF NOT EXISTS profile_background_game TEXT`,
 		`CREATE TABLE IF NOT EXISTS user_owned_variants (
 			user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
 			console_id TEXT NOT NULL,
