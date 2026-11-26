@@ -6,7 +6,7 @@
 
      GET  /api/profile-background/search?q=   games with artwork (auth, rate-limited)
      GET  /api/me/profile-background          what the signed-in user has chosen
-     PUT  /api/me/profile-background          { imageId, game } | { imageId: null } to remove
+     PUT  /api/me/profile-background          { imageId, game } | { imageId: null or "" } to remove
 
    Only the IGDB image id is stored (users.profile_background) - the URL is always
    built here, so a stored value can never point anywhere but images.igdb.com.
@@ -69,9 +69,11 @@ router.get('/me/profile-background', authRequired, async (req, res) => {
 });
 
 router.put('/me/profile-background', authRequired, async (req, res) => {
-    const imageId = req.body?.imageId;
+    // null, "" or a missing field all mean "remove" (the app's Gson drops nulls).
+    const raw = req.body?.imageId;
+    const imageId = raw === undefined || raw === null || raw === '' ? null : String(raw);
     const game = String(req.body?.game || '').trim().slice(0, 200);
-    if (imageId !== null && !IMAGE_ID.test(String(imageId || ''))) {
+    if (imageId !== null && !IMAGE_ID.test(imageId)) {
         return res.status(400).json({ success: false, error: 'Invalid image.' });
     }
     try {
