@@ -18,6 +18,13 @@
             POST/PUT/DELETE /units[/:id], POST/PUT/DELETE /extras[/:id]
             GET /:consoleId?all=1 also lists reserved/sold units, inactive extras
    Admins are "CNote": every admin sees and processes every shop order.
+
+   Stock from the inventory (2026-11-26): units/extras sent to sale from Andrei's
+   inventory (routes/personal.js POST /inventory/:id/sell) carry inventory_item_id.
+   A linked accessory has no stock of its own: available = the item's quantity minus
+   what open orders (new/confirmed) hold. Shipping an order books a 'vanzare'
+   movement on every linked item (the DB trigger lowers its quantity); cancelling
+   touches nothing there, since nothing left the shelf.
    ───────────────────────────────────────── */
 const express = require('express');
 const pool = require('../db');
@@ -35,6 +42,19 @@ const UNIT_STATUSES = ['available', 'reserved', 'sold', 'hidden'];
 const ORDER_STATUSES = ['new', 'confirmed', 'shipped', 'cancelled'];
 const CONSOLE_ID = /^[a-z0-9-]{1,40}$/;
 
+// SQL for an extra's available stock: the inventory's quantity minus open orders when it
+// is linked to an inventory item, its own `stock` otherwise (NULL = no limit).
+const RESERVED_SQL = `(SELECT COALESCE(SUM((it->>'qty')::int), 0) FROM shop_orders o, jsonb_array_elements(o.items) it
+    WHERE o.status IN ('new', 'confirmed') AND (it->>'extra_id')::int = e.id)`;
+const AVAILABLE_SQL = `CASE WHEN e.inventory_item_id IS NOT NULL
+    THEN GREATEST(COALESCE((SELECT FLOOR(i.quantity) FROM personal_inventory_items i WHERE i.id = e.inventory_item_id), 0) - ${RESERVED_SQL}, 0)::int
+    ELSE e.stock END`;
+
+// A unit sent to sale from the inventory disappears once that item is no longer on the
+// shelf (quantity 0: sold some other way, written off...).
+const UNIT_IN_INVENTORY = `AND (u.inventory_item_id IS NULL OR EXISTS (
+    SELECT 1 FROM personal_inventory_items i WHERE i.id = u.inventory_item_id AND i.quantity > 0))`;
+
 const money = v => {
     const n = Number(v);
     return Number.isFinite(n) && n >= 0 && n < 1e7 ? Math.round(n * 100) / 100 : null;
@@ -47,7 +67,7 @@ function publicUnit(u) {
     return { id: u.id, console_id: u.console_id, model_code: u.model_code, condition: u.condition, notes: u.notes, price: Number(u.price), status: u.status };
 }
 function publicExtra(e) {
-    return { id: e.id, console_id: e.console_id, kind: e.kind, name: e.name, description: e.description, price: Number(e.price), stock: e.stock, active: e.active, sort: e.sort, models: e.models || [] };
+    return { id: e.id, console_id: e.console_id, kind: e.kind, name: e.name, description: e.description, price: Number(e.price), stock: e.available !== undefined ? e.available : e.stock, active: e.active, sort: e.sort, models: e.models || [], from_inventory: !!e.inventory_item_id };
 }
 
 async function notifyAdmins(message, req) {
@@ -82,6 +102,10 @@ router.post('/orders', authRequired, async (req, res) => {
         await client.query('BEGIN');
         const { rows: units } = await client.query('SELECT * FROM shop_units WHERE id = $1 FOR UPDATE', [unitId]);
         const unit = units[0];
+        if (unit && unit.inventory_item_id) {
+            const { rows: inv } = await client.query('SELECT quantity FROM personal_inventory_items WHERE id = $1', [unit.inventory_item_id]);
+            if (!inv.length || Number(inv[0].quantity) <= 0) unit.status = 'gone';
+        }
         if (!unit || unit.status !== 'available') {
             await client.query('ROLLBACK');
             return res.status(409).json({ success: false, error: 'This console is no longer available.' });
@@ -91,7 +115,7 @@ router.post('/orders', authRequired, async (req, res) => {
         let extrasPrice = 0;
         if (wanted.size) {
             const { rows: extras } = await client.query(
-                'SELECT * FROM shop_extras WHERE id = ANY($1) FOR UPDATE', [[...wanted.keys()]]);
+                `SELECT e.*, ${AVAILABLE_SQL} AS available FROM shop_extras e WHERE e.id = ANY($1) FOR UPDATE OF e`, [[...wanted.keys()]]);
             const seen = { mod: 0, storage: 0 };
             for (const e of extras) {
                 const qty = wanted.get(e.id);
@@ -102,8 +126,9 @@ router.post('/orders', authRequired, async (req, res) => {
                     if (++seen[e.kind] > 1) fail('Only one option of each kind can be chosen.');
                 }
                 const n = e.kind === 'accessory' ? qty : 1;
-                if (e.stock !== null && e.stock < n) fail(`Only ${e.stock} × "${e.name}" left.`);
-                if (e.stock !== null) await client.query('UPDATE shop_extras SET stock = stock - $1 WHERE id = $2', [n, e.id]);
+                if (e.available !== null && e.available < n) fail(`Only ${e.available} × "${e.name}" left.`);
+                // Own stock is taken now; inventory-linked stock is held by the open order itself.
+                if (!e.inventory_item_id && e.stock !== null) await client.query('UPDATE shop_extras SET stock = stock - $1 WHERE id = $2', [n, e.id]);
                 items.push({ extra_id: e.id, kind: e.kind, name: e.name, price: Number(e.price), qty: n });
                 extrasPrice += Number(e.price) * n;
             }
@@ -181,18 +206,32 @@ router.patch('/orders/:id', authRequired, adminOnly, async (req, res) => {
         const { rows } = await client.query('SELECT * FROM shop_orders WHERE id = $1 FOR UPDATE', [id]);
         const order = rows[0];
         if (!order) { await client.query('ROLLBACK'); return res.status(404).json({ success: false, error: 'Order not found.' }); }
-        if (order.status === 'cancelled') {
+        if (order.status === 'cancelled' || order.status === 'shipped') {
             await client.query('ROLLBACK');
-            return res.status(409).json({ success: false, error: 'A cancelled order cannot be reopened.' });
+            return res.status(409).json({ success: false, error: 'This order is closed.' });
         }
         if (status === 'cancelled') {
             if (order.unit_id) await client.query("UPDATE shop_units SET status = 'available', updated_at = NOW() WHERE id = $1 AND status <> 'hidden'", [order.unit_id]);
             for (const it of order.items || []) {
-                await client.query('UPDATE shop_extras SET stock = stock + $1 WHERE id = $2 AND stock IS NOT NULL', [it.qty, it.extra_id]);
+                await client.query('UPDATE shop_extras SET stock = stock + $1 WHERE id = $2 AND stock IS NOT NULL AND inventory_item_id IS NULL', [it.qty, it.extra_id]);
+            }
+        } else if (status === 'shipped') {
+            if (order.unit_id) await client.query("UPDATE shop_units SET status = 'sold', updated_at = NOW() WHERE id = $1", [order.unit_id]);
+            // What left the shelf comes off the inventory (the trigger applies the movement).
+            const note = `Magazin CNote #${order.id}`;
+            const { rows: unitInv } = await client.query('SELECT inventory_item_id FROM shop_units WHERE id = $1 AND inventory_item_id IS NOT NULL', [order.unit_id]);
+            for (const r of unitInv) {
+                await client.query(`INSERT INTO personal_inventory_movements (item_id, delta, reason, note) VALUES ($1, -1, 'vanzare', $2)`, [r.inventory_item_id, note]);
+            }
+            for (const it of order.items || []) {
+                const { rows: inv } = await client.query('SELECT inventory_item_id FROM shop_extras WHERE id = $1 AND inventory_item_id IS NOT NULL', [it.extra_id]);
+                for (const r of inv) {
+                    await client.query(`INSERT INTO personal_inventory_movements (item_id, delta, reason, note) VALUES ($1, $2, 'vanzare', $3)`, [r.inventory_item_id, -it.qty, note]);
+                }
             }
         } else if (order.unit_id) {
             await client.query('UPDATE shop_units SET status = $1, updated_at = NOW() WHERE id = $2',
-                [status === 'shipped' ? 'sold' : 'reserved', order.unit_id]);
+                ['reserved', order.unit_id]);
         }
         await client.query('UPDATE shop_orders SET status = $1, updated_at = NOW() WHERE id = $2', [status, id]);
         await client.query('COMMIT');
@@ -353,7 +392,7 @@ router.get('/', async (req, res) => {
     try {
         const { rows } = await pool.query(`
             SELECT console_id, COUNT(*)::int AS units, MIN(price) AS from_price
-            FROM shop_units WHERE status = 'available'
+            FROM shop_units u WHERE status = 'available' ${UNIT_IN_INVENTORY}
             GROUP BY console_id ORDER BY console_id`);
         res.json({ success: true, consoles: rows.map(r => ({ ...r, from_price: Number(r.from_price) })) });
     } catch (err) {
@@ -375,10 +414,11 @@ router.get('/:consoleId', authOptional, async (req, res) => {
             all = rows[0]?.role === 'admin';
         }
         const { rows: units } = await pool.query(
-            `SELECT * FROM shop_units WHERE console_id = $1 ${all ? '' : "AND status = 'available'"}
+            `SELECT * FROM shop_units u WHERE console_id = $1 ${all ? '' : `AND status = 'available' ${UNIT_IN_INVENTORY}`}
              ORDER BY model_code, price, id`, [consoleId]);
         const { rows: extras } = await pool.query(
-            `SELECT * FROM shop_extras WHERE console_id = $1 ${all ? '' : 'AND active AND (stock IS NULL OR stock > 0)'}
+            `SELECT * FROM (SELECT e.*, ${AVAILABLE_SQL} AS available FROM shop_extras e WHERE e.console_id = $1) x
+             ${all ? '' : 'WHERE active AND (available IS NULL OR available > 0)'}
              ORDER BY kind, sort, price, id`, [consoleId]);
         res.json({ success: true, units: units.map(publicUnit), extras: extras.map(publicExtra) });
     } catch (err) {

@@ -744,6 +744,15 @@ async function initializeSchema() {
 		)`,
 		`CREATE INDEX IF NOT EXISTS idx_shop_orders_status ON shop_orders(status, created_at DESC)`,
 		`CREATE INDEX IF NOT EXISTS idx_shop_orders_buyer ON shop_orders(buyer_id, created_at DESC)`,
+		// Shop stock comes from Andrei's inventory (2026-11-26): an inventory item is "sent to
+		// sale" from the app's Inventory page. A console item becomes shop_units rows, an
+		// accessory a shop_extras row; both remember the item, so shipping an order books a
+		// "vanzare" movement on it, and an accessory's available stock is the item's
+		// quantity minus what open orders hold. console_id = which console page it belongs to.
+		// (personal_inventory_* were created in Supabase directly, hence IF EXISTS.)
+		`ALTER TABLE IF EXISTS personal_inventory_items ADD COLUMN IF NOT EXISTS console_id TEXT`,
+		`ALTER TABLE shop_units ADD COLUMN IF NOT EXISTS inventory_item_id UUID`,
+		`ALTER TABLE shop_extras ADD COLUMN IF NOT EXISTS inventory_item_id UUID`,
 
 		// (2026-10-22) Connected consoles — a PS2 running CNote under PSBBN links
 		// itself to an account with a pairing code (routes/devices.js). user_id is

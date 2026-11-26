@@ -146,7 +146,10 @@ router.delete('/cash-flow/:id', async (req, res) => {
 const INV_CATEGORY_MAX = 100;
 const INV_REASONS = new Set(['vanzare', 'achizitie', 'consum', 'corectie', 'initial']);
 const INV_COLS = `id, category, name, model, quantity, unit, condition, location,
-    min_quantity, vault_note, notes, created_at, updated_at`;
+    min_quantity, vault_note, notes, console_id, created_at, updated_at`;
+// console_id (2026-11-26): the console page an item belongs to ("playstation-2"), so it
+// lands on the right page/model when sent to the CNote shop (see POST /inventory/:id/sell).
+const CONSOLE_ID = /^[a-z0-9-]{1,40}$/;
 
 function optText(v, max) {
     if (v === undefined || v === null) return [null, false];
@@ -169,6 +172,7 @@ function toItem(row) {
         min_quantity: row.min_quantity === null ? null : Number(row.min_quantity),
         vault_note: row.vault_note,
         notes: row.notes,
+        console_id: row.console_id || null,
         created_at: row.created_at,
         updated_at: row.updated_at,
     };
@@ -187,6 +191,9 @@ function validateItem(body) {
         if (bad) return [null, key];
         out[key] = val;
     }
+    if (b.console_id === undefined || b.console_id === null || b.console_id === '') out.console_id = null;
+    else if (typeof b.console_id === 'string' && CONSOLE_ID.test(b.console_id)) out.console_id = b.console_id;
+    else return [null, 'console_id'];
     const [unit, badUnit] = optText(b.unit, 30);
     if (badUnit) return [null, 'unit'];
     out.unit = unit || 'buc';
@@ -222,7 +229,8 @@ router.get('/inventory', async (req, res) => {
         const { rows } = await pool.query(
             `SELECT ${INV_COLS} FROM personal_inventory_items ORDER BY category, name`
         );
-        res.json({ success: true, items: rows.map(toItem) });
+        const sale = await onSaleMap();
+        res.json({ success: true, items: rows.map(r => ({ ...toItem(r), on_sale: sale.get(r.id) || null })) });
     } catch (err) {
         console.error('Personal inventory GET error:', err);
         res.status(500).json({ success: false, error: 'Internal error.' });
@@ -242,9 +250,9 @@ router.post('/inventory', async (req, res) => {
         await client.query('BEGIN');
         const { rows } = await client.query(
             `INSERT INTO personal_inventory_items
-                 (category, name, model, quantity, unit, condition, location, min_quantity, vault_note, notes)
-             VALUES ($1, $2, $3, 0, $4, $5, $6, $7, $8, $9) RETURNING id`,
-            [v.category, v.name, v.model, v.unit, v.condition, v.location, v.min_quantity, v.vault_note, v.notes]
+                 (category, name, model, quantity, unit, condition, location, min_quantity, vault_note, notes, console_id)
+             VALUES ($1, $2, $3, 0, $4, $5, $6, $7, $8, $9, $10) RETURNING id`,
+            [v.category, v.name, v.model, v.unit, v.condition, v.location, v.min_quantity, v.vault_note, v.notes, v.console_id]
         );
         if (qty > 0) {
             await client.query(
@@ -275,9 +283,9 @@ router.put('/inventory/:id', async (req, res) => {
         const { rows } = await pool.query(
             `UPDATE personal_inventory_items
              SET category = $1, name = $2, model = $3, unit = $4, condition = $5,
-                 location = $6, min_quantity = $7, vault_note = $8, notes = $9
-             WHERE id = $10 RETURNING ${INV_COLS}`,
-            [v.category, v.name, v.model, v.unit, v.condition, v.location, v.min_quantity, v.vault_note, v.notes, req.params.id]
+                 location = $6, min_quantity = $7, vault_note = $8, notes = $9, console_id = $10
+             WHERE id = $11 RETURNING ${INV_COLS}`,
+            [v.category, v.name, v.model, v.unit, v.condition, v.location, v.min_quantity, v.vault_note, v.notes, v.console_id, req.params.id]
         );
         if (!rows.length) return res.status(404).json({ success: false, error: 'Not found.' });
         res.json({ success: true, item: toItem(rows[0]) });
@@ -291,12 +299,117 @@ router.put('/inventory/:id', async (req, res) => {
 // DELETE /api/personal/inventory/:id — removes the item and its movements
 router.delete('/inventory/:id', async (req, res) => {
     try {
+        // Whatever of it is still waiting in the CNote shop goes too (units in an open order stay).
+        await pool.query("DELETE FROM shop_units WHERE inventory_item_id = $1 AND status = 'available'", [req.params.id]);
+        await pool.query('UPDATE shop_units SET inventory_item_id = NULL WHERE inventory_item_id = $1', [req.params.id]);
+        await pool.query('DELETE FROM shop_extras WHERE inventory_item_id = $1', [req.params.id]);
         const { rowCount } = await pool.query('DELETE FROM personal_inventory_items WHERE id = $1', [req.params.id]);
         if (!rowCount) return res.status(404).json({ success: false, error: 'Not found.' });
         res.json({ success: true });
     } catch (err) {
         if (err.code === '22P02') return res.status(404).json({ success: false, error: 'Not found.' });
         console.error('Personal inventory DELETE error:', err);
+        res.status(500).json({ success: false, error: 'Internal error.' });
+    }
+});
+
+// ── Send to the CNote shop (2026-11-26) ──────────────────
+// An item's place in the shop: { kind, console_id, units: [{id, status, price, model_code}],
+// extra: {id, price, active} } — from shop_units / shop_extras rows carrying its id.
+async function onSaleMap() {
+    const map = new Map();
+    const { rows: units } = await pool.query(
+        `SELECT id, inventory_item_id, console_id, model_code, condition, price, status FROM shop_units
+         WHERE inventory_item_id IS NOT NULL AND status IN ('available', 'reserved') ORDER BY id`);
+    for (const u of units) {
+        const m = map.get(u.inventory_item_id) || { kind: 'unit', console_id: u.console_id, units: [], extra: null };
+        m.units.push({ id: u.id, status: u.status, price: Number(u.price), model_code: u.model_code, condition: u.condition });
+        map.set(u.inventory_item_id, m);
+    }
+    const { rows: extras } = await pool.query(
+        'SELECT id, inventory_item_id, console_id, price, active FROM shop_extras WHERE inventory_item_id IS NOT NULL AND active');
+    for (const e of extras) {
+        map.set(e.inventory_item_id, { kind: 'accessory', console_id: e.console_id, units: [], extra: { id: e.id, price: Number(e.price), active: e.active } });
+    }
+    return map;
+}
+
+// POST /api/personal/inventory/:id/sell — put an item on sale in the CNote shop.
+// Body: console_id, price, kind ('unit' for a console, 'accessory'), and for a unit
+// model_code / condition / notes / qty (how many of the item's pieces; default 1).
+// An accessory is one shop extra whose stock follows the item's quantity; sending it
+// again just updates its price/console.
+router.post('/inventory/:id/sell', async (req, res) => {
+    const b = req.body || {};
+    const consoleId = typeof b.console_id === 'string' && CONSOLE_ID.test(b.console_id) ? b.console_id : null;
+    const price = Number(b.price);
+    const kind = b.kind === 'accessory' ? 'accessory' : 'unit';
+    if (!consoleId) return res.status(400).json({ success: false, error: 'Choose the console page.' });
+    if (!Number.isFinite(price) || price < 0 || price > 1e7) return res.status(400).json({ success: false, error: 'Invalid price.' });
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        const { rows } = await client.query(`SELECT ${INV_COLS} FROM personal_inventory_items WHERE id = $1 FOR UPDATE`, [req.params.id]);
+        const item = rows[0];
+        if (!item) { await client.query('ROLLBACK'); return res.status(404).json({ success: false, error: 'Not found.' }); }
+        await client.query('UPDATE personal_inventory_items SET console_id = $1 WHERE id = $2', [consoleId, item.id]);
+
+        if (kind === 'unit') {
+            const qty = Math.max(1, Math.min(parseInt(b.qty) || 1, 50));
+            const { rows: cnt } = await client.query(
+                "SELECT COUNT(*)::int AS n FROM shop_units WHERE inventory_item_id = $1 AND status IN ('available', 'reserved')", [item.id]);
+            const free = Math.floor(Number(item.quantity)) - cnt[0].n;
+            if (qty > free) {
+                await client.query('ROLLBACK');
+                return res.status(409).json({ success: false, error: `Only ${Math.max(free, 0)} more of this item can go on sale.` });
+            }
+            const text = (v, n, d) => String(v ?? d ?? '').trim().slice(0, n);
+            for (let i = 0; i < qty; i++) {
+                await client.query(
+                    `INSERT INTO shop_units (console_id, model_code, condition, notes, price, inventory_item_id)
+                     VALUES ($1, $2, $3, $4, $5, $6)`,
+                    [consoleId, text(b.model_code, 40, item.model), text(b.condition, 120, item.condition), text(b.notes, 500, ''), price, item.id]);
+            }
+        } else {
+            const name = String(b.name ?? item.name).trim().slice(0, 120) || item.name;
+            const desc = String(b.description ?? '').trim().slice(0, 500);
+            const { rowCount } = await client.query(
+                `UPDATE shop_extras SET console_id = $1, price = $2, name = $3, description = $4, active = TRUE
+                 WHERE inventory_item_id = $5`, [consoleId, price, name, desc, item.id]);
+            if (!rowCount) {
+                await client.query(
+                    `INSERT INTO shop_extras (console_id, kind, name, description, price, stock, inventory_item_id)
+                     VALUES ($1, 'accessory', $2, $3, $4, NULL, $5)`, [consoleId, name, desc, price, item.id]);
+            }
+        }
+        await client.query('COMMIT');
+        const sale = await onSaleMap();
+        const { rows: fresh } = await pool.query(`SELECT ${INV_COLS} FROM personal_inventory_items WHERE id = $1`, [item.id]);
+        res.status(201).json({ success: true, item: { ...toItem(fresh[0]), on_sale: sale.get(item.id) || null } });
+    } catch (err) {
+        await client.query('ROLLBACK').catch(() => {});
+        if (err.code === '22P02') return res.status(404).json({ success: false, error: 'Not found.' });
+        console.error('Personal inventory sell error:', err);
+        res.status(500).json({ success: false, error: 'Internal error.' });
+    } finally {
+        client.release();
+    }
+});
+
+// DELETE /api/personal/inventory/:id/sell — take it off the shop. Pieces already in an
+// open order stay there (cancel the order in the shop to free them).
+router.delete('/inventory/:id/sell', async (req, res) => {
+    try {
+        await pool.query("DELETE FROM shop_units WHERE inventory_item_id = $1 AND status = 'available'", [req.params.id]);
+        // Deactivated, not deleted: an open order holding it still books its sale on shipping.
+        await pool.query('UPDATE shop_extras SET active = FALSE WHERE inventory_item_id = $1', [req.params.id]);
+        const sale = await onSaleMap();
+        const { rows } = await pool.query(`SELECT ${INV_COLS} FROM personal_inventory_items WHERE id = $1`, [req.params.id]);
+        if (!rows.length) return res.status(404).json({ success: false, error: 'Not found.' });
+        res.json({ success: true, item: { ...toItem(rows[0]), on_sale: sale.get(rows[0].id) || null } });
+    } catch (err) {
+        if (err.code === '22P02') return res.status(404).json({ success: false, error: 'Not found.' });
+        console.error('Personal inventory unsell error:', err);
         res.status(500).json({ success: false, error: 'Internal error.' });
     }
 });
