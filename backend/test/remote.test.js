@@ -176,3 +176,37 @@ test('friend sharing rooms: create, join, approve, perms, kick, close', async ()
         assert.equal(r.status, 200);
     });
 });
+
+test('GET /api/remote/friends lists CNote friends and their live sharing rooms', async () => {
+    const baseQuery = fakeTable();
+    mockPool.query = async (sql, params = []) => {
+        if (/FROM friends f/.test(sql)) {
+            return { rows: [{ id: USER.id, username: USER.username, avatar: '' }] };
+        }
+        return baseQuery(sql, params);
+    };
+    remoteRoutes._rooms.clear();
+    await withServer(async (base) => {
+        // Before host shares: friend appears with sharing=false
+        let r = await fetch(`${base}/api/remote/friends`, { headers: authFor(OTHER) });
+        assert.equal(r.status, 200);
+        let list = (await r.json()).friends;
+        assert.equal(list.length, 1);
+        assert.equal(list[0].username, 'andrei');
+        assert.equal(list[0].sharing, false);
+        assert.equal(list[0].code, null);
+
+        // Host opens a room -> friend now sees sharing=true + room code
+        r = await fetch(`${base}/api/remote/rooms`, {
+            method: 'POST', headers: authFor(USER),
+            body: JSON.stringify({ deviceId: 'tablet-0001', deviceName: 'Tab S11', screenW: 2960, screenH: 1848 }),
+        });
+        const room = await r.json();
+
+        r = await fetch(`${base}/api/remote/friends`, { headers: authFor(OTHER) });
+        list = (await r.json()).friends;
+        assert.equal(list[0].sharing, true);
+        assert.equal(list[0].code, room.code);
+        assert.equal(list[0].deviceName, 'Tab S11');
+    });
+});

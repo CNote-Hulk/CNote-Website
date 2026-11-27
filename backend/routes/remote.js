@@ -208,6 +208,46 @@ function guestSummary(g) {
     };
 }
 
+// GET /api/remote/friends — the user's CNote friends + whether each is currently sharing a room.
+router.get('/friends', authRequired, async (req, res) => {
+    pruneRooms();
+    try {
+        const { rows } = await pool.query(
+            `SELECT u.id, u.username, u.avatar
+             FROM friends f
+             JOIN users u ON (
+                (f.user1_id = $1 AND u.id = f.user2_id) OR
+                (f.user2_id = $1 AND u.id = f.user1_id)
+             )
+             ORDER BY u.username ASC`,
+            [req.user.id],
+        );
+        const activeByOwner = new Map();
+        for (const room of rooms.values()) {
+            const prev = activeByOwner.get(room.ownerId);
+            if (!prev || room.lastSeen > prev.lastSeen) activeByOwner.set(room.ownerId, room);
+        }
+        const friends = rows.map((u) => {
+            const r = activeByOwner.get(u.id);
+            return {
+                userId: u.id,
+                username: u.username,
+                avatar: u.avatar || '',
+                sharing: !!r,
+                code: r ? r.code : null,
+                deviceName: r ? r.deviceName : null,
+                screenW: r ? r.screenW : 0,
+                screenH: r ? r.screenH : 0,
+            };
+        });
+        friends.sort((a, b) => (b.sharing ? 1 : 0) - (a.sharing ? 1 : 0) || a.username.localeCompare(b.username));
+        res.json({ success: true, friends });
+    } catch (err) {
+        console.error('GET /remote/friends error:', err.message);
+        res.status(500).json({ success: false, error: 'Could not load friends.' });
+    }
+});
+
 // POST /api/remote/rooms — host opens (or refreshes) a friend-sharing room.
 router.post('/rooms', authRequired, (req, res) => {
     pruneRooms();
