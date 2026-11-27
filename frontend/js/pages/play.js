@@ -75,6 +75,15 @@ function renderSession(res) {
     $('pl-empty').hidden = !!res.total_events;
 
     const b = res.boards;
+    const results = res.events.filter((e) => (e.kind === 'fight' || e.kind === 'race') && e.data && e.data.winner);
+    const names = new Set();
+    for (const e of res.events) { if (e.p1_name) names.add(e.p1_name); if (e.p2_name && !(e.data && e.data.vs_cpu)) names.add(e.p2_name); }
+    const leader = (b.versus[0] || b.races[0] || b.vs_cpu[0]);
+    $('sb-st-matches').textContent = res.total_events;
+    $('sb-st-leader').textContent = leader ? `${leader.name} · ${leader.wins}V` : '—';
+    $('sb-st-arcade').textContent = b.arcade[0] ? (b.arcade[0].cleared ? `${b.arcade[0].name} 🏆` : `${b.arcade[0].name} · ${b.arcade[0].reached}/8`) : '—';
+    $('sb-st-players').textContent = names.size;
+    void results;
     const wl = (r) => `<span class="pl-row__name">${esc(r.name)}</span><span class="pl-row__score">${r.wins}V</span><span class="pl-row__extra">${r.losses}Î</span>`;
     $('pl-board-versus').hidden = !b.versus.length;
     $('pl-versus').innerHTML = rows(b.versus, wl);

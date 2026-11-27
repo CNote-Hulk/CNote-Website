@@ -23,7 +23,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,700&family=DM+Sans:wght@300;400;500;600;700&family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
     <title>Play — Console Notebook</title>
     <link rel="stylesheet" href="../../css/main.css?v=20261126j">
-    <link rel="stylesheet" href="../../css/pages/play.css?v=20261127c">
+    <link rel="stylesheet" href="../../css/pages/play.css?v=20261127-sb2">
 </head>
 <body class="has-mbn">
     <div id="navbar-placeholder"></div>
@@ -50,11 +50,18 @@
                 <button type="button" class="pl-btn pl-btn--danger" id="pl-end">Închide sesiunea</button>
             </div>
 
+            <div class="sb-stats" id="sb-stats">
+                <div class="sb-stat"><span class="sb-stat__v" id="sb-st-matches">0</span><span class="sb-stat__l">meciuri</span></div>
+                <div class="sb-stat"><span class="sb-stat__v" id="sb-st-leader">—</span><span class="sb-stat__l">liderul serii</span></div>
+                <div class="sb-stat"><span class="sb-stat__v" id="sb-st-arcade">—</span><span class="sb-stat__l">cel mai departe în Arcade</span></div>
+                <div class="sb-stat"><span class="sb-stat__v" id="sb-st-players">0</span><span class="sb-stat__l">jucători</span></div>
+            </div>
+
             <div class="sb-grid">
                 <section class="sb-col sb-matches">
                     <h2 class="sb-h">Meciuri</h2>
                     <ol class="sb-list" id="sb-list"></ol>
-                    <p class="sb-empty" id="pl-empty" hidden>Niciun meci încă. Rezultatele apar aici singure.</p>
+                    <p class="sb-empty" id="pl-empty" hidden>INSERT COIN<br><small>Primul meci terminat apare aici.</small></p>
                     <div class="sb-boards">
                         <section id="pl-board-versus" hidden><h3>⚔️ Versus</h3><ol class="pl-rows" id="pl-versus"></ol></section>
                         <section id="pl-board-arcade" hidden><h3>🏆 Arcade</h3><ol class="pl-rows" id="pl-arcade"></ol></section>
@@ -79,7 +86,7 @@
                         </div>
                         <div class="sb-ladder" id="sb-ladder" hidden></div>
                     </div>
-                    <p class="sb-idle" id="sb-idle">Așteptăm următorul meci…</p>
+                    <div class="sb-idle" id="sb-idle"><span class="sb-blink">PRESS START</span><span>Așteptăm următorul meci…</span></div>
                 </section>
             </div>
             <div class="pl-toast" id="pl-toast" hidden></div>
@@ -131,7 +138,7 @@
 
     <script src="../../js/data/consoles-data.js"></script>
     <script type="module" src="../../js/main.js?v=20261126j"></script>
-    <script type="module" src="../../js/pages/play.js?v=20261127b"></script>
+    <script type="module" src="../../js/pages/play.js?v=20261127-sb2"></script>
     <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
     <script src="../../js/fallback/search-profile.js"></script>
     <script src="/js/cookie-consent.js"></script>
