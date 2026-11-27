@@ -146,7 +146,9 @@ router.delete('/cash-flow/:id', async (req, res) => {
 const INV_CATEGORY_MAX = 100;
 const INV_REASONS = new Set(['vanzare', 'achizitie', 'consum', 'corectie', 'initial']);
 const INV_COLS = `id, category, name, model, quantity, unit, condition, location,
-    min_quantity, vault_note, notes, console_id, created_at, updated_at`;
+    min_quantity, vault_note, notes, console_id, storage, created_at, updated_at`;
+// storage (2026-11-27): a console's storage as text ("120 GB", "Fără HDD"), picked in the app
+// from per-console options; it goes into a shop unit's notes when the console is sent to sale.
 // console_id (2026-11-26): the console page an item belongs to ("playstation-2"), so it
 // lands on the right page/model when sent to the CNote shop (see POST /inventory/:id/sell).
 const CONSOLE_ID = /^[a-z0-9-]{1,40}$/;
@@ -179,6 +181,7 @@ function toItem(row) {
         vault_note: row.vault_note,
         notes: row.notes,
         console_id: row.console_id || null,
+        storage: row.storage || null,
         created_at: row.created_at,
         updated_at: row.updated_at,
     };
@@ -202,6 +205,13 @@ function validateItem(body) {
     else if (b.console_id === null || b.console_id === '') out.console_id = null;
     else if (typeof b.console_id === 'string' && CONSOLE_ID.test(b.console_id)) out.console_id = b.console_id;
     else return [null, 'console_id'];
+    // Same rule for storage: an app that does not know the field leaves it as it is.
+    if (b.storage === undefined) out.storage = undefined;
+    else {
+        const [st, badSt] = optText(b.storage, 50);
+        if (badSt) return [null, 'storage'];
+        out.storage = st;
+    }
     const [unit, badUnit] = optText(b.unit, 30);
     if (badUnit) return [null, 'unit'];
     out.unit = unit || 'buc';
@@ -258,9 +268,9 @@ router.post('/inventory', async (req, res) => {
         await client.query('BEGIN');
         const { rows } = await client.query(
             `INSERT INTO personal_inventory_items
-                 (category, name, model, quantity, unit, condition, location, min_quantity, vault_note, notes, console_id)
-             VALUES ($1, $2, $3, 0, $4, $5, $6, $7, $8, $9, $10) RETURNING id`,
-            [v.category, v.name, v.model, v.unit, v.condition, v.location, v.min_quantity, v.vault_note, v.notes, v.console_id ?? null]
+                 (category, name, model, quantity, unit, condition, location, min_quantity, vault_note, notes, console_id, storage)
+             VALUES ($1, $2, $3, 0, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING id`,
+            [v.category, v.name, v.model, v.unit, v.condition, v.location, v.min_quantity, v.vault_note, v.notes, v.console_id ?? null, v.storage ?? null]
         );
         if (qty > 0) {
             await client.query(
@@ -292,9 +302,11 @@ router.put('/inventory/:id', async (req, res) => {
             `UPDATE personal_inventory_items
              SET category = $1, name = $2, model = $3, unit = $4, condition = $5,
                  location = $6, min_quantity = $7, vault_note = $8, notes = $9,
-                 console_id = CASE WHEN $12 THEN console_id ELSE $10 END
+                 console_id = CASE WHEN $12 THEN console_id ELSE $10 END,
+                 storage = CASE WHEN $14 THEN storage ELSE $13 END
              WHERE id = $11 RETURNING ${INV_COLS}`,
-            [v.category, v.name, v.model, v.unit, v.condition, v.location, v.min_quantity, v.vault_note, v.notes, v.console_id ?? null, req.params.id, v.console_id === undefined]
+            [v.category, v.name, v.model, v.unit, v.condition, v.location, v.min_quantity, v.vault_note, v.notes, v.console_id ?? null, req.params.id, v.console_id === undefined,
+             v.storage ?? null, v.storage === undefined]
         );
         if (!rows.length) return res.status(404).json({ success: false, error: 'Not found.' });
         res.json({ success: true, item: toItem(rows[0]) });
@@ -386,7 +398,7 @@ router.post('/inventory/:id/sell', async (req, res) => {
                 await client.query(
                     `INSERT INTO shop_units (console_id, model_code, condition, notes, price, inventory_item_id)
                      VALUES ($1, $2, $3, $4, $5, $6)`,
-                    [consoleId, text(b.model_code, 40, item.model), b.grade, text(b.notes, 500, ''), price, item.id]);
+                    [consoleId, text(b.model_code, 40, item.model), b.grade, text(b.notes, 500, item.storage ? `Stocare: ${item.storage}` : ''), price, item.id]);
             }
         } else {
             const name = String(b.name ?? item.name).trim().slice(0, 120) || item.name;
