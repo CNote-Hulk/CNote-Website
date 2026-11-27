@@ -20,7 +20,7 @@
    Auth:    GET /            my items
             POST /, PUT /:id, DELETE /:id, PUT /order {ids}
             POST /:id/photos {key}, DELETE /photos/:photoId
-   Public:  GET /user/:username   someone's items (for the profile)
+   Public:  GET /user/:username, GET /of/:userId   someone's items (profile, My Space)
    ───────────────────────────────────────── */
 const express = require('express');
 const pool = require('../db');
@@ -342,6 +342,18 @@ router.delete('/photos/:photoId', authRequired, async (req, res) => {
 });
 
 // ── Public ───────────────────────────────────────────────
+// By id, for My Space (which knows the viewed user's id, not the name).
+router.get('/of/:userId', async (req, res) => {
+    const userId = parseInt(req.params.userId, 10);
+    if (!Number.isInteger(userId)) return res.status(400).json({ success: false, error: 'Invalid id.' });
+    try {
+        res.json({ success: true, items: await itemsOf(userId) });
+    } catch (err) {
+        console.error('Collection by id GET error:', err);
+        res.status(500).json({ success: false, error: 'Internal error.' });
+    }
+});
+
 router.get('/user/:username', async (req, res) => {
     try {
         const { rows: u } = await pool.query('SELECT id FROM users WHERE LOWER(username) = LOWER($1)', [String(req.params.username || '')]);
