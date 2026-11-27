@@ -1,5 +1,5 @@
 {
-  "_comment": "Official controllers per console page id (2026-11-27). code = model number printed on the controller (empty when the hardware carries none worth searching for). Sources: Sony/Nintendo/Microsoft support pages, Sega Retro, iFixit. The app bundles a copy as assets/controller-models.json - keep the two equal.",
+  "_comment": "Official controllers per console page id (2026-11-27). code = model number printed on the controller (empty when the hardware carries none worth searching for). Sources: Sony/Nintendo/Microsoft support pages, Sega Retro, iFixit. DualShock 2 series = the letter moulded on the rear label (manufacturer, not region): A = Alps (4 board versions), H (Hal or Hosiden - sources disagree, 2 versions), M = Mitsumi (rarest); playstationjoysticks.blogspot.com via Scribd, shmups.system11.org. The app bundles a copy as assets/controller-models.json - keep the two equal.",
   "controllers": {
     "atari-2600": [
       { "name": "Atari CX40 Joystick", "code": "CX40" },
@@ -78,6 +78,9 @@
     ],
     "playstation-2": [
       { "name": "DualShock 2", "code": "SCPH-10010" },
+      { "name": "DualShock 2, seria A (Alps)", "code": "SCPH-10010 A" },
+      { "name": "DualShock 2, seria H", "code": "SCPH-10010 H" },
+      { "name": "DualShock 2, seria M (Mitsumi)", "code": "SCPH-10010 M" },
       { "name": "PS2 Memory Card (8 MB)", "code": "SCPH-10020" },
       { "name": "PS2 Multitap", "code": "SCPH-10090" },
       { "name": "PS2 DVD Remote Control", "code": "SCPH-10150" }
