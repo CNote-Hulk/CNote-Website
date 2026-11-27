@@ -776,6 +776,17 @@ async function initializeSchema() {
 		)`,
 		`CREATE INDEX IF NOT EXISTS idx_user_collection_items_user ON user_collection_items(user_id)`,
 		`ALTER TABLE user_collection_items ENABLE ROW LEVEL SECURITY`,
+		`ALTER TABLE user_collection_items ADD COLUMN IF NOT EXISTS attached_to INTEGER REFERENCES user_collection_items(id) ON DELETE SET NULL`,
+		// (2026-11-27) Photos of a collection row (routes/collection.js); files in R2 under my-space/photo/.
+		`CREATE TABLE IF NOT EXISTS user_collection_photos (
+			id         SERIAL PRIMARY KEY,
+			item_id    INTEGER NOT NULL REFERENCES user_collection_items(id) ON DELETE CASCADE,
+			user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+			image_key  TEXT NOT NULL,
+			created_at TIMESTAMP DEFAULT NOW()
+		)`,
+		`CREATE INDEX IF NOT EXISTS idx_user_collection_photos_user ON user_collection_photos(user_id)`,
+		`ALTER TABLE user_collection_photos ENABLE ROW LEVEL SECURITY`,
 		`ALTER TABLE shop_units ADD COLUMN IF NOT EXISTS inventory_item_id UUID`,
 		`ALTER TABLE shop_extras ADD COLUMN IF NOT EXISTS inventory_item_id UUID`,
 		// Which hardware line of a console a user owns (2026-11-26): PS2 vs PS2 Slim, PS4 Pro...

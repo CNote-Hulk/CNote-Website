@@ -13,8 +13,13 @@
    from the collection's console rows. My Space's "I own it" toggle and the old
    PUT /api/owned-consoles go through addConsole()/removeConsole() here.
 
+   Photos (2026-11-27): up to MAX_PHOTOS per row in user_collection_photos; the bytes go
+   to R2 first (POST /api/uploads/presign, kind "myspace" - the same key prefix as My
+   Space), then POST /:id/photos {key} records it. Every item carries photos [{id, url}].
+
    Auth:    GET /            my items
             POST /, PUT /:id, DELETE /:id, PUT /order {ids}
+            POST /:id/photos {key}, DELETE /photos/:photoId
    Public:  GET /user/:username   someone's items (for the profile)
    ───────────────────────────────────────── */
 const express = require('express');
@@ -22,16 +27,20 @@ const pool = require('../db');
 const { authRequired } = require('../middleware/auth');
 const { awardXP } = require('../utils/gamification');
 const { baseVariant, parseVariant, variantLabel } = require('../utils/consoleVariants');
+const { publicUrlForKey, deleteAttachment } = require('../utils/objectStorage');
 
 const router = express.Router();
 
 // Shown in this order on the profile and in the app.
 const CATEGORIES = ['consola', 'controller', 'card_memorie', 'accesoriu', 'joc', 'altele'];
 const CONSOLE_ID = /^[a-z0-9-]{1,40}$/;
-const COLS = `id, category, console_id, variant, model, name, quantity, storage, edition, color, notes, position, created_at, updated_at`;
+const MAX_PHOTOS = 6;
+// attached_to (2026-11-27): a controller / memory card / accessory packed with one of the
+// user's console rows (the "bundle" the My Space notebook shows). NULL = loose.
+const COLS = `id, category, console_id, variant, model, name, quantity, storage, edition, color, notes, attached_to, position, created_at, updated_at`;
 const ORDER = `array_position(ARRAY['${CATEGORIES.join("','")}']::text[], category), position NULLS LAST, id`;
 
-function toItem(r) {
+function toItem(r, photos = []) {
     return {
         id: r.id,
         category: r.category,
@@ -44,8 +53,23 @@ function toItem(r) {
         edition: r.edition || null,
         color: r.color || null,
         notes: r.notes || null,
+        attached_to: r.attached_to || null,
         position: r.position,
+        photos,
     };
+}
+
+/** Items of one user with their photos, in display order. */
+async function itemsOf(userId) {
+    const { rows } = await pool.query(`SELECT ${COLS} FROM user_collection_items WHERE user_id = $1 ORDER BY ${ORDER}`, [userId]);
+    const { rows: ph } = await pool.query(
+        'SELECT id, item_id, image_key FROM user_collection_photos WHERE user_id = $1 ORDER BY id', [userId]);
+    const by = new Map();
+    for (const p of ph) {
+        if (!by.has(p.item_id)) by.set(p.item_id, []);
+        by.get(p.item_id).push({ id: p.id, url: publicUrlForKey(p.image_key) });
+    }
+    return rows.map(r => toItem(r, by.get(r.id) || []));
 }
 
 /** Returns [values, errorField]. */
@@ -76,7 +100,23 @@ function validate(b = {}) {
     const q = b.quantity === undefined ? 1 : Number(b.quantity);
     if (!Number.isInteger(q) || q < 1 || q > 999) return [null, 'quantity'];
     out.quantity = q;
+    if (b.attached_to === undefined || b.attached_to === null || b.attached_to === '') out.attached_to = null;
+    else if (out.category === 'consola') return [null, 'attached_to'];
+    else {
+        const a = Number(b.attached_to);
+        if (!Number.isInteger(a) || a < 1) return [null, 'attached_to'];
+        out.attached_to = a;
+    }
     return [out, null];
+}
+
+/** attached_to must be one of the same user's console rows (checked on every write). */
+async function attachOk(userId, attachedTo, selfId = null) {
+    if (attachedTo === null) return true;
+    if (selfId !== null && attachedTo === selfId) return false;
+    const { rows } = await pool.query(
+        "SELECT 1 FROM user_collection_items WHERE id = $1 AND user_id = $2 AND category = 'consola'", [attachedTo, userId]);
+    return rows.length > 0;
 }
 
 /** Console name for an item created without one (My Space toggle, old clients). */
@@ -172,8 +212,7 @@ async function removeConsole(userId, consoleId) {
 // ── Mine ─────────────────────────────────────────────────
 router.get('/', authRequired, async (req, res) => {
     try {
-        const { rows } = await pool.query(`SELECT ${COLS} FROM user_collection_items WHERE user_id = $1 ORDER BY ${ORDER}`, [req.user.id]);
-        res.json({ success: true, items: rows.map(toItem) });
+        res.json({ success: true, items: await itemsOf(req.user.id) });
     } catch (err) {
         console.error('Collection GET error:', err);
         res.status(500).json({ success: false, error: 'Internal error.' });
@@ -186,13 +225,14 @@ router.post('/', authRequired, async (req, res) => {
     try {
         const { rows: cnt } = await pool.query('SELECT COUNT(*)::int AS n FROM user_collection_items WHERE user_id = $1', [req.user.id]);
         if (cnt[0].n >= 500) return res.status(400).json({ success: false, error: 'Collection limit reached (500).' });
+        if (!await attachOk(req.user.id, v.attached_to)) return res.status(400).json({ success: false, error: 'Invalid attached_to.' });
         const { rows } = await pool.query(
             `INSERT INTO user_collection_items
-                 (user_id, category, console_id, variant, model, name, quantity, storage, edition, color, notes, position)
-             VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,
+                 (user_id, category, console_id, variant, model, name, quantity, storage, edition, color, notes, attached_to, position)
+             VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,
                      (SELECT COALESCE(MAX(position) + 1, 0) FROM user_collection_items WHERE user_id = $1))
              RETURNING ${COLS}`,
-            [req.user.id, v.category, v.console_id, v.variant, v.model, v.name, v.quantity, v.storage, v.edition, v.color, v.notes]);
+            [req.user.id, v.category, v.console_id, v.variant, v.model, v.name, v.quantity, v.storage, v.edition, v.color, v.notes, v.attached_to]);
         await syncOwned(req.user.id, req.app.get('io'));
         res.status(201).json({ success: true, item: toItem(rows[0]) });
     } catch (err) {
@@ -224,12 +264,17 @@ router.put('/:id', authRequired, async (req, res) => {
     if (!Number.isInteger(id)) return res.status(400).json({ success: false, error: 'Invalid id.' });
     if (bad) return res.status(400).json({ success: false, error: `Invalid ${bad}.` });
     try {
+        if (!await attachOk(req.user.id, v.attached_to, id)) return res.status(400).json({ success: false, error: 'Invalid attached_to.' });
         const { rows } = await pool.query(
             `UPDATE user_collection_items
                 SET category = $3, console_id = $4, variant = $5, model = $6, name = $7, quantity = $8,
-                    storage = $9, edition = $10, color = $11, notes = $12, updated_at = NOW()
+                    storage = $9, edition = $10, color = $11, notes = $12, attached_to = $13, updated_at = NOW()
               WHERE id = $1 AND user_id = $2 RETURNING ${COLS}`,
-            [id, req.user.id, v.category, v.console_id, v.variant, v.model, v.name, v.quantity, v.storage, v.edition, v.color, v.notes]);
+            [id, req.user.id, v.category, v.console_id, v.variant, v.model, v.name, v.quantity, v.storage, v.edition, v.color, v.notes, v.attached_to]);
+        // A row that stopped being a console lets go of what was packed with it.
+        if (rows.length && v.category !== 'consola') {
+            await pool.query('UPDATE user_collection_items SET attached_to = NULL WHERE attached_to = $1 AND user_id = $2', [id, req.user.id]);
+        }
         if (!rows.length) return res.status(404).json({ success: false, error: 'Not found.' });
         await syncOwned(req.user.id, req.app.get('io'));
         res.json({ success: true, item: toItem(rows[0]) });
@@ -243,12 +288,55 @@ router.delete('/:id', authRequired, async (req, res) => {
     const id = parseInt(req.params.id, 10);
     if (!Number.isInteger(id)) return res.status(400).json({ success: false, error: 'Invalid id.' });
     try {
+        const { rows: ph } = await pool.query(
+            'SELECT image_key FROM user_collection_photos WHERE item_id = $1 AND user_id = $2', [id, req.user.id]);
         const { rowCount } = await pool.query('DELETE FROM user_collection_items WHERE id = $1 AND user_id = $2', [id, req.user.id]);
         if (!rowCount) return res.status(404).json({ success: false, error: 'Not found.' });
+        // The photo rows went with the item (ON DELETE CASCADE); the files go too.
+        for (const p of ph) deleteAttachment(p.image_key).catch(() => {});
         await syncOwned(req.user.id, req.app.get('io'));
         res.json({ success: true });
     } catch (err) {
         console.error('Collection DELETE error:', err);
+        res.status(500).json({ success: false, error: 'Internal error.' });
+    }
+});
+
+// ── Photos ───────────────────────────────────────────────
+router.post('/:id/photos', authRequired, async (req, res) => {
+    const id = parseInt(req.params.id, 10);
+    const key = String(req.body.key || '').trim();
+    if (!Number.isInteger(id)) return res.status(400).json({ success: false, error: 'Invalid id.' });
+    // Only a key this user was just given by the presign flow (kind "myspace").
+    if (!key.startsWith(`my-space/photo/${req.user.id}/`) || key.length > 300) {
+        return res.status(400).json({ success: false, error: 'Invalid photo.' });
+    }
+    try {
+        const { rows: it } = await pool.query('SELECT id FROM user_collection_items WHERE id = $1 AND user_id = $2', [id, req.user.id]);
+        if (!it.length) return res.status(404).json({ success: false, error: 'Not found.' });
+        const { rows: cnt } = await pool.query('SELECT COUNT(*)::int AS n FROM user_collection_photos WHERE item_id = $1', [id]);
+        if (cnt[0].n >= MAX_PHOTOS) return res.status(400).json({ success: false, error: `At most ${MAX_PHOTOS} photos per item.` });
+        const { rows } = await pool.query(
+            'INSERT INTO user_collection_photos (item_id, user_id, image_key) VALUES ($1, $2, $3) RETURNING id, image_key',
+            [id, req.user.id, key]);
+        res.status(201).json({ success: true, photo: { id: rows[0].id, url: publicUrlForKey(rows[0].image_key) } });
+    } catch (err) {
+        console.error('Collection photo POST error:', err);
+        res.status(500).json({ success: false, error: 'Internal error.' });
+    }
+});
+
+router.delete('/photos/:photoId', authRequired, async (req, res) => {
+    const id = parseInt(req.params.photoId, 10);
+    if (!Number.isInteger(id)) return res.status(400).json({ success: false, error: 'Invalid id.' });
+    try {
+        const { rows } = await pool.query(
+            'DELETE FROM user_collection_photos WHERE id = $1 AND user_id = $2 RETURNING image_key', [id, req.user.id]);
+        if (!rows.length) return res.status(404).json({ success: false, error: 'Not found.' });
+        deleteAttachment(rows[0].image_key).catch(() => {});
+        res.json({ success: true });
+    } catch (err) {
+        console.error('Collection photo DELETE error:', err);
         res.status(500).json({ success: false, error: 'Internal error.' });
     }
 });
@@ -258,8 +346,7 @@ router.get('/user/:username', async (req, res) => {
     try {
         const { rows: u } = await pool.query('SELECT id FROM users WHERE LOWER(username) = LOWER($1)', [String(req.params.username || '')]);
         if (!u.length) return res.status(404).json({ success: false, error: 'User not found.' });
-        const { rows } = await pool.query(`SELECT ${COLS} FROM user_collection_items WHERE user_id = $1 ORDER BY ${ORDER}`, [u[0].id]);
-        res.json({ success: true, items: rows.map(toItem) });
+        res.json({ success: true, items: await itemsOf(u[0].id) });
     } catch (err) {
         console.error('Collection public GET error:', err);
         res.status(500).json({ success: false, error: 'Internal error.' });
