@@ -124,7 +124,9 @@ router.get('/google', (req, res, next) => {
         } catch { /* invalid token, proceed as login */ }
     }
 
-    const state = req.query.platform === 'android' ? 'platform=android' : '';
+    const platform = req.query.platform === 'android-remote' ? 'android-remote'
+        : (req.query.platform === 'android' ? 'android' : '');
+    const state = platform ? `platform=${platform}` : '';
 
     passport.authenticate('google', {
         scope: ['profile', 'email'],
@@ -215,13 +217,16 @@ router.get('/google/callback',
             // Also now uses isActivelyBanned() (an expired temp ban isn't actively banned) and
             // builds the same detailed "why + until" message routes/auth.js's own /login gives,
             // instead of a bare error code.
+            const mobileScheme = req.query.state && req.query.state.includes('platform=android-remote')
+                ? 'cnote-remote'
+                : (req.query.state && req.query.state.includes('platform=android') ? 'cnote' : null);
+
             if (isActivelyBanned(user)) {
                 const reasonSuffix = user.banned_reason ? ` Reason: ${user.banned_reason}` : '';
                 const untilSuffix = user.banned_until ? ` Until: ${new Date(user.banned_until).toISOString()}` : '';
                 const banMessage = `Your account has been suspended.${reasonSuffix}${untilSuffix}`;
-                const isMobileBan = req.query.state && req.query.state.includes('platform=android');
-                if (isMobileBan) {
-                    return res.redirect(`cnote://auth/callback?error=account_banned&message=${encodeURIComponent(banMessage)}`);
+                if (mobileScheme) {
+                    return res.redirect(`${mobileScheme}://auth/callback?error=account_banned&message=${encodeURIComponent(banMessage)}`);
                 }
                 return res.redirect(`/html/pages/login.html?error=account_banned&message=${encodeURIComponent(banMessage)}`);
             }
@@ -239,10 +244,9 @@ router.get('/google/callback',
                 { expiresIn: '7d' }
             );
 
-            const isMobile = req.query.state && req.query.state.includes('platform=android');
-            if (isMobile) {
+            if (mobileScheme) {
                 // Redirect to Android deep link with JWT token
-                return res.redirect(`cnote://auth/callback?token=${jwtToken}`);
+                return res.redirect(`${mobileScheme}://auth/callback?token=${jwtToken}`);
             }
 
             // Redirect with tokens encoded as base64 JSON in the URL hash
