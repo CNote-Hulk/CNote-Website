@@ -124,3 +124,32 @@ test('live: now state is cleaned, frames must be JPEG', async () => {
         assert.equal(ok.status, 200);
     });
 });
+
+test('community: live lists only sessions with something happening, hall groups by game', async () => {
+    const recent = new Date().toISOString();
+    const old = new Date(Date.now() - 3 * 3600 * 1000).toISOString();
+    mockPool.query = async (sql) => {
+        if (/FROM play_sessions s JOIN users u/.test(sql) && /ended_at IS NULL AND s.created_at/.test(sql)) {
+            return { rows: [
+                { id: 1, user_id: 50, slug: 'aaaa1', title: 'MK', username: 'andrei', last_event: recent, events: 3, game_serial: 'SLUS21543', p1_name: 'A', p2_name: 'B' },
+                { id: 2, user_id: 51, slug: 'bbbb2', title: 'Old', username: 'x', last_event: old, events: 1, game_serial: '' },
+            ] };
+        }
+        if (/FROM play_events e\s+WHERE e.game <> ''/.test(sql)) {
+            return { rows: [
+                { game: 'MK', serial: 'SLUS21543', kind: 'fight', p1_name: 'A', p2_name: 'B', data: { winner: 1 } },
+                { game: 'MK', serial: 'SLUS21543', kind: 'arcade_run', p1_name: 'A', p2_name: '', data: { player: 1, reached: 6 } },
+                { game: 'NFS', serial: 'SLES52725', kind: 'race', p1_name: 'A', p2_name: 'B', data: { winner: 2 } },
+            ] };
+        }
+        return { rows: [] };
+    };
+    await withServer(async (base) => {
+        const live = await (await fetch(`${base}/api/play/live`)).json();
+        assert.deepEqual(live.sessions.map((s) => s.slug), ['aaaa1']);
+        const hall = await (await fetch(`${base}/api/play/hall`)).json();
+        assert.deepEqual(hall.games.map((g) => g.game), ['MK', 'NFS']);
+        assert.equal(hall.games[0].arcade[0].reached, 6);
+        assert.equal(hall.games[1].races[0].name, 'B');
+    });
+});

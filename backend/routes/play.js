@@ -32,6 +32,9 @@
      PUT    /api/play/device/icon/:serial (device) image/png body, ?frames=N
      GET    /api/play/s/:slug/frame       (public) the latest picture of that session's game
    socket.io: 'live:watch' slug joins 'live:<slug>' → 'live:now', 'live:frame'.
+   Community → Retro Gaming (2026-11-27):
+     GET    /api/play/live                (public) open sessions with something happening now
+     GET    /api/play/hall                (public) Hall of Fame per game, from every session
      GET    /api/play/join?m=&k=          (public, with a key) which side, game, names
      POST   /api/play/join                (public, with a key) { m, k, name }
    socket.io: 'duel:watch' {m, k} joins the match room; the room gets 'duel:live',
@@ -129,6 +132,7 @@ function publicSession(row) {
         title: row.title,
         p1_name: row.p1_name,
         p2_name: row.p2_name,
+        game_serial: row.game_serial || '',
         created_at: row.created_at,
         ended_at: row.ended_at,
         open: !row.ended_at,
@@ -679,6 +683,70 @@ function nowFor(userId) {
     const n = liveNow.get(userId);
     return n && Date.now() - n.at < 30000 ? n.state : null;
 }
+
+/* ── community: live now, hall of fame ──── */
+
+router.get('/live', async (req, res) => {
+    try {
+        const { rows } = await pool.query(
+            `SELECT s.id, s.user_id, s.slug, s.title, s.p1_name, s.p2_name, s.game_serial, s.created_at, u.username, u.avatar,
+                    (SELECT MAX(e.occurred_at) FROM play_events e WHERE e.session_id = s.id) AS last_event,
+                    (SELECT COUNT(*)::int FROM play_events e WHERE e.session_id = s.id) AS events
+               FROM play_sessions s JOIN users u ON u.id = s.user_id
+              WHERE s.ended_at IS NULL AND s.created_at > NOW() - INTERVAL '2 days'
+              ORDER BY s.created_at DESC LIMIT 60`
+        );
+        const now = Date.now();
+        const live = rows.map((r) => ({ r, n: nowFor(r.user_id) }))
+            // Playing right now, or a result in the last 30 minutes.
+            .filter(({ r, n }) => n || (r.last_event && now - new Date(r.last_event).getTime() < 30 * 60 * 1000))
+            .map(({ r, n }) => ({
+                slug: r.slug, title: r.title, host: r.username, avatar: r.avatar || '',
+                p1_name: r.p1_name, p2_name: r.p2_name, serial: (n && n.serial) || r.game_serial,
+                events: r.events, playing: !!n, presence: n ? n.presence || '' : '', fight: n ? n.fight || null : null,
+            }));
+        return res.json({ success: true, sessions: live });
+    } catch (err) {
+        console.error('[play] live:', err.message);
+        return res.status(503).json({ success: false, error: 'Database unavailable' });
+    }
+});
+
+let hallCache = { at: 0, data: null };
+router.get('/hall', async (req, res) => {
+    try {
+        if (!hallCache.data || Date.now() - hallCache.at > 60000) {
+            const { rows } = await pool.query(
+                `SELECT e.game, e.serial, e.kind, e.p1_name, e.p2_name, e.data, e.occurred_at
+                   FROM play_events e
+                  WHERE e.game <> '' AND e.occurred_at > NOW() - INTERVAL '365 days'
+                  ORDER BY e.occurred_at LIMIT 20000`
+            );
+            const byGame = new Map();
+            for (const e of rows) {
+                if (!byGame.has(e.game)) byGame.set(e.game, { game: e.game, serials: new Map(), events: [] });
+                const g = byGame.get(e.game);
+                g.events.push(e);
+                if (e.serial) g.serials.set(e.serial, (g.serials.get(e.serial) || 0) + 1);
+            }
+            const games = [...byGame.values()].map((g) => {
+                const b = buildBoards(g.events);
+                const top = (list) => list.slice(0, 5);
+                return {
+                    game: g.game,
+                    serial: [...g.serials.entries()].sort((a, c) => c[1] - a[1])[0]?.[0] || '',
+                    matches: g.events.length,
+                    arcade: top(b.arcade), versus: top(b.versus), races: top(b.races), vs_cpu: top(b.vs_cpu),
+                };
+            }).sort((a, c) => c.matches - a.matches);
+            hallCache = { at: Date.now(), data: games };
+        }
+        return res.json({ success: true, games: hallCache.data });
+    } catch (err) {
+        console.error('[play] hall:', err.message);
+        return res.status(503).json({ success: false, error: 'Database unavailable' });
+    }
+});
 
 router._test = { buildBoards, cleanData, sideOf, cleanNow };
 router.attachSockets = attachSockets;

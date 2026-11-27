@@ -9,6 +9,7 @@ import { API_BASE_URL } from '../config.js';
 import { confirmModal } from '../utils/confirm-modal.js';
 import { shareOrCopy } from '../utils/share.js';
 import { NO_IMAGE_PLACEHOLDER } from '../utils/no-image-placeholder.js';
+import { renderRetro } from '../modules/retro-hub.js?v=20261127';
 
 /** Shorthand for I18nModule.t() */
 const t = (key) => I18nModule.t(key);
@@ -700,6 +701,10 @@ function navigate(view, con, cat) {
             showView('photos');
             renderPhotos();
             loadPhotos();
+            break;
+        case 'retro':
+            showView('retro');
+            renderRetro(cat);
             break;
     }
 }
@@ -4032,7 +4037,7 @@ function handleHashNavigation() {
         const con  = parts[1] || null;
         const cat  = parts[2] || '';
 
-        const validViews = ['forum', 'marketplace', 'repair', 'repair-requests', 'repair-admin', 'dm', 'photos'];
+        const validViews = ['forum', 'marketplace', 'repair', 'repair-requests', 'repair-admin', 'dm', 'photos', 'retro'];
         if (validViews.includes(view)) {
             // Mark the active sidebar item
             sidebar?.querySelectorAll('.hub-sidebar__item').forEach(item => {

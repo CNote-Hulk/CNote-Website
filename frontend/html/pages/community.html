@@ -26,6 +26,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../../css/main.css?v=20261126j">
+    <link rel="stylesheet" href="../../css/pages/retro-hub.css?v=20261127">
     <link rel="stylesheet" href="../../css/components/report-modal.css">
 </head>
 <body class="community-navbar-page has-mbn">
@@ -58,6 +59,15 @@
                     <button class="hub-sidebar__item" data-view="dm"><span data-i18n="community_chat_unified">💬 Chat</span> <span class="hub-badge hub-badge--count" id="dm-unread-badge" hidden>0</span></button>
                     <button class="hub-sidebar__item" data-view="forum" data-console="general" data-i18n="community_forum_general">🌐 Forum General</button>
                     <button class="hub-sidebar__item" data-view="photos" data-i18n="community_photos_tab">📸 Community Photos</button>
+                </div>
+
+                <!-- Retro Gaming (2026-11-27): game nights from ArmSX2's CNote Live — js/modules/retro-hub.js.
+                     No chat here: that is the Discord server. -->
+                <div class="hub-sidebar__section">
+                    <div class="hub-sidebar__heading">🕹️ Retro Gaming</div>
+                    <button class="hub-sidebar__item" data-view="retro" data-category="live">🔴 Live acum</button>
+                    <button class="hub-sidebar__item" data-view="retro" data-category="hall">🏆 Hall of Fame</button>
+                    <button class="hub-sidebar__item" data-view="retro" data-category="mine">📅 Sesiunile mele</button>
                 </div>
 
                 <div class="hub-sidebar__section">
@@ -173,6 +183,7 @@
                 </div>
 
                 <div class="hub-view" id="view-photos"></div>
+                <div class="hub-view" id="view-retro"></div>
             </main>
         </div>
     </div>
