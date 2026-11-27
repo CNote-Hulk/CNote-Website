@@ -9,7 +9,7 @@ import { API_BASE_URL } from '../config.js';
 import { confirmModal } from '../utils/confirm-modal.js';
 import { shareOrCopy } from '../utils/share.js';
 import { NO_IMAGE_PLACEHOLDER } from '../utils/no-image-placeholder.js';
-import { renderRetro } from '../modules/retro-hub.js?v=20261127';
+import { renderRetro } from '../modules/retro-hub.js?v=20261127b';
 
 /** Shorthand for I18nModule.t() */
 const t = (key) => I18nModule.t(key);

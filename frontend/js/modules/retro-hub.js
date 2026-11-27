@@ -24,7 +24,7 @@ const play = (slug) => `play.html?s=${encodeURIComponent(slug)}`;
 
 /** The game's own save icon (rendered by the emulator from the game's files), first frame. */
 function icon(serial) {
-    if (!serial) return '<span class="rh-icon rh-icon--none"></span>';
+    if (!serial) return '<span class="rh-icon rh-icon--none">🎮</span>';
     return `<span class="rh-icon" data-serial="${esc(serial)}"></span>`;
 }
 
@@ -39,6 +39,7 @@ async function fillIcons(root) {
             el.style.backgroundSize = `${frames * 100}% 100%`;
         } catch {
             el.classList.add('rh-icon--none');
+            el.textContent = '🎮';
         }
     }
 }
@@ -78,12 +79,12 @@ async function renderHall(root) {
     const games = (res && res.games) || [];
     root.querySelector('.rh-body').innerHTML = games.length ? games.map((g) => `
         <section class="rh-game">
-            <header>${icon(g.serial)}<span><span class="rh-card__title">${esc(g.game)}</span><span class="rh-card__meta">${g.matches} rezultate</span></span></header>
+            <header class="rh-game__head">${icon(g.serial)}<span><span class="rh-card__title">${esc(g.game)}</span><span class="rh-card__meta">${g.matches} rezultate</span></span></header>
             <div class="rh-boards">
                 ${board('🏆 Arcade', g.arcade, (r) => (r.cleared ? 'terminat' : `lupta ${r.reached}/8`) + (r.char ? ` · ${esc(r.char)}` : ''))}
                 ${board('⚔️ Versus', g.versus, (r) => `${r.wins}V ${r.losses}Î`)}
-                ${board('🏁 Curse', g.races, (r) => `${r.wins}V ${r.losses}Î`)}
-                ${board('🤖 Contra CPU', g.vs_cpu, (r) => `${r.wins}V ${r.losses}Î`)}
+                ${board('🎮 Curse', g.races, (r) => `${r.wins}V ${r.losses}Î`)}
+                ${board('🕹️ Contra CPU', g.vs_cpu, (r) => `${r.wins}V ${r.losses}Î`)}
             </div>
         </section>`).join('') : '<p class="rh-empty">Hall of Fame se umple după primele meciuri.</p>';
     fillIcons(root);
@@ -105,7 +106,7 @@ async function renderMine(root) {
     fillIcons(root);
 }
 
-const TITLES = { live: '🔴 Live acum', hall: '🏆 Hall of Fame', mine: '📅 Sesiunile mele' };
+const TITLES = { live: '📡 Live acum', hall: '🏆 Hall of Fame', mine: '📅 Sesiunile mele' };
 
 /** Called by community.js's navigate('retro', null, category). */
 export function renderRetro(category) {

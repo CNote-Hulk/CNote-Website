@@ -717,8 +717,8 @@ router.get('/hall', async (req, res) => {
     try {
         if (!hallCache.data || Date.now() - hallCache.at > 60000) {
             const { rows } = await pool.query(
-                `SELECT e.game, e.serial, e.kind, e.p1_name, e.p2_name, e.data, e.occurred_at
-                   FROM play_events e
+                `SELECT e.game, COALESCE(NULLIF(e.serial, ''), s.game_serial, '') AS serial, e.kind, e.p1_name, e.p2_name, e.data, e.occurred_at
+                   FROM play_events e LEFT JOIN play_sessions s ON s.id = e.session_id
                   WHERE e.game <> '' AND e.occurred_at > NOW() - INTERVAL '365 days'
                   ORDER BY e.occurred_at LIMIT 20000`
             );
