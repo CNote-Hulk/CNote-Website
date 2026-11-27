@@ -119,6 +119,7 @@ router.post('/devices', authRequired, async (req, res) => {
 
 // GET /api/remote/devices — the account's devices, most recently seen first.
 router.get('/devices', authRequired, async (req, res) => {
+    pruneRooms();
     try {
         const { rows } = await pool.query(
             `SELECT device_id, name, platform, hosting, host_key, host_key_id, lan_ip, tailscale_ip,
@@ -126,13 +127,27 @@ router.get('/devices', authRequired, async (req, res) => {
              FROM remote_devices WHERE user_id = $1 ORDER BY last_seen_at DESC`,
             [req.user.id],
         );
+        const roomByDevice = new Map();
+        for (const room of rooms.values()) {
+            if (room.ownerId === req.user.id) {
+                const prev = roomByDevice.get(room.deviceId);
+                if (!prev || room.lastSeen > prev.lastSeen) roomByDevice.set(room.deviceId, room);
+            }
+        }
         res.json({
             success: true,
-            devices: rows.map((r) => ({
-                deviceId: r.device_id, name: r.name, platform: r.platform, hosting: r.hosting,
-                hostKey: r.host_key, hostKeyId: r.host_key_id, lanIp: r.lan_ip, tailscaleIp: r.tailscale_ip,
-                screenW: r.screen_w, screenH: r.screen_h, lastSeenAt: r.last_seen_at,
-            })),
+            devices: rows.map((r) => {
+                const rm = roomByDevice.get(r.device_id);
+                return {
+                    deviceId: r.device_id, name: r.name, platform: r.platform, hosting: r.hosting,
+                    hostKey: r.host_key, hostKeyId: r.host_key_id, lanIp: r.lan_ip, tailscaleIp: r.tailscale_ip,
+                    screenW: r.screen_w, screenH: r.screen_h, lastSeenAt: r.last_seen_at,
+                    roomCode: rm ? rm.code : null,
+                    relayToken: rm ? rm.relayToken : null,
+                    publicIp: rm ? rm.publicIp : null,
+                    publicPort: rm ? rm.publicPort : 0,
+                };
+            }),
         });
     } catch (err) {
         console.error('GET /remote/devices error:', err.message);
@@ -187,6 +202,8 @@ function pruneRooms() {
 function closeRoomSockets(room) {
     try { room.hostWs?.destroy(); } catch {}
     room.hostWs = null;
+    try { room.ownerWs?.destroy(); } catch {}
+    room.ownerWs = null;
     for (const g of room.guests.values()) {
         try { g.ws?.destroy(); } catch {}
         g.ws = null;
@@ -224,6 +241,7 @@ router.get('/friends', authRequired, async (req, res) => {
         );
         const activeByOwner = new Map();
         for (const room of rooms.values()) {
+            if (!room.forFriends) continue;
             const prev = activeByOwner.get(room.ownerId);
             if (!prev || room.lastSeen > prev.lastSeen) activeByOwner.set(room.ownerId, room);
         }
@@ -256,6 +274,8 @@ router.post('/rooms', authRequired, (req, res) => {
     if (!DEVICE_ID.test(deviceId)) return res.status(400).json({ success: false, error: 'Invalid device id.' });
     const deviceName = String(b.deviceName || '').trim().slice(0, 80) || 'Device';
 
+    const forFriends = b.forFriends !== false;
+
     // Reuse an already-open room for this same user + device so toggling/re-opening keeps one code.
     for (const room of rooms.values()) {
         if (room.ownerId === req.user.id && room.deviceId === deviceId) {
@@ -265,6 +285,7 @@ router.post('/rooms', authRequired, (req, res) => {
             room.publicPort = cleanPort(b.publicPort) || room.publicPort;
             room.screenW = cleanInt(b.screenW) || room.screenW;
             room.screenH = cleanInt(b.screenH) || room.screenH;
+            if (forFriends) room.forFriends = true;
             room.lastSeen = Date.now();
             return res.json({ success: true, code: room.code, relayToken: room.relayToken });
         }
@@ -277,6 +298,7 @@ router.post('/rooms', authRequired, (req, res) => {
         ownerName: req.user.username || 'Host',
         deviceId,
         deviceName,
+        forFriends,
         lanIp: cleanIp(b.lanIp),
         publicIp: cleanIp(b.publicIp),
         publicPort: cleanPort(b.publicPort),
@@ -284,6 +306,7 @@ router.post('/rooms', authRequired, (req, res) => {
         screenH: cleanInt(b.screenH),
         relayToken: crypto.randomBytes(16).toString('hex'),
         hostWs: null,
+        ownerWs: null,
         nextSlot: 1,
         guests: new Map(), // joinId -> Guest
         lastSeen: Date.now(),
@@ -492,6 +515,8 @@ function attachRelay(httpServer) {
         if (!room) { socket.write('HTTP/1.1 404 Not Found\r\n\r\n'); socket.destroy(); return; }
         if (role === 'host') {
             if (token !== room.relayToken) { socket.write('HTTP/1.1 403 Forbidden\r\n\r\n'); socket.destroy(); return; }
+        } else if (role === 'owner') {
+            if (token !== room.relayToken) { socket.write('HTTP/1.1 403 Forbidden\r\n\r\n'); socket.destroy(); return; }
         } else if (role === 'guest') {
             guest = room.guests.get(joinId);
             if (!guest || guest.status !== 'approved' || token !== guest.relayToken) {
@@ -517,16 +542,33 @@ function attachRelay(httpServer) {
             socket.on('close', () => { if (room.hostWs === socket) room.hostWs = null; });
             socket.on('error', () => { if (room.hostWs === socket) room.hostWs = null; });
             wsAttachReader(socket, (payload) => {
-                // Host -> guest: [u8 slot][sealed packet]
+                // Host -> owner (slot 0) or guest (slot 1..250): [u8 slot][sealed packet]
                 if (payload.length < 2) return;
                 const slot = payload[0];
                 const body = payload.subarray(1);
+                if (slot === 0) {
+                    if (room.ownerWs) wsWriteBinary(room.ownerWs, body);
+                    return;
+                }
                 for (const g of room.guests.values()) {
                     if (g.slot === slot && g.status === 'approved' && g.ws) {
                         wsWriteBinary(g.ws, body);
                         break;
                     }
                 }
+            });
+        } else if (role === 'owner') {
+            try { room.ownerWs?.destroy(); } catch {}
+            room.ownerWs = socket;
+            socket.on('close', () => { if (room.ownerWs === socket) room.ownerWs = null; });
+            socket.on('error', () => { if (room.ownerWs === socket) room.ownerWs = null; });
+            wsAttachReader(socket, (payload) => {
+                // Owner -> host: prepend [u8 0]
+                if (!room.hostWs) return;
+                const framed = Buffer.allocUnsafe(1 + payload.length);
+                framed[0] = 0;
+                payload.copy(framed, 1);
+                wsWriteBinary(room.hostWs, framed);
             });
         } else {
             try { guest.ws?.destroy(); } catch {}
