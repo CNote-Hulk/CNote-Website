@@ -649,6 +649,7 @@ const httpServer = http.createServer(app);
 const io = socketio(httpServer, { cors: { origin: allowedOrigins, credentials: true } });
 app.set('io', io);
 playRoutes.attachSockets(io);
+remoteRoutes.attachRelay(httpServer);
 
 const { authRequired: _authReq } = require('./middleware/auth');
 const jwt = require('jsonwebtoken');

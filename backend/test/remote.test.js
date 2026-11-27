@@ -103,3 +103,76 @@ test('devices are upserted, listed and deleted per account only', async () => {
         assert.equal((await r.json()).devices.length, 0);
     });
 });
+
+test('friend sharing rooms: create, join, approve, perms, kick, close', async () => {
+    mockPool.query = fakeTable();
+    remoteRoutes._rooms.clear();
+    await withServer(async (base) => {
+        // Host opens a room
+        let r = await fetch(`${base}/api/remote/rooms`, {
+            method: 'POST', headers: authFor(USER),
+            body: JSON.stringify({ deviceId: 'tablet-0001', deviceName: 'Tab S11', lanIp: '192.168.1.131', publicIp: '82.1.2.3', publicPort: 47800, screenW: 2960, screenH: 1848 }),
+        });
+        assert.equal(r.status, 200);
+        const room = await r.json();
+        assert.equal(room.code.length, 6);
+        assert.ok(room.relayToken);
+
+        // Friend requests to join
+        r = await fetch(`${base}/api/remote/rooms/${room.code}/join`, {
+            method: 'POST', headers: authFor(OTHER),
+            body: JSON.stringify({ publicIp: '85.4.5.6', publicPort: 51234 }),
+        });
+        assert.equal(r.status, 200);
+        const joined = await r.json();
+        assert.ok(joined.joinId);
+
+        // Host heartbeat sees pending request
+        r = await fetch(`${base}/api/remote/rooms/${room.code}/heartbeat`, {
+            method: 'POST', headers: authFor(USER), body: JSON.stringify({}),
+        });
+        const hb = await r.json();
+        assert.equal(hb.pending.length, 1);
+        assert.equal(hb.pending[0].username, 'someone');
+
+        // Friend polls status -> still pending
+        r = await fetch(`${base}/api/remote/rooms/${room.code}/status/${joined.joinId}`, { headers: authFor(OTHER) });
+        assert.equal((await r.json()).status, 'pending');
+
+        // Host approves with view-only (perms=1)
+        const sessionKey = 'cd'.repeat(32);
+        r = await fetch(`${base}/api/remote/rooms/${room.code}/decide`, {
+            method: 'POST', headers: authFor(USER),
+            body: JSON.stringify({ joinId: joined.joinId, action: 'approve', perms: 1, sessionKey }),
+        });
+        assert.equal(r.status, 200);
+
+        // Friend polls status -> approved with sessionKey + host endpoints
+        r = await fetch(`${base}/api/remote/rooms/${room.code}/status/${joined.joinId}`, { headers: authFor(OTHER) });
+        const st = await r.json();
+        assert.equal(st.status, 'approved');
+        assert.equal(st.perms, 1);
+        assert.equal(st.sessionKey, sessionKey);
+        assert.equal(st.hostPublicIp, '82.1.2.3');
+        assert.equal(st.hostPublicPort, 47800);
+
+        // Host grants control (perms=3) then kicks
+        r = await fetch(`${base}/api/remote/rooms/${room.code}/decide`, {
+            method: 'POST', headers: authFor(USER),
+            body: JSON.stringify({ joinId: joined.joinId, action: 'perms', perms: 3 }),
+        });
+        assert.equal((await r.json()).guest.perms, 3);
+
+        r = await fetch(`${base}/api/remote/rooms/${room.code}/decide`, {
+            method: 'POST', headers: authFor(USER),
+            body: JSON.stringify({ joinId: joined.joinId, action: 'kick' }),
+        });
+        assert.equal(r.status, 200);
+        r = await fetch(`${base}/api/remote/rooms/${room.code}/status/${joined.joinId}`, { headers: authFor(OTHER) });
+        assert.equal((await r.json()).status, 'kicked');
+
+        // Host closes room
+        r = await fetch(`${base}/api/remote/rooms/${room.code}`, { method: 'DELETE', headers: authFor(USER) });
+        assert.equal(r.status, 200);
+    });
+});
