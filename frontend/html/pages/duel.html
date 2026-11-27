@@ -20,10 +20,10 @@
     <link rel="manifest" href="../../manifest.json">
     <link rel="canonical" href="https://consolenotebook.com/html/pages/duel.html" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,700&family=DM+Sans:wght@300;400;500;600;700&family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
     <title>Duel — CNote</title>
     <link rel="stylesheet" href="../../css/main.css?v=20261126j">
-    <link rel="stylesheet" href="../../css/pages/play.css?v=20261127">
+    <link rel="stylesheet" href="../../css/pages/play.css?v=20261127b">
 </head>
 <body class="du-body">
     <main class="du" id="du">
@@ -33,7 +33,7 @@
             <form id="du-form">
                 <label for="du-name">Cum te cheamă?</label>
                 <input id="du-name" maxlength="20" autocomplete="nickname" placeholder="Numele tău" required>
-                <button type="submit" class="pl-btn pl-btn--primary">Intră în meci</button>
+                <button type="submit" class="du-btn">▶ INTRĂ ÎN MECI</button>
             </form>
             <p class="du-note">Doar un nume — fără cont. Îl vezi pe proiector și în clasament.</p>
         </section>
@@ -57,8 +57,8 @@
         <section class="du-result" id="du-result" hidden>
             <p class="du-result__big" id="du-result-big">WIN</p>
             <p class="du-result__text" id="du-result-text"></p>
-            <a class="pl-btn pl-btn--primary" href="register.html?ref=duel">Păstrează-ți scorul — fă-ți cont CNote</a>
-            <button type="button" class="pl-btn" id="du-again">Înapoi la meci</button>
+            <a class="du-btn" href="register.html?ref=duel">★ PĂSTREAZĂ-ȚI SCORUL — CONT CNOTE</a>
+            <button type="button" class="du-btn du-btn--ghost" id="du-again">◀ ÎNAPOI LA MECI</button>
         </section>
 
         <section class="du-join" id="du-error" hidden>

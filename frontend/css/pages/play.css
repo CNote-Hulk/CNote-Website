@@ -252,3 +252,21 @@
   font-family: 'Press Start 2P', monospace; font-size: 10px; z-index: 3; box-shadow: 0 6px 20px rgba(0,0,0,.5); }
 .pl-toast[hidden] { display: none; }
 @media (max-width: 480px) { .pl-pads2 { grid-template-columns: 1fr; } .pl-now { grid-template-columns: 56px 1fr; } .pl-icon { width: 56px; height: 56px; } .pl-now__ach { grid-column: 1 / -1; } }
+
+/* Duel buttons: fixed arcade colours. The site's accent is near-white on the dark theme, which
+   left white text on a white button (2026-11-27, Andrei's screenshot). */
+.du-btn { display: block; width: 100%; box-sizing: border-box; text-align: center; text-decoration: none; cursor: pointer;
+  font-family: 'Press Start 2P', monospace; font-size: 13px; line-height: 1.5; letter-spacing: .04em;
+  color: #1a1200; background: linear-gradient(#ffe066, #ffb547); border: 3px solid #fff3c4; border-radius: 12px;
+  padding: 16px 12px; box-shadow: 0 5px 0 #a8620a, 0 8px 18px rgba(0,0,0,.5); }
+.du-btn:active { transform: translateY(4px); box-shadow: 0 1px 0 #a8620a; }
+.du-p2 .du-btn { background: linear-gradient(#a8dcff, #5ab8ff); border-color: #e3f4ff; box-shadow: 0 5px 0 #1f6fb0, 0 8px 18px rgba(0,0,0,.5); }
+.du-btn--ghost, .du-p2 .du-btn--ghost { background: transparent; color: #eee; border-color: #555; box-shadow: none; }
+.du-title { font-family: 'VT323', monospace; font-size: 2.4rem; line-height: 1; }
+.du-tag, .du-hinge, .du-result__big { font-family: 'Press Start 2P', monospace; }
+.du-tag { font-size: 12px; }
+.du-hinge { font-size: 11px; }
+.du-result__big { font-size: 3.2rem; }
+.du-who { font-family: 'VT323', monospace; font-size: 1.6rem; }
+.du-who--me { font-size: 2rem; }
+.du-join input { font-family: 'VT323', monospace; font-size: 1.8rem; }
