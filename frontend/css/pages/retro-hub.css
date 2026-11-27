@@ -20,7 +20,8 @@
 .rh-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #ff3b3b; box-shadow: 0 0 6px #ff3b3b; }
 
 .rh-icon { width: 56px; height: 56px; display: block; background-repeat: no-repeat; background-position: 0 0; filter: drop-shadow(0 3px 5px rgba(0,0,0,.4)); }
-.rh-icon--none { background: #1b1d25 !important; border: 2px solid #2b2f3a; border-radius: 10px; display: grid; place-items: center; font-size: 26px; color: #ffd166; box-sizing: border-box; }
+/* No save icon for the game yet: the console it runs on, from the encyclopedia's photos. */
+.rh-icon--none { background: url('/assets/images/consoles/ps2.webp') center / contain no-repeat !important; }
 
 .rh-fight { display: grid; grid-template-columns: auto 1fr auto 1fr auto; gap: 6px; align-items: center; font-size: .85rem; }
 .rh-fight b { color: var(--text-light); font-weight: 600; }

@@ -203,7 +203,7 @@
 
 /* ── Live bits shared by the scoreboard (play.html): spinning save icon, ticker, toast ── */
 .pl-icon { width: 72px; height: 72px; background-repeat: no-repeat; background-size: 100% 100%; image-rendering: auto; filter: drop-shadow(0 4px 6px rgba(0,0,0,.5)); }
-.pl-icon.none { background: radial-gradient(circle, #3456a8, #13204a); border-radius: 50%; }
+.pl-icon.none { background: url('/assets/images/consoles/ps2.webp') center / contain no-repeat !important; }
 .pl-now__ach { margin: 0; font-family: 'Press Start 2P', monospace; font-size: 10px; color: #ffd166; white-space: nowrap; }
 .pl-ticker { overflow: hidden; background: #000; border: 2px solid #333; border-radius: 6px; padding: 6px 0; }
 .pl-ticker[hidden] { display: none; }

@@ -24,7 +24,7 @@ const play = (slug) => `play.html?s=${encodeURIComponent(slug)}`;
 
 /** The game's own save icon (rendered by the emulator from the game's files), first frame. */
 function icon(serial) {
-    if (!serial) return '<span class="rh-icon rh-icon--none">🎮</span>';
+    if (!serial) return '<span class="rh-icon rh-icon--none"></span>';
     return `<span class="rh-icon" data-serial="${esc(serial)}"></span>`;
 }
 
@@ -39,7 +39,6 @@ async function fillIcons(root) {
             el.style.backgroundSize = `${frames * 100}% 100%`;
         } catch {
             el.classList.add('rh-icon--none');
-            el.textContent = '🎮';
         }
     }
 }
