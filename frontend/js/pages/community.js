@@ -4,12 +4,12 @@
  * Vanilla ES module — no frameworks.
  */
 import { AuthModule } from '../modules/auth.js?v=20261005';
-import { I18nModule } from '../modules/i18n.js?v=20261126j';
+import { I18nModule } from '../modules/i18n.js?v=20261127r';
 import { API_BASE_URL } from '../config.js';
 import { confirmModal } from '../utils/confirm-modal.js';
 import { shareOrCopy } from '../utils/share.js';
 import { NO_IMAGE_PLACEHOLDER } from '../utils/no-image-placeholder.js';
-import { renderRetro } from '../modules/retro-hub.js?v=20261127c';
+import { renderRetro } from '../modules/retro-hub.js?v=20261127r';
 
 /** Shorthand for I18nModule.t() */
 const t = (key) => I18nModule.t(key);
@@ -704,7 +704,7 @@ function navigate(view, con, cat) {
             break;
         case 'retro':
             showView('retro');
-            renderRetro(cat);
+            renderRetro(con, cat);
             break;
     }
 }

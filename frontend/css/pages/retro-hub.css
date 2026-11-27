@@ -1,48 +1,127 @@
 /**
- * Community → Retro Gaming (js/modules/retro-hub.js): live sessions, Hall of Fame, my sessions.
- * Pixel/terminal fonts like the scoreboard (play.html); loaded only on community.html.
+ * Community → Retro Gaming (js/modules/retro-hub.js). Built on the hub's own pieces
+ * (.hub-view-header, .hub-detail-card, .hub-btn, .hub-form-*, .hub-empty) and the site's colour
+ * tokens; only what the hub has no piece for lives here: game icons, health bars, round pips,
+ * the arcade ladder, the scoreboard grid and the phone's two "screens" (Duel).
  */
-@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap');
 
-.rh { padding: 20px 24px; display: grid; gap: 14px; max-width: 980px; }
-.rh-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
-.rh-head h2 { margin: 0; font-family: 'Press Start 2P', monospace; font-size: 14px; color: var(--text-light); letter-spacing: .06em; }
-.rh-body { display: grid; gap: 10px; }
-.rh-empty { color: var(--text-gray); font-family: 'VT323', monospace; font-size: 1.4rem; margin: 10px 0; }
+.rh-body { flex: 1; min-height: 0; padding: 20px 24px 28px; overflow-y: auto; display: grid; gap: 16px; align-content: start; }
+.rh-list { display: grid; gap: 12px; }
+.rh-h { margin: 0 0 12px; font-size: 1rem; font-weight: 700; color: var(--text-light); }
+.rh-h4 { margin: 14px 0 6px; font-size: .9rem; color: var(--text-light); }
+.rh-note { margin: 8px 0 0; color: var(--text-gray); font-size: .85rem; }
+.rh-gap { margin-top: 12px; display: inline-block; }
 
-.rh-card { background: rgba(18, 19, 24, .92) !important; display: grid; grid-template-columns: 56px 1fr; gap: 12px; align-items: center; text-decoration: none; color: inherit;
-  background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 10px 12px; transition: border-color .15s, transform .15s; }
+/* a game's icon: its own save icon when the emulator sent one, else the PS2's photo */
+.rh-icon { width: 56px; height: 56px; flex-shrink: 0; display: block; border-radius: 10px;
+  background: url('/assets/images/consoles/ps2.webp') center / contain no-repeat; }
+.rh-icon--game { background-position: 0 0; background-repeat: no-repeat; border-radius: 0; }
+.rh-icon--big { width: 72px; height: 72px; }
+
+.rh-card { display: grid; grid-template-columns: 56px 1fr; gap: 14px; align-items: center; text-decoration: none; color: inherit; padding: 14px 16px;
+  transition: border-color var(--transition-fast, .15s), transform var(--transition-fast, .15s); }
 .rh-card:hover, .rh-card:focus-visible { border-color: var(--accent-color); transform: translateY(-1px); }
 .rh-card__body { display: grid; gap: 4px; min-width: 0; }
-.rh-card__title { font-family: 'VT323', monospace; font-size: 1.6rem; line-height: 1; color: var(--text-light); overflow-wrap: anywhere; display: block; }
-.rh-card__meta { font-size: .8rem; color: var(--text-gray); display: block; }
-.rh-card__presence { font-family: 'VT323', monospace; font-size: 1.15rem; color: #39d97a; overflow-wrap: anywhere; }
-.rh-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #ff3b3b; box-shadow: 0 0 6px #ff3b3b; }
+.rh-card__title { font-weight: 700; color: var(--text-light); overflow-wrap: anywhere; display: block; }
+.rh-card__meta { color: var(--text-gray); font-size: .82rem; display: block; }
+.rh-card__presence { color: var(--text-light); font-size: .85rem; opacity: .85; overflow-wrap: anywhere; display: block; }
+.rh-card__vs { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: .9rem; color: var(--text-gray); }
+.rh-card__vs b { color: var(--text-light); }
+.rh-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #e5484d; vertical-align: middle; }
+.rh-mini { width: 70px; height: 8px; border-radius: 4px; background: rgba(229, 72, 77, .25); overflow: hidden; display: inline-block; }
+.rh-mini i { display: block; height: 100%; background: #f5c84c; }
+.rh-mini--r { transform: scaleX(-1); }
 
-.rh-icon { width: 56px; height: 56px; display: block; background-repeat: no-repeat; background-position: 0 0; filter: drop-shadow(0 3px 5px rgba(0,0,0,.4)); }
-/* No save icon for the game yet: the console it runs on, from the encyclopedia's photos. */
-.rh-icon--none { background: url('/assets/images/consoles/ps2.webp') center / contain no-repeat !important; }
-
-.rh-fight { display: grid; grid-template-columns: auto 1fr auto 1fr auto; gap: 6px; align-items: center; font-size: .85rem; }
-.rh-fight b { color: var(--text-light); font-weight: 600; }
-.rh-fight em, .rh-vs em { font-style: normal; font-family: 'Press Start 2P', monospace; font-size: 9px; color: #ff5a5a; }
-.rh-bar { height: 10px; background: #3a1214; border-radius: 3px; overflow: hidden; }
-.rh-bar i { display: block; height: 100%; background: linear-gradient(#fff3a6, #ffcc33 45%, #e59b00); }
-.rh-fight .rh-bar:last-of-type { transform: scaleX(-1); }
-.rh-vs { font-size: .9rem; color: var(--text-light); }
-
-.rh-game { background: rgba(18, 19, 24, .92); border: 2px solid #262a35; border-radius: 14px; padding: 14px; display: grid; gap: 12px; }
-.rh-game__head { display: grid; grid-template-columns: 56px 1fr; gap: 12px; align-items: center; padding-bottom: 10px; border-bottom: 1px dashed #2b2f3a; }
-.rh-boards { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; }
-.rh-board { background: #1b1d25; border-radius: 10px; padding: 10px 12px; }
-.rh-board h4 { margin: 0 0 8px; font-family: 'Press Start 2P', monospace; font-size: 9px; letter-spacing: .06em; color: #ffd166; }
+/* Hall of Fame */
+.rh-game { display: grid; gap: 14px; }
+.rh-game__head { display: grid; grid-template-columns: 56px 1fr; gap: 14px; align-items: center; }
+.rh-boards { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+.rh-board { border: 1px solid var(--border-color); border-radius: var(--radius-md, 10px); padding: 10px 12px; }
+.rh-board h4 { margin: 0 0 8px; font-size: .85rem; color: var(--text-light); }
 .rh-board ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
-.rh-board li { display: grid; grid-template-columns: 1.8em minmax(0, 1fr); column-gap: 6px; align-items: center; font-size: .9rem; }
-.rh-board li > span:first-child { grid-row: span 2; text-align: center; }
-.rh-board li b { font-family: 'VT323', monospace; font-size: 1.35rem; font-weight: 400; color: #fff; line-height: 1; overflow-wrap: anywhere; }
-.rh-board li > span:last-child { color: #9aa1b1; font-size: .8rem; }
+.rh-board li { display: grid; grid-template-columns: 2em minmax(0, 1fr); column-gap: 6px; align-items: center; }
+.rh-board__rank { grid-row: span 2; text-align: center; }
+.rh-board__name { color: var(--text-light); font-weight: 600; overflow-wrap: anywhere; }
+.rh-board__val { color: var(--text-gray); font-size: .8rem; }
 
-.rh-btn { display: inline-block; justify-self: start; text-decoration: none; font-family: 'Press Start 2P', monospace; font-size: 10px; line-height: 1.6;
-  color: #1a1200; background: linear-gradient(#ffe066, #ffb547); border: 2px solid #fff3c4; border-radius: 10px; padding: 10px 14px; box-shadow: 0 4px 0 #a8620a; }
-.rh-btn--discord { color: #fff; background: linear-gradient(#7983f5, #5865f2); border-color: #c9cdfb; box-shadow: 0 4px 0 #3c45a5; }
-@media (max-width: 600px) { .rh { padding: 14px 12px; } .rh-fight { grid-template-columns: 1fr; } .rh-fight em { display: none; } }
+/* My sessions */
+.rh-two { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+.rh-form { display: grid; gap: 10px; align-content: start; }
+.rh-form .hub-form-row { display: flex; gap: 10px; }
+.rh-form .hub-form-row > * { flex: 1; min-width: 0; }
+.rh-form .hub-form-row > .hub-btn { flex: 0 0 auto; }
+.rh-consoles { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; color: var(--text-light); font-size: .9rem; }
+
+/* One session: the scoreboard (wide on desktop: matches left, the fight now right) */
+.rh-session { display: grid; gap: 16px; }
+.rh-top { display: grid; grid-template-columns: auto 1fr auto; gap: 16px; align-items: center; }
+.rh-top__text { display: grid; gap: 4px; min-width: 0; }
+.rh-top__title { font-family: var(--font-serif, serif); font-size: clamp(1.3rem, 2.2vw, 1.9rem); font-weight: 700; color: var(--text-light); margin: 0; overflow-wrap: anywhere; }
+.rh-live .rh-dot { animation: rh-pulse 1.6s ease-in-out infinite; }
+.rh-live--off .rh-dot { background: var(--text-gray); animation: none; }
+@keyframes rh-pulse { 50% { opacity: .3; } }
+.rh-ach { font-weight: 700; color: var(--accent-color); white-space: nowrap; }
+.rh-owner { display: flex; flex-wrap: wrap; gap: 8px; }
+.rh-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.rh-stat { display: grid; gap: 4px; padding: 14px 16px; }
+.rh-stat b { font-size: 1.35rem; color: var(--text-light); overflow-wrap: anywhere; }
+.rh-stat span { color: var(--text-gray); font-size: .8rem; }
+.rh-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 16px; align-items: start; }
+.rh-matches { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; max-height: 55vh; overflow-y: auto; }
+.rh-m { display: grid; grid-template-columns: 3.2em 1fr auto 1fr; gap: 10px; align-items: center; border: 1px solid var(--border-color); border-radius: var(--radius-md, 10px); padding: 10px 12px; }
+.rh-m:first-child { border-color: var(--accent-color); }
+.rh-m__time { color: var(--text-gray); font-size: .75rem; font-variant-numeric: tabular-nums; }
+.rh-m__p { color: var(--text-gray); overflow-wrap: anywhere; }
+.rh-m__p small { display: block; font-size: .75rem; color: var(--text-gray); opacity: .8; }
+.rh-m__p--r { text-align: right; }
+.rh-m__p.win { color: var(--text-light); font-weight: 700; }
+.rh-m__p.win::before { content: '🏆 '; }
+.rh-m__p--r.win::before { content: ''; }
+.rh-m__p--r.win::after { content: ' 🏆'; }
+.rh-m__s { font-weight: 700; color: var(--accent-color); text-align: center; font-variant-numeric: tabular-nums; }
+.rh-col .rh-boards { margin-top: 16px; }
+
+/* the fight now (scoreboard) and the phone */
+.rh-fight { display: grid; gap: 16px; }
+.rh-fighter__head { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.rh-fighter--p2 .rh-fighter__head { justify-content: flex-end; }
+.rh-fighter__head b { font-size: clamp(1.3rem, 2.4vw, 1.9rem); color: var(--text-light); }
+.rh-tag { font-size: .75rem; font-weight: 700; color: var(--accent-color); text-transform: uppercase; letter-spacing: .06em; }
+.rh-char { color: var(--text-gray); font-size: .9rem; }
+.rh-bar { height: 22px; border-radius: 6px; background: rgba(229, 72, 77, .22); overflow: hidden; margin-top: 8px; border: 1px solid var(--border-color); }
+.rh-bar--big { height: 34px; }
+.rh-bar i { display: block; height: 100%; width: 100%; background: linear-gradient(90deg, #f5c84c, #ffde7a); transition: width .25s linear; }
+.rh-bar i.low { background: #e5484d; }
+.rh-fighter--p2 .rh-bar { transform: scaleX(-1); }
+.rh-pips { display: flex; gap: 6px; margin-top: 8px; }
+.rh-fighter--p2 .rh-pips { justify-content: flex-end; }
+.rh-pips span { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--border-color); }
+.rh-pips span.on { background: #f5c84c; border-color: #f5c84c; }
+.rh-vs { text-align: center; font-weight: 800; letter-spacing: .1em; color: var(--accent-color); }
+.rh-ladder { display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; }
+.rh-ladder span { text-align: center; padding: 8px 0; border-radius: 6px; border: 1px solid var(--border-color); color: var(--text-gray); font-weight: 700; font-size: .85rem; }
+.rh-ladder span.done { color: var(--text-light); border-color: #3a8f5b; }
+.rh-ladder span.cur { background: var(--accent-color); border-color: var(--accent-color); color: var(--bg-color, #111); }
+
+/* Duel: the player's phone */
+.rh-duel-join { display: grid; gap: 12px; max-width: 460px; margin: 0 auto; width: 100%; box-sizing: border-box; }
+.rh-ds { display: grid; gap: 10px; max-width: 520px; margin: 0 auto; width: 100%; }
+.rh-ds__screen { display: grid; gap: 6px; }
+.rh-ds__screen--me { border-color: var(--accent-color); }
+.rh-result { display: grid; gap: 12px; text-align: center; max-width: 520px; margin: 0 auto; width: 100%; box-sizing: border-box; }
+.rh-result__big { margin: 0; font-size: 2.6rem; font-weight: 900; color: #e5484d; }
+.rh-result--win .rh-result__big { color: #3a8f5b; }
+
+[hidden].rh-fight, [hidden].rh-result, .rh-session [hidden] { display: none; }
+
+@media (max-width: 900px) {
+    .rh-grid { grid-template-columns: 1fr; }
+    .rh-now { order: -1; }
+    .rh-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 600px) {
+    .rh-body { padding: 14px 12px 20px; }
+    .rh-top { grid-template-columns: auto 1fr; }
+    .rh-ach { grid-column: 1 / -1; }
+}
+@media (prefers-reduced-motion: reduce) { .rh-bar i { transition: none; } .rh-live .rh-dot { animation: none; } }

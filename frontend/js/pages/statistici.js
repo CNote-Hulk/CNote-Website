@@ -6,9 +6,9 @@
  */
 import { AuthModule } from '../modules/auth.js?v=20261005';
 import { AchievementsModule } from '../modules/achievements.js';
-import { I18nModule } from '../modules/i18n.js?v=20261126j';
+import { I18nModule } from '../modules/i18n.js?v=20261127r';
 import { shareOrCopy } from '../utils/share.js';
-import { certT, certName } from '../modules/cert-i18n.js?v=20261029c';
+import { certT, certName } from '../modules/cert-i18n.js?v=20261127r';
 
 
 // Texts of the learning cards. Their labels used translation keys that mean something else ("Quizzes Completed" for an

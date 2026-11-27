@@ -9,7 +9,7 @@
  * console pages don't link that stylesheet.
  */
 import { AuthModule } from './auth.js?v=20261005';
-import { I18nModule } from './i18n.js?v=20261126j';
+import { I18nModule } from './i18n.js?v=20261127r';
 import { API_BASE_URL } from '../config.js';
 import { ARTICLE_CATEGORIES, categoryLabel, categoryBadgeHtml } from './article-meta.js?v=20261126j';
 

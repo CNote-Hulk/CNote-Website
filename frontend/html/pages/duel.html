@@ -1,73 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- ===========================
-         CNOTE DUEL — PLAYER PHONE
-         Reached from the QR codes ArmSX2 shows before each match (Tools → Duel): name yourself, then the phone is your second screen
-         =========================== -->
+    <!-- Moved to Community → Retro Gaming (community.html#retro/…); kept as a redirect for the
+         addresses ArmSX2 and its Duel QR codes open. See js/pages/retro-redirect.js. -->
     <meta charset="UTF-8">
-    <script>!function(){if(localStorage.getItem("cnote-pixel-art")==="off")document.documentElement.classList.add("no-pixel");var t=localStorage.getItem("cnote-theme");if(t===null)t="dark";if(t==="system")t=matchMedia("(prefers-color-scheme: light)").matches?"light":"dark";document.documentElement.dataset.theme=t;var a=localStorage.getItem("cnote-accent-color");if(a&&localStorage.getItem("cn_session")){var r=parseInt(a.slice(1,3),16),g=parseInt(a.slice(3,5),16),b=parseInt(a.slice(5,7),16),s=document.documentElement.style;s.setProperty("--accent-color",a);s.setProperty("--accent-light","#"+[r,g,b].map(function(c){return Math.min(255,Math.floor(c+(255-c)*.2)).toString(16).padStart(2,"0")}).join(""));s.setProperty("--accent-rgb",r+", "+g+", "+b);s.setProperty("--accent-color-rgb",r+", "+g+", "+b);s.setProperty("--glow-accent","0 0 20px rgba("+r+", "+g+", "+b+", .15)")}}()</script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Your second screen for the match: health, rounds, result.">
-    <meta name="theme-color" content="#1B1714">
-    <meta property="og:title" content="Duel — CNote">
-    <meta property="og:description" content="Your second screen for the match: health, rounds, result.">
-    <meta property="og:url" content="https://consolenotebook.com/html/pages/duel.html">
-    <meta property="og:type" content="website">
-    <meta property="og:image" content="https://consolenotebook.com/assets/images/og-image.png">
-    <link rel="icon" type="image/x-icon" href="../../assets/icons/favicon.ico">
-    <link rel="apple-touch-icon" href="../../assets/icons/apple-touch-icon.png">
-    <link rel="manifest" href="../../manifest.json">
-    <link rel="canonical" href="https://consolenotebook.com/html/pages/duel.html" />
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,700&family=DM+Sans:wght@300;400;500;600;700&family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
-    <title>Duel — CNote</title>
-    <link rel="stylesheet" href="../../css/main.css?v=20261126j">
-    <link rel="stylesheet" href="../../css/pages/play.css?v=20261127-sb2">
+    <meta name="robots" content="noindex">
+    <title>Retro Gaming — Console Notebook</title>
+    <script src="../../js/pages/retro-redirect.js?v=20261127r"></script>
 </head>
-<body class="du-body">
-    <main class="du" id="du">
-        <section class="du-join" id="du-join" hidden>
-            <p class="du-tag" id="du-tag">🎮 Player 1</p>
-            <h1 class="du-title" id="du-title">Duel</h1>
-            <form id="du-form">
-                <label for="du-name">Cum te cheamă?</label>
-                <input id="du-name" maxlength="20" autocomplete="nickname" placeholder="Numele tău" required>
-                <button type="submit" class="du-btn">▶ INTRĂ ÎN MECI</button>
-            </form>
-            <p class="du-note">Doar un nume — fără cont. Îl vezi pe proiector și în clasament.</p>
-        </section>
-
-        <section class="du-live" id="du-live" hidden>
-            <div class="du-screen du-screen--top">
-                <div class="du-who"><span id="du-op-name">Adversar</span> <span class="du-char" id="du-op-char"></span></div>
-                <div class="du-bar"><i id="du-op-bar"></i></div>
-                <div class="du-rounds" id="du-op-rounds"></div>
-            </div>
-            <div class="du-hinge"><span id="du-phase">Așteptăm meciul…</span></div>
-            <div class="du-screen du-screen--bottom">
-                <div class="du-who du-who--me"><span id="du-me-name">Tu</span> <span class="du-char" id="du-me-char"></span></div>
-                <div class="du-bar du-bar--me"><i id="du-me-bar"></i></div>
-                <div class="du-rounds" id="du-me-rounds"></div>
-                <p class="du-fight" id="du-fight"></p>
-            </div>
-            <a class="du-board" id="du-board" href="#">📊 Clasamentul serii</a>
-        </section>
-
-        <section class="du-result" id="du-result" hidden>
-            <p class="du-result__big" id="du-result-big">WIN</p>
-            <p class="du-result__text" id="du-result-text"></p>
-            <a class="du-btn" href="register.html?ref=duel">★ PĂSTREAZĂ-ȚI SCORUL — CONT CNOTE</a>
-            <button type="button" class="du-btn du-btn--ghost" id="du-again">◀ ÎNAPOI LA MECI</button>
-        </section>
-
-        <section class="du-join" id="du-error" hidden>
-            <h1 class="du-title">Codul nu mai e valid</h1>
-            <p class="du-note">Scanează codul de pe proiector de la meciul următor.</p>
-        </section>
-    </main>
-
-    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
-    <script type="module" src="../../js/pages/duel.js?v=20261127"></script>
+<body>
+    <noscript><a href="community.html#retro/live">Retro Gaming</a></noscript>
 </body>
 </html>

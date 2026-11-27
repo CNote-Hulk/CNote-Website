@@ -5,7 +5,7 @@
  */
 import { AuthModule } from '../modules/auth.js?v=20261005';
 import { API_BASE_URL } from '../config.js';
-import { I18nModule } from '../modules/i18n.js?v=20261126j';
+import { I18nModule } from '../modules/i18n.js?v=20261127r';
 
 function tr(key) {
     I18nModule.lang = I18nModule.getStoredLang();
