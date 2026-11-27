@@ -9,8 +9,18 @@ const { authRequired, authOptional } = require('../middleware/auth');
 const { awardXP } = require('../utils/gamification');
 const { isMuted, mutedUntilMessage } = require('../utils/moderation');
 const { publicUrlForKey } = require('../utils/objectStorage');
+const { parseVariant } = require('../utils/consoleVariants');
 
 const router = express.Router();
+
+/**
+ * (2026-11-27) A listing's hardware line: "<console>|<group>" from MODEL_DIRECTORY_GROUPS, or ''
+ * — a key the console list doesn't have, or one of another console than console_type, is dropped.
+ */
+function safeVariant(variant, consoleType) {
+    const v = parseVariant(variant);
+    return v && v.consoleId === String(consoleType || '').trim() && v.group ? v.key : '';
+}
 
 /**
  * resolveImages
@@ -117,7 +127,7 @@ router.get('/listings', async (req, res) => {
         const listingsResult = await pool.query(`
             SELECT l.id, l.title, l.description, l.price, l.condition, l.category,
                    l.location, l.country, l.images, l.sold, l.status, l.views,
-                   l.favorites_count, l.console_type, l.created_at,
+                   l.favorites_count, l.console_type, l.console_variant, l.created_at,
                    u.id AS seller_id, u.username AS seller_name, u.avatar AS seller_avatar,
                    u.role = 'admin' AS seller_is_official
             FROM listings l
@@ -142,6 +152,7 @@ router.get('/listings', async (req, res) => {
             views: row.views || 0,
             favorites_count: row.favorites_count || 0,
             console_type: row.console_type || '',
+            console_variant: row.console_variant || '',
             created_at: row.created_at,
             seller_id: row.seller_id,
             seller_name: row.seller_name,
@@ -162,7 +173,7 @@ router.get('/listings/mine', authRequired, async (req, res) => {
         const result = await pool.query(`
             SELECT l.id, l.title, l.description, l.price, l.condition, l.category,
                    l.location, l.country, l.images, l.sold, l.status, l.views,
-                   l.favorites_count, l.console_type, l.created_at
+                   l.favorites_count, l.console_type, l.console_variant, l.created_at
             FROM listings l
             WHERE l.user_id = $1
             ORDER BY l.created_at DESC
@@ -183,6 +194,7 @@ router.get('/listings/mine', authRequired, async (req, res) => {
             views: row.views || 0,
             favorites_count: row.favorites_count || 0,
             console_type: row.console_type || '',
+            console_variant: row.console_variant || '',
             created_at: row.created_at
         }));
 
@@ -201,7 +213,7 @@ router.get('/listings/user/:userId', async (req, res) => {
     try {
         const result = await pool.query(`
             SELECT l.id, l.title, l.price, l.currency, l.condition, l.category, l.location, l.country,
-                   l.images, l.sold, l.status, l.console_type, l.created_at,
+                   l.images, l.sold, l.status, l.console_type, l.console_variant, l.created_at,
                    u.id AS seller_id, u.username AS seller_name, u.avatar AS seller_avatar,
                    u.role = 'admin' AS seller_is_official
             FROM listings l
@@ -223,6 +235,7 @@ router.get('/listings/user/:userId', async (req, res) => {
             sold: row.sold,
             status: row.status || 'active',
             console_type: row.console_type || '',
+            console_variant: row.console_variant || '',
             created_at: row.created_at,
             seller_id: row.seller_id,
             seller_name: row.seller_name,
@@ -275,6 +288,7 @@ router.get('/listings/:id', async (req, res) => {
                 views: row.views || 0,
                 favorites_count: row.favorites_count || 0,
                 console_type: row.console_type || '',
+                console_variant: row.console_variant || '',
                 created_at: row.created_at,
                 seller_id: row.seller_id,
                 seller_name: row.seller_name,
@@ -376,7 +390,7 @@ router.post('/listings', authRequired, async (req, res) => {
     if (isMuted(req.user)) {
         return res.status(403).json({ success: false, error: mutedUntilMessage(req.user.muted_until) });
     }
-    const { title, description, price, condition, category, location, country, phone, olx_url, images, console_type } = req.body;
+    const { title, description, price, condition, category, location, country, phone, olx_url, images, console_type, console_variant } = req.body;
 
     if (!title || !description || price == null) {
         return res.status(400).json({ success: false, error: 'Title, description, and price are required.' });
@@ -394,13 +408,14 @@ router.post('/listings', authRequired, async (req, res) => {
     const safeOlx = (rawOlx === '' || rawOlx.startsWith('https://') || rawOlx.startsWith('http://')) ? rawOlx.slice(0, 500) : '';
     const safeImages      = JSON.stringify(Array.isArray(images) ? images.slice(0, 8).map(u => String(u).slice(0, 500)) : []);
     const safeConsoleType = String(console_type || '').trim().slice(0, 100);
+    const safeConsoleVariant = safeVariant(console_variant, safeConsoleType);
 
     try {
         const result = await pool.query(`
-            INSERT INTO listings (user_id, title, description, price, condition, category, location, country, phone, olx_url, images, console_type)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+            INSERT INTO listings (user_id, title, description, price, condition, category, location, country, phone, olx_url, images, console_type, console_variant)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
             RETURNING id, title, price, condition, category, created_at
-        `, [req.user.id, safeTitle, safeDesc, safePrice, safeCond, safeCat, safeLocation, safeCountry, safePhone, safeOlx, safeImages, safeConsoleType]);
+        `, [req.user.id, safeTitle, safeDesc, safePrice, safeCond, safeCat, safeLocation, safeCountry, safePhone, safeOlx, safeImages, safeConsoleType, safeConsoleVariant]);
 
         const listing = result.rows[0];
         listing.seller_name = req.user.username;
@@ -419,11 +434,11 @@ router.put('/listings/:id', authRequired, async (req, res) => {
     if (isNaN(id)) return res.status(400).json({ success: false, error: 'ID invalid.' });
 
     try {
-        const check = await pool.query('SELECT user_id FROM listings WHERE id = $1', [id]);
+        const check = await pool.query('SELECT user_id, console_type FROM listings WHERE id = $1', [id]);
         if (check.rows.length === 0) return res.status(404).json({ success: false, error: 'Listing not found.' });
         if (check.rows[0].user_id !== req.user.id) return res.status(403).json({ success: false, error: 'You do not have permission.' });
 
-        const { title, description, price, condition, category, location, country, phone, olx_url, images, console_type } = req.body;
+        const { title, description, price, condition, category, location, country, phone, olx_url, images, console_type, console_variant } = req.body;
 
         const sets = [];
         const params = [];
@@ -439,6 +454,11 @@ router.put('/listings/:id', authRequired, async (req, res) => {
         if (phone !== undefined)       { sets.push(`phone = $${idx++}`);        params.push(String(phone).trim().slice(0, 30)); }
         if (olx_url !== undefined)     { const u = String(olx_url).trim(); sets.push(`olx_url = $${idx++}`); params.push((u === '' || u.startsWith('https://') || u.startsWith('http://')) ? u.slice(0, 500) : ''); }
         if (console_type !== undefined){ sets.push(`console_type = $${idx++}`); params.push(String(console_type).trim().slice(0, 100)); }
+        // The line is checked against the console sent with it; changing the console alone clears it.
+        if (console_variant !== undefined || console_type !== undefined) {
+            sets.push(`console_variant = $${idx++}`);
+            params.push(safeVariant(console_variant, console_type !== undefined ? console_type : check.rows[0].console_type));
+        }
         if (images !== undefined && Array.isArray(images)) {
             sets.push(`images = $${idx++}`);
             params.push(JSON.stringify(images.slice(0, 8).map(u => String(u).slice(0, 500))));
@@ -638,7 +658,7 @@ router.get('/my-listings', authRequired, async (req, res) => {
     try {
         const result = await pool.query(
             `SELECT id, title, price, condition, category, location,
-                    images, sold, status, views, console_type, created_at
+                    images, sold, status, views, console_type, console_variant, created_at
              FROM listings
              WHERE user_id = $1
              ORDER BY created_at DESC`,

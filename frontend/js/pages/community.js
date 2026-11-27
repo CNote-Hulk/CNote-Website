@@ -10,6 +10,7 @@ import { confirmModal } from '../utils/confirm-modal.js';
 import { shareOrCopy } from '../utils/share.js';
 import { NO_IMAGE_PLACEHOLDER } from '../utils/no-image-placeholder.js';
 import { renderRetro } from '../modules/retro-hub.js?v=20261127r';
+import { consoleVariantList } from '../data/console-models.js?v=20261127s';
 
 /** Shorthand for I18nModule.t() */
 const t = (key) => I18nModule.t(key);
@@ -1488,6 +1489,7 @@ async function openListingDetail(id) {
                                     <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:6px">
                                         <span class="hub-condition hub-condition--${l.condition}">${CONDITIONS[l.condition] ? esc(t(CONDITIONS[l.condition])) : esc(l.condition)}</span>
                                         ${CATEGORIES[l.category] ? `<span style="color:var(--text-gray);font-size:.78rem">${esc(t(CATEGORIES[l.category]))}</span>` : ''}
+                                        ${listingConsoleLabel(l) ? `<span style="color:var(--text-gray);font-size:.78rem">· ${esc(listingConsoleLabel(l))}</span>` : ''}
                                     </div>
                                 </div>
                                 <div class="hub-detail-price">${Number(l.price).toFixed(0)} RON</div>
@@ -1757,6 +1759,30 @@ async function loadSimilarListings(listingId, container) {
 }
 
 /** Open modal dialog to create a new marketplace listing */
+/**
+ * (2026-11-27) The listing forms' console picker: every hardware line with its full name
+ * ("PlayStation 2 Slim"), same list as collections and the app. The option value is the
+ * variant key; consoleFromPick() splits it back into console_type + console_variant.
+ */
+function consolePickOptions(consoleType = '', consoleVariant = '') {
+    const list = consoleVariantList(window.CONSOLES_DATA || []);
+    // An old listing with only a console page selects that console's first line.
+    const current = consoleVariant || (list.find(v => v.consoleId === consoleType) || {}).key || '';
+    return list.map(v => `<option value="${esc(v.key)}"${v.key === current ? ' selected' : ''}>${esc(v.name)}</option>`).join('');
+}
+/** "PlayStation 2 Slim" for a listing's line, else its console's name, else ''. */
+function listingConsoleLabel(l) {
+    const consoles = window.CONSOLES_DATA || [];
+    const v = l.console_variant && consoleVariantList(consoles).find(x => x.key === l.console_variant);
+    if (v) return v.name;
+    const c = consoles.find(x => x.id === l.console_type);
+    return c ? c.name : '';
+}
+function consoleFromPick(value) {
+    const [consoleType = '', group] = String(value || '').split('|');
+    return { console_type: consoleType, console_variant: group ? value : '' };
+}
+
 function openAddListingModal() {
     const _prev = document.querySelector('.hub-modal-overlay');
     if (_prev) { cleanupHubSelects(_prev); _prev.remove(); }
@@ -1799,7 +1825,7 @@ function openAddListingModal() {
                     <label class="hub-form-label">${esc(t('listing_field_console'))}</label>
                     <select class="hub-form-select" name="console_type">
                         <option value="">${esc(t('listing_console_placeholder'))}</option>
-                        ${(window.CONSOLES_DATA || []).slice().sort((a, b) => a.name.localeCompare(b.name)).map(c => `<option value="${c.id}">${c.name}</option>`).join('')}
+                        ${consolePickOptions()}
                     </select>
                 </div>
                 <div class="hub-form-group">
@@ -1954,8 +1980,9 @@ function openAddListingModal() {
         }
 
         // Default image: if no images uploaded but a console is selected, use console image
-        if (finalImages.length === 0 && f.console_type.value) {
-            const consoleDef = (window.CONSOLES_DATA || []).find(c => c.id === f.console_type.value);
+        const picked = consoleFromPick(f.console_type.value);
+        if (finalImages.length === 0 && picked.console_type) {
+            const consoleDef = (window.CONSOLES_DATA || []).find(c => c.id === picked.console_type);
             if (consoleDef && consoleDef.image) finalImages = [consoleDef.image];
         }
 
@@ -1966,7 +1993,7 @@ function openAddListingModal() {
                 price: parseFloat(f.price.value),
                 condition: f.condition.value,
                 category: f.category.value,
-                console_type: f.console_type.value,
+                ...picked,
                 location: f.location.value.trim(),
                 phone: f.phone.value.trim(),
                 olx_url: f.olx_url.value.trim(),
@@ -2025,7 +2052,7 @@ function openEditListingFromDetail(id, l) {
                     <label class="hub-form-label">${esc(t('listing_field_console'))}</label>
                     <select class="hub-form-select" name="console_type">
                         <option value="">${esc(t('listing_console_placeholder'))}</option>
-                        ${(window.CONSOLES_DATA || []).slice().sort((a, b) => a.name.localeCompare(b.name)).map(c => `<option value="${c.id}"${c.id === (l.console_type || '') ? ' selected' : ''}>${c.name}</option>`).join('')}
+                        ${consolePickOptions(l.console_type || '', l.console_variant || '')}
                     </select>
                 </div>
                 <div class="hub-form-group">
@@ -2096,7 +2123,7 @@ function openEditListingFromDetail(id, l) {
             price: parseFloat(f.price.value),
             condition: f.condition.value,
             category: f.category.value,
-            console_type: f.console_type.value,
+            ...consoleFromPick(f.console_type.value),
             country: f.country.value,
             location: f.location.value.trim(),
             phone: f.phone.value.trim(),

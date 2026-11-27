@@ -1,0 +1,125 @@
+{
+  "_comment": "Official controllers per console page id (2026-11-27). code = model number printed on the controller (empty when the hardware carries none worth searching for). Sources: Sony/Nintendo/Microsoft support pages, Sega Retro, iFixit. The app bundles a copy as assets/controller-models.json - keep the two equal.",
+  "controllers": {
+    "atari-2600": [
+      { "name": "Atari CX40 Joystick", "code": "CX40" },
+      { "name": "Atari CX30 Paddle Controllers", "code": "CX30" }
+    ],
+    "atari-7800": [
+      { "name": "Atari 7800 ProLine Joystick", "code": "CX24" }
+    ],
+    "nes": [
+      { "name": "NES Controller", "code": "NES-004" },
+      { "name": "NES Advantage", "code": "NES-026" },
+      { "name": "NES Zapper", "code": "NES-005" }
+    ],
+    "famicom": [
+      { "name": "Famicom Controller (AV Famicom)", "code": "HVC-102" }
+    ],
+    "snes": [
+      { "name": "SNES Controller", "code": "SNS-005" },
+      { "name": "Super Famicom Controller", "code": "SHVC-005" },
+      { "name": "SNES Mouse", "code": "SNS-016" }
+    ],
+    "nintendo-64": [
+      { "name": "Nintendo 64 Controller", "code": "NUS-005" },
+      { "name": "Rumble Pak", "code": "NUS-013" },
+      { "name": "Controller Pak", "code": "NUS-004" }
+    ],
+    "nintendo-gamecube": [
+      { "name": "GameCube Controller", "code": "DOL-003" },
+      { "name": "WaveBird Wireless Controller", "code": "DOL-004" }
+    ],
+    "nintendo-wii": [
+      { "name": "Wii Remote", "code": "RVL-003" },
+      { "name": "Wii Remote Plus", "code": "RVL-036" },
+      { "name": "Nunchuk", "code": "RVL-004" },
+      { "name": "Classic Controller", "code": "RVL-005" },
+      { "name": "Classic Controller Pro", "code": "RVL-005(-02)" },
+      { "name": "Wii MotionPlus", "code": "RVL-026" }
+    ],
+    "nintendo-wii-u": [
+      { "name": "Wii U GamePad", "code": "WUP-010" },
+      { "name": "Wii U Pro Controller", "code": "WUP-005" }
+    ],
+    "nintendo-switch": [
+      { "name": "Joy-Con (L)", "code": "HAC-015" },
+      { "name": "Joy-Con (R)", "code": "HAC-016" },
+      { "name": "Nintendo Switch Pro Controller", "code": "HAC-013" }
+    ],
+    "nintendo-switch-2": [
+      { "name": "Joy-Con 2 (L)", "code": "BEE-012" },
+      { "name": "Joy-Con 2 (R)", "code": "BEE-014" },
+      { "name": "Nintendo Switch 2 Pro Controller", "code": "BEE-008" }
+    ],
+    "sega-master-system": [
+      { "name": "Master System Control Pad", "code": "3020" }
+    ],
+    "sega-genesis": [
+      { "name": "Genesis 3-Button Control Pad", "code": "MK-1650" },
+      { "name": "Genesis 6-Button Arcade Pad", "code": "MK-1653" }
+    ],
+    "sega-saturn": [
+      { "name": "Saturn Control Pad (US)", "code": "MK-80100" },
+      { "name": "Saturn Control Pad (Japan)", "code": "HSS-0101" },
+      { "name": "Saturn 3D Control Pad", "code": "MK-80117" },
+      { "name": "Saturn 3D Control Pad (Japan)", "code": "HSS-0137" }
+    ],
+    "sega-dreamcast": [
+      { "name": "Dreamcast Controller", "code": "HKT-7700" },
+      { "name": "Visual Memory Unit (VMU)", "code": "HKT-7000" }
+    ],
+    "playstation-1": [
+      { "name": "PlayStation Controller (digital)", "code": "SCPH-1080" },
+      { "name": "Dual Analog Controller", "code": "SCPH-1180" },
+      { "name": "DualShock", "code": "SCPH-1200" },
+      { "name": "PSone DualShock", "code": "SCPH-110" },
+      { "name": "PlayStation Memory Card", "code": "SCPH-1020" }
+    ],
+    "playstation-2": [
+      { "name": "DualShock 2", "code": "SCPH-10010" },
+      { "name": "PS2 Memory Card (8 MB)", "code": "SCPH-10020" },
+      { "name": "PS2 Multitap", "code": "SCPH-10090" },
+      { "name": "PS2 DVD Remote Control", "code": "SCPH-10150" }
+    ],
+    "playstation-3": [
+      { "name": "Sixaxis", "code": "CECHZC1" },
+      { "name": "DualShock 3", "code": "CECHZC2" },
+      { "name": "PlayStation Move Motion Controller", "code": "CECH-ZCM1" },
+      { "name": "PlayStation Move Motion Controller (micro-USB)", "code": "CECH-ZCM2" },
+      { "name": "PlayStation Move Navigation Controller", "code": "CECH-ZCS1" }
+    ],
+    "playstation-4": [
+      { "name": "DualShock 4 (v1)", "code": "CUH-ZCT1" },
+      { "name": "DualShock 4 (v2)", "code": "CUH-ZCT2" }
+    ],
+    "playstation-5": [
+      { "name": "DualSense", "code": "CFI-ZCT1" },
+      { "name": "DualSense (v2)", "code": "CFI-ZCT2" },
+      { "name": "DualSense Edge", "code": "CFI-ZCP1" }
+    ],
+    "xbox": [
+      { "name": "Xbox Controller (Duke)", "code": "" },
+      { "name": "Xbox Controller S", "code": "" }
+    ],
+    "xbox-360": [
+      { "name": "Xbox 360 Wireless Controller", "code": "1403" },
+      { "name": "Xbox 360 Wired Controller", "code": "" }
+    ],
+    "xbox-one": [
+      { "name": "Xbox One Wireless Controller", "code": "1537" },
+      { "name": "Xbox One Wireless Controller (3.5 mm jack)", "code": "1697" },
+      { "name": "Xbox One S Wireless Controller (Bluetooth)", "code": "1708" },
+      { "name": "Xbox Elite Wireless Controller", "code": "1698" },
+      { "name": "Xbox Elite Wireless Controller Series 2", "code": "1797" }
+    ],
+    "xbox-series-x": [
+      { "name": "Xbox Wireless Controller (Series X|S)", "code": "1914" },
+      { "name": "Xbox Elite Wireless Controller Series 2", "code": "1797" }
+    ],
+    "xbox-series-s": [
+      { "name": "Xbox Wireless Controller (Series X|S)", "code": "1914" },
+      { "name": "Xbox Elite Wireless Controller Series 2", "code": "1797" }
+    ]
+  }
+}

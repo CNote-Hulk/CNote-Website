@@ -10,7 +10,7 @@ import { API_BASE_URL } from '../../js/config.js';
 import { confirmModal, promptModal } from '../../js/utils/confirm-modal.js';
 import { I18nModule } from '../../js/modules/i18n.js?v=20261127r';
 import { createDatePicker } from '../../js/utils/date-picker.js';
-import { MODEL_DIRECTORY_GROUPS } from '../../js/data/console-models.js?v=20260909d';
+import { consoleVariantList } from '../../js/data/console-models.js?v=20261127s';
 import { openAvatarCropper } from '../../js/modules/avatar-cropper.js';
 // Same URL as main.js's import on purpose — one module instance, one shared on/off state.
 import { isPixelArtOn, setPixelArt } from '../../js/modules/pixel-emoji.js?v=20261005d';
@@ -2225,13 +2225,9 @@ async function initOwnedConsolesSelect() {
     // (2026-11-26) Every hardware line, not just the console page: PS2 / PS2 Slim, PS4 / Slim /
     // Pro... (MODEL_DIRECTORY_GROUPS, same as the app and backend/utils/consoleVariants.js).
     // Key "<console id>|<group>"; a console without lines is just its id.
-    const variantsOf = c => {
-        const g = MODEL_DIRECTORY_GROUPS[c.id] || [];
-        if (!g.length) return [{ key: c.id, consoleId: c.id, name: c.name || c.id }];
-        if (g.length === 1) return [{ key: `${c.id}|${g[0]}`, consoleId: c.id, name: c.name || c.id }];
-        return g.map(name => ({ key: `${c.id}|${name}`, consoleId: c.id, name }));
-    };
-    const allVariants = allConsoles.flatMap(variantsOf);
+    // Labels are the full names ("PlayStation 2 Slim"), from consoleVariantList().
+    const variantsOf = c => consoleVariantList([c]);
+    const allVariants = consoleVariantList(allConsoles);
     const baseKey = id => (variantsOf({ id })[0] || {}).key;
     const selectedVariants = new Set(ownedVariants || []);
     // An owned console with no line recorded shows its base line ticked.

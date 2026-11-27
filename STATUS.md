@@ -7,6 +7,14 @@ own notes.
 
 ## Gata (Done)
 
+### Console pickers: full names, every model, controllers (2026-11-27)
+Andrei: in the app's "Send to sale" not every PS2 model was there, the lines read "PS2" instead of "PlayStation 2", inventory items should be picked from the lists, controller models were missing, and the listing form needed the same console list.
+- Cause of the missing models: the app's pickers read the bundled `assets/console-models.json` (194 models, Sept.) instead of the live directory (227). Now they use the live list (`LiveConsoleModelRepository`) with the refreshed bundle as fallback, sorted numerically.
+- Full names: `MODEL_GROUP_LABELS` (site `console-models.js`) = `ConsoleVariants.GROUP_LABELS` (app); collections, listings and the inventory all use them.
+- Inventory (app): a console picks line → model and the name fills itself; an accessory picks console → controller from `controller-models.json` (≈70 official controllers with model numbers, from Sony/Nintendo/Microsoft support pages, Sega Retro, iFixit), or "Other".
+- Listings: `listings.console_variant` (migration), site new/edit forms + app edit sheet pick a hardware line. The app has no "new listing" form (only edit) — creating listings stays on the site.
+- Next: Andrei checks the controller list (Xbox Duke/Controller S and the wired Xbox 360 pad have no model number on purpose; more accessories — memory cards, cables — can be added to the same file).
+
 ### README rewritten and INDEX.md/STATUS.md synced (2026-11-20 / 2026-11-21)
 The public README.md was far behind the code; it was rewritten from INDEX.md + STATUS.md (commit `bd1aa42` on `main`). Corrected there: uploads are on Cloudflare R2 (MinIO/VPS is only a kept-for-later path); eBay/OLX marketplace sync is gone from the code, not just hidden; the guide directory has 227 models (not 194); Console Engineering is in progress; features added since July are listed (My Space, articles, leaderboard, stickers/voice notes, PS2 pairing, CNote Remote registry, no-payment checkout with flat Sameday fees, Turnstile, CI, daily encrypted backup). The stale env var list (eBay/OLX/MinIO names) was dropped in favour of a pointer to `backend/.env.example`, and the owner-only `personal.js` route is deliberately not mentioned in the public file.
 

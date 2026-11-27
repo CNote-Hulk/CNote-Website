@@ -264,6 +264,42 @@ export const MODEL_DIRECTORY_GROUPS = {
     'nintendo-3ds': ['Nintendo 3DS', 'Nintendo 3DS XL', 'Nintendo 2DS', 'New Nintendo 3DS', 'New Nintendo 3DS XL', 'New Nintendo 2DS XL'],
 };
 
+// (2026-11-27) What a picker shows for a hardware line: the group names above are the
+// directory's short ones ("PS2 Slim"), people pick "PlayStation 2 Slim". A group missing here
+// shows as it is. Mirrored in the app's ConsoleVariants.kt (GROUP_LABELS) — keep them equal.
+export const MODEL_GROUP_LABELS = {
+    'PS1': 'PlayStation 1', 'PSone': 'PSone',
+    'PS2': 'PlayStation 2', 'PS2 Slim': 'PlayStation 2 Slim',
+    'PS3': 'PlayStation 3', 'PS3 Slim': 'PlayStation 3 Slim', 'PS3 Super Slim': 'PlayStation 3 Super Slim',
+    'PS4': 'PlayStation 4', 'PS4 Slim': 'PlayStation 4 Slim', 'PS4 Pro': 'PlayStation 4 Pro',
+    'PS5': 'PlayStation 5', 'PS5 Slim': 'PlayStation 5 Slim', 'PS5 Pro': 'PlayStation 5 Pro',
+    'PSP': 'PlayStation Portable',
+    'PS Vita': 'PlayStation Vita', 'PS Vita Slim': 'PlayStation Vita Slim',
+    'Xbox (original)': 'Xbox',
+    'Famicom': 'Nintendo Famicom', 'NES': 'Nintendo NES',
+    'Super Famicom': 'Super Famicom', 'SNES': 'Super Nintendo (SNES)',
+    'GameCube': 'Nintendo GameCube',
+    'Wii': 'Nintendo Wii', 'Wii Mini': 'Nintendo Wii Mini', 'Wii U': 'Nintendo Wii U',
+    'Switch': 'Nintendo Switch', 'Switch Lite': 'Nintendo Switch Lite', 'Switch OLED': 'Nintendo Switch OLED',
+    'Switch 2': 'Nintendo Switch 2',
+};
+
+/**
+ * Every hardware line of the given consoles, for pickers (collections, listings):
+ * [{ key: "<console id>|<group>" or "<console id>", consoleId, group, name }], the consoles
+ * sorted by name and each console's lines in directory order.
+ */
+export function consoleVariantList(consoles) {
+    return (consoles || []).slice()
+        .sort((a, b) => String(a.name || a.id).localeCompare(String(b.name || b.id)))
+        .flatMap(c => {
+            const g = MODEL_DIRECTORY_GROUPS[c.id] || [];
+            if (!g.length) return [{ key: c.id, consoleId: c.id, group: null, name: c.name || c.id }];
+            if (g.length === 1) return [{ key: `${c.id}|${g[0]}`, consoleId: c.id, group: g[0], name: c.name || c.id }];
+            return g.map(group => ({ key: `${c.id}|${group}`, consoleId: c.id, group, name: MODEL_GROUP_LABELS[group] || group }));
+        });
+}
+
 // Same bare-relative-path fetch convention as the sibling data-loader.js in
 // this same directory (no API_BASE_URL import — that module doesn't use it
 // either, since neither has ever needed the frontend-hosted-separately

@@ -1,4 +1,4 @@
-import { MOD_OPTIONS, flashTypesForModel, loadModels, invalidateModelsCache } from '../data/console-models.js?v=20260909d';
+import { MOD_OPTIONS, flashTypesForModel, loadModels, invalidateModelsCache } from '../data/console-models.js?v=20261127s';
 import { I18nModule } from '../modules/i18n.js?v=20261127r';
 import { openImageViewer } from '../modules/image-viewer.js?v=20261126j';
 import { AuthModule } from '../modules/auth.js?v=20261005';

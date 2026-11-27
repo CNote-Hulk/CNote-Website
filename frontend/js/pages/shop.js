@@ -16,7 +16,7 @@ import { I18nModule } from '../modules/i18n.js?v=20261127r';
 import { API_BASE_URL } from '../config.js';
 import { getConsoleById, getConsolesSorted, resolveImagePath } from '../data/data-loader.js';
 import { confirmModal } from '../utils/confirm-modal.js';
-import { MODEL_DIRECTORY_GROUPS } from '../data/console-models.js?v=20260909d';
+import { MODEL_DIRECTORY_GROUPS } from '../data/console-models.js?v=20261127s';
 
 const t = key => I18nModule.t(key);
 const SHIPPING_PRICE = { address: 25, easybox: 20 }; // = backend/utils/shipping.js

@@ -769,6 +769,9 @@ async function initializeSchema() {
 		`CREATE INDEX IF NOT EXISTS idx_tgdb_artwork_title ON tgdb_artwork(title_norm)`,
 		`ALTER TABLE users ADD COLUMN IF NOT EXISTS profile_background_mobile_game TEXT`,
 		`ALTER TABLE users ADD COLUMN IF NOT EXISTS profile_background_mobile_focus SMALLINT`,
+		// (2026-11-27) The hardware line a listing is for ("playstation-2|PS2 Slim"), same keys as
+		// user_owned_variants (utils/consoleVariants.js); console_type stays the console page id.
+		`ALTER TABLE listings ADD COLUMN IF NOT EXISTS console_variant TEXT DEFAULT ''`,
 		`CREATE TABLE IF NOT EXISTS user_owned_variants (
 			user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
 			console_id TEXT NOT NULL,
