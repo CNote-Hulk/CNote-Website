@@ -6,7 +6,7 @@
 import { AuthModule } from '/js/modules/auth.js?v=20261005';
 import { API_BASE_URL } from '/js/config.js';
 import { AchievementsModule } from '/js/modules/achievements.js';
-import { I18nModule } from '/js/modules/i18n.js?v=20261127r';
+import { I18nModule } from '/js/modules/i18n.js?v=20261127u';
 import { shareOrCopy } from '/js/utils/share.js';
 import { certT, certName, certDate } from '/js/modules/cert-i18n.js?v=20261127r';
 import { confirmModal, promptModal } from '/js/utils/confirm-modal.js';
@@ -515,6 +515,10 @@ const t = key => I18nModule.t(key);
                 const allOwned = rankedList(profile.owned_console_ids, profile.owned_consoles);
                 if (allOwned.length > 0) ownedContainer.innerHTML = rankedMarkup(allOwned);
 
+                // Collection (2026-11-27): every piece the user listed in the app - consoles with their
+                // line/model/storage, controllers, memory cards, special editions, with quantities.
+                renderCollection(profile.username);
+
                 // Friend button
                 const actionsEl = document.getElementById('user-profile-actions');
 
@@ -980,4 +984,38 @@ function applyProfileBackground(bg) {
         });
         page.appendChild(credit);
     }
+}
+
+const COLLECTION_CATEGORIES = ['consola', 'controller', 'card_memorie', 'accesoriu', 'joc', 'altele'];
+
+/** Fills #user-collection from GET /api/collection/user/:username; stays hidden when empty. */
+async function renderCollection(username) {
+    const box = document.getElementById('user-collection');
+    const list = document.getElementById('user-collection-items');
+    if (!box || !list) return;
+    let items = [];
+    try {
+        const res = await fetch(`${API_BASE_URL}/collection/user/${encodeURIComponent(username)}`);
+        const data = await res.json();
+        if (data.success) items = data.items || [];
+    } catch { /* the profile works without it */ }
+    if (!items.length) return;
+    const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const t = k => I18nModule.t(k);
+    const piece = i => {
+        const bits = [i.name];
+        if (i.model && !i.name.includes(i.model)) bits.push(i.model);
+        if (i.storage) bits.push(i.storage === 'Fără HDD' ? t('collection_no_hdd') : i.storage);
+        if (i.color) bits.push(i.color);
+        const label = bits.join(' · ') + (i.quantity > 1 ? ` ×${i.quantity}` : '');
+        const edition = i.edition ? ` <em>(${esc(i.edition)})</em>` : '';
+        return `<span class="profile-console-tag" title="${esc(i.notes || '')}">${esc(label)}${edition}</span>`;
+    };
+    list.innerHTML = COLLECTION_CATEGORIES.map(cat => {
+        const group = items.filter(i => i.category === cat);
+        if (!group.length) return '';
+        return `<div class="profile-console-list__empty" style="opacity:1;margin:8px 0 4px">${esc(t('collection_cat_' + cat))}</div>`
+            + `<div class="profile-console-list__items">${group.map(piece).join('')}</div>`;
+    }).join('');
+    box.hidden = false;
 }

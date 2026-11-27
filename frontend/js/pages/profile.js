@@ -8,9 +8,8 @@ import { AchievementsModule } from '../../js/modules/achievements.js';
 import { SearchModule } from '../../js/modules/search.js';
 import { API_BASE_URL } from '../../js/config.js';
 import { confirmModal, promptModal } from '../../js/utils/confirm-modal.js';
-import { I18nModule } from '../../js/modules/i18n.js?v=20261127r';
+import { I18nModule } from '../../js/modules/i18n.js?v=20261127u';
 import { createDatePicker } from '../../js/utils/date-picker.js';
-import { consoleVariantList } from '../../js/data/console-models.js?v=20261127s';
 import { openAvatarCropper } from '../../js/modules/avatar-cropper.js';
 // Same URL as main.js's import on purpose — one module instance, one shared on/off state.
 import { isPixelArtOn, setPixelArt } from '../../js/modules/pixel-emoji.js?v=20261005d';
@@ -344,7 +343,6 @@ function initSettings() {
         }
     }
 
-    initOwnedConsolesSelect();
     initProfileBackground();
 
     // Password section toggle for Google-only users
@@ -531,7 +529,6 @@ function initSettings() {
         e.preventDefault();
         const username = document.getElementById('set-username').value;
         const bio = document.getElementById('set-bio').value;
-        const owned_consoles = document.getElementById('set-owned-consoles').value;
         const email = document.getElementById('set-email').value;
         const currentPassword = document.getElementById('set-current-password').value;
         const emailConfirmPassword = (document.getElementById('set-email-confirm-password') || {}).value || '';
@@ -560,24 +557,11 @@ function initSettings() {
         }
 
         const birthDateVal = _birthDatePicker ? _birthDatePicker.getValue() : '';
-        const profileResult = await AuthModule.updateProfile({ username, bio, owned_consoles, birth_date: birthDateVal || null });
+        const profileResult = await AuthModule.updateProfile({ username, bio, birth_date: birthDateVal || null });
         if (profileResult === false || (profileResult && !profileResult.success && profileResult.error)) {
             showSettingsMessage(profileResult?.error || 'Username is already taken.', false);
             return;
         }
-
-        // Save owned consoles to table
-        try {
-            const ownedList = owned_consoles.split(',').map(s => s.trim()).filter(Boolean);
-            const token = localStorage.getItem('cn_token');
-            const headers = { 'Content-Type': 'application/json' };
-            if (token) headers['Authorization'] = 'Bearer ' + token;
-            await fetch(API_BASE_URL + '/owned-consoles', {
-                method: 'PUT', headers, credentials: 'include',
-                body: JSON.stringify({ consoles: ownedList, variants: JSON.parse(document.getElementById('set-owned-consoles').dataset.variants || 'null') || undefined })
-            });
-            window.dispatchEvent(new CustomEvent('cn:owned-changed'));
-        } catch { /* ignore */ }
 
         document.getElementById('profile-name').textContent = username;
         document.getElementById('profile-bio').textContent = bio || 'No description yet.';
@@ -630,46 +614,11 @@ function initSettings() {
 
         user.username = username.trim();
         user.bio = bio;
-        user.owned_consoles = owned_consoles;
         user.email = email.trim().toLowerCase();
         document.getElementById('set-current-password').value = '';
         showSettingsMessage('Settings updated successfully.', true);
     });
 
-    // ═══ OWNED CONSOLES SAVE ═══
-    const saveConsolesBtn = document.getElementById('save-owned-consoles-btn');
-    const consolesMsg = document.getElementById('owned-consoles-msg');
-    if (saveConsolesBtn && consolesMsg) {
-        saveConsolesBtn.addEventListener('click', async () => {
-            const owned_consoles = document.getElementById('set-owned-consoles').value;
-            consolesMsg.style.display = 'none';
-            saveConsolesBtn.disabled = true;
-            try {
-                const ownedList = owned_consoles.split(',').map(s => s.trim()).filter(Boolean);
-                const token = localStorage.getItem('cn_token');
-                const headers = { 'Content-Type': 'application/json' };
-                if (token) headers['Authorization'] = 'Bearer ' + token;
-                const res = await fetch(API_BASE_URL + '/owned-consoles', {
-                    method: 'PUT', headers, credentials: 'include',
-                    body: JSON.stringify({ consoles: ownedList, variants: JSON.parse(document.getElementById('set-owned-consoles').dataset.variants || 'null') || undefined })
-                });
-                const data = await res.json().catch(() => ({}));
-                if (res.ok && data.success !== false) {
-                    consolesMsg.textContent = 'Consoles saved.';
-                    consolesMsg.style.color = 'var(--success, #4ade80)';
-                    window.dispatchEvent(new CustomEvent('cn:owned-changed'));
-                } else {
-                    consolesMsg.textContent = data.error || 'Failed to save consoles.';
-                    consolesMsg.style.color = 'var(--error, #e57373)';
-                }
-            } catch {
-                consolesMsg.textContent = 'Failed to save consoles.';
-                consolesMsg.style.color = 'var(--error, #e57373)';
-            }
-            consolesMsg.style.display = 'block';
-            saveConsolesBtn.disabled = false;
-        });
-    }
 
     // ═══ CONFIRM DIALOG ═══
     const showConfirmDialog = ({
@@ -2179,106 +2128,6 @@ async function loadAdminAnalytics() {
         console.error('[loadAdminAnalytics]', err);
         container.innerHTML = `<p class="my-reports-empty">${t('admin_analytics_error')}</p>`;
     }
-}
-
-/** Initialize the owned-consoles multi-select dropdown */
-async function initOwnedConsolesSelect() {
-    const listEl = document.getElementById('owned-consoles-list');
-    const searchEl = document.getElementById('owned-consoles-search');
-    const hiddenInput = document.getElementById('set-owned-consoles');
-    if (!listEl || !searchEl || !hiddenInput) return;
-
-    let allConsoles = [];
-    let selectedIds = new Set();
-    let ownedVariants = null;
-
-    try {
-        const token = localStorage.getItem('cn_token');
-        const headers = {};
-        if (token) headers['Authorization'] = 'Bearer ' + token;
-        const [consolesRes, ownedRes] = await Promise.all([
-            fetch(API_BASE_URL + '/consoles/list', { headers, credentials: 'include' }),
-            fetch(API_BASE_URL + '/owned-consoles', { headers, credentials: 'include' })
-        ]);
-        const consolesData = await consolesRes.json();
-        const ownedData = await ownedRes.json();
-        if (consolesData.success) allConsoles = consolesData.consoles;
-        if (ownedData.success) {
-            ownedData.consoles.forEach(id => selectedIds.add(id));
-            if (Array.isArray(ownedData.variants)) ownedVariants = ownedData.variants;
-        }
-    } catch { }
-
-    if (allConsoles.length === 0 && window.CONSOLES_DATA && window.CONSOLES_DATA.length > 0) {
-        allConsoles = window.CONSOLES_DATA.map(c => ({ id: c.id, name: c.name })).sort((a, b) => a.name.localeCompare(b.name));
-    }
-
-    if (allConsoles.length === 0) {
-        listEl.innerHTML = '<p style="color:#e57373;font-size:0.85rem;">Could not load consoles.</p>';
-        return;
-    }
-
-    if (user.owned_consoles) {
-        user.owned_consoles.split(',').map(s => s.trim()).filter(Boolean).forEach(id => selectedIds.add(id));
-    }
-
-    // (2026-11-26) Every hardware line, not just the console page: PS2 / PS2 Slim, PS4 / Slim /
-    // Pro... (MODEL_DIRECTORY_GROUPS, same as the app and backend/utils/consoleVariants.js).
-    // Key "<console id>|<group>"; a console without lines is just its id.
-    // Labels are the full names ("PlayStation 2 Slim"), from consoleVariantList().
-    const variantsOf = c => consoleVariantList([c]);
-    const allVariants = consoleVariantList(allConsoles);
-    const baseKey = id => (variantsOf({ id })[0] || {}).key;
-    const selectedVariants = new Set(ownedVariants || []);
-    // An owned console with no line recorded shows its base line ticked.
-    selectedIds.forEach(id => {
-        if (![...selectedVariants].some(k => k.split('|')[0] === id) && baseKey(id)) selectedVariants.add(baseKey(id));
-    });
-
-    function updateHidden() {
-        const consoles = [...new Set([...selectedVariants].map(k => k.split('|')[0]))];
-        hiddenInput.value = consoles.join(',');
-        hiddenInput.dataset.variants = JSON.stringify([...selectedVariants]);
-    }
-
-    function renderList(filter = '') {
-        const normalizedFilter = String(filter || '').trim().toLowerCase();
-        const filtered = filter
-            ? allVariants.filter(v => {
-                const idText = String(v.consoleId || '').toLowerCase();
-                const nameText = formatConsoleDisplayName(v.name || '').toLowerCase();
-                return idText.includes(normalizedFilter) || nameText.includes(normalizedFilter);
-            })
-            : allVariants;
-
-        if (filtered.length === 0) {
-            listEl.innerHTML = '<p style="color:var(--text-gray);font-size:0.85rem;padding:8px;">No consoles found.</p>';
-            return;
-        }
-
-        listEl.innerHTML = filtered.map(c => {
-            const checked = selectedVariants.has(c.key);
-            const displayName = formatConsoleDisplayName(c.name);
-            return `<label class="owned-console-item${checked ? ' checked' : ''}">
-                <input type="checkbox" value="${escapeHtml(c.key)}" ${checked ? 'checked' : ''}>
-                <span class="owned-console-check">${checked ? '☑' : '☐'}</span>
-                <span class="owned-console-name">${escapeHtml(displayName)}</span>
-            </label>`;
-        }).join('');
-
-        listEl.querySelectorAll('input[type="checkbox"]').forEach(cb => {
-            cb.addEventListener('change', () => {
-                if (cb.checked) selectedVariants.add(cb.value);
-                else selectedVariants.delete(cb.value);
-                updateHidden();
-                renderList(searchEl.value);
-            });
-        });
-    }
-
-    searchEl.addEventListener('input', () => renderList(searchEl.value));
-    renderList();
-    updateHidden();
 }
 
 // ── Mobile bottom nav — tab switching ────────────────────────

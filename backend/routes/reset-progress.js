@@ -28,6 +28,11 @@ async function resetUserData(userId) {
         'DELETE FROM user_console_visits WHERE user_id = $1',
         'DELETE FROM user_favorites WHERE user_id = $1',
         'DELETE FROM user_owned_consoles WHERE user_id = $1',
+        // The collection is where owned consoles come from now (routes/collection.js).
+        'DELETE FROM user_collection_items WHERE user_id = $1',
+        'DELETE FROM user_owned_variants WHERE user_id = $1',
+        'DELETE FROM user_owned_models WHERE user_id = $1',
+        "UPDATE users SET owned_consoles = '' WHERE id = $1",
         'DELETE FROM xp_transactions WHERE user_id = $1',
         'DELETE FROM course_part_completions WHERE user_id = $1',
     ];

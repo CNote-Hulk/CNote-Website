@@ -304,24 +304,13 @@
                         </div>
                     </div>
 
-                    <!-- Owned consoles row -->
+                    <!-- Collection row (2026-11-27): the owned-consoles picker is gone - what you own is
+                         your collection, edited only in the app (Personal -> Collection), backend
+                         routes/collection.js. The profile shows it. -->
                     <div class="settings-row">
                         <div class="settings-row__meta">
-                            <div class="settings-row__title" data-i18n="settings_consoles_title">Owned consoles</div>
-                            <div class="settings-row__desc" data-i18n="settings_consoles_desc">Select the consoles you own.</div>
-                        </div>
-                        <div class="settings-row__body">
-                            <div class="owned-consoles-select" id="owned-consoles-select">
-                                <div class="owned-consoles-search-wrap">
-                                    <input type="text" class="owned-consoles-search" id="owned-consoles-search" placeholder="Search consoles..." autocomplete="off" data-i18n="profile_settings_search_consoles" data-i18n-attr="placeholder">
-                                </div>
-                                <div class="owned-consoles-list" id="owned-consoles-list">
-                                    <p class="owned-consoles-loading" data-i18n="profile_settings_loading_consoles">Loading consoles...</p>
-                                </div>
-                            </div>
-                            <input type="hidden" id="set-owned-consoles" value="">
-                            <button type="button" class="auth-btn settings-row__btn" id="save-owned-consoles-btn" data-i18n="settings_save_consoles">Save consoles</button>
-                            <div class="auth-error" id="owned-consoles-msg" style="display:none;margin-top:8px;"></div>
+                            <div class="settings-row__title" data-i18n="settings_consoles_title">Collection</div>
+                            <div class="settings-row__desc" data-i18n="settings_consoles_desc">Your collection is edited in the CNote app: Personal → Collection. It shows on your profile.</div>
                         </div>
                     </div>
 
@@ -677,8 +666,8 @@
     <script src="../../js/data/location-data.js"></script>
     <script src="../../js/data/city-name-overrides.js"></script>
     <script src="../../js/modules/gamification-data.js?v=2"></script>
-    <script type="module" src="../../js/main.js?v=20261127r"></script>
-    <script type="module" src="../../js/pages/profile.js?v=20261127s"></script>
+    <script type="module" src="../../js/main.js?v=20261127u"></script>
+    <script type="module" src="../../js/pages/profile.js?v=20261127u"></script>
     <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
     <script src="../../js/fallback/search-profile.js"></script>
 

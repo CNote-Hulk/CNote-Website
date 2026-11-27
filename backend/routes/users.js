@@ -13,9 +13,10 @@ const path = require('path');
 const fs = require('fs');
 const pool = require('../db');
 const { authRequired, authOptional } = require('../middleware/auth');
-const { awardXP, getLevelFromXP } = require('../utils/gamification');
+const { getLevelFromXP } = require('../utils/gamification');
 const { publicUrlForKey, deleteAttachment } = require('../utils/objectStorage');
-const { baseVariant, parseVariant, variantOfGroup } = require('../utils/consoleVariants');
+const { parseVariant, variantOfGroup } = require('../utils/consoleVariants');
+const { syncOwned, addConsole, removeConsole } = require('./collection');
 const { toPublic: profileBackgroundOf, mobileOf: profileBackgroundMobileOf } = require('./profileBackground');
 
 const router = express.Router();
@@ -272,44 +273,13 @@ router.get('/owned-consoles', authRequired, async (req, res) => {
     }
 });
 
-// `users.owned_consoles` is a comma-separated mirror of `user_owned_consoles`, kept for the older
-// readers that still fall back to it. It had drifted badly: Settings wrote ONLY the text column
-// (through PUT /api/me) while My Space, the profile and the Collection page all read ONLY the
-// table - so ticking a console in Settings changed nothing anywhere the user could see, and a
-// console added from My Space never appeared in Settings.
-//
-// Rather than teach each writer to update both, every mutation of the table calls this and the
-// text column is derived from it. A mirror that gets rebuilt cannot drift; two writers kept in
-// step by hand eventually always do.
-// Every owned console has at least one line recorded: its base line when nothing more specific
-// is known (an older client ticked the console, or My Space marked it owned).
-async function ensureBaseVariants(userId) {
-    const { rows } = await pool.query(
-        `SELECT c.console_id FROM user_owned_consoles c
-          WHERE c.user_id = $1
-            AND NOT EXISTS (SELECT 1 FROM user_owned_variants v WHERE v.user_id = c.user_id AND v.console_id = c.console_id)`,
-        [userId]);
-    for (const r of rows) {
-        await pool.query(
-            'INSERT INTO user_owned_variants (user_id, console_id, variant) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING',
-            [userId, r.console_id, baseVariant(r.console_id)]);
-    }
-}
+// `users.owned_consoles` (CSV), user_owned_consoles / _variants / _models are all rebuilt from the
+// collection by routes/collection.js syncOwned() (2026-11-27) - one writer, so they cannot drift.
 
 /** The line a console_models code belongs to, as a variant key (null if unknown). */
 async function variantOfModel(consoleId, code) {
     const { rows } = await pool.query('SELECT console FROM console_models WHERE code = $1 LIMIT 1', [code]);
     return rows.length ? variantOfGroup(consoleId, rows[0].console) : null;
-}
-
-async function syncOwnedCsv(userId) {
-    await pool.query(
-        `UPDATE users SET owned_consoles = COALESCE((
-           SELECT string_agg(console_id, ',' ORDER BY position NULLS LAST, id)
-             FROM user_owned_consoles WHERE user_id = $1
-         ), '') WHERE id = $1`,
-        [userId]
-    );
 }
 
 // ── My Space ────────────────────────────────────────────
@@ -456,16 +426,12 @@ router.put('/my-space/:consoleId', authRequired, async (req, res) => {
     const { owned, favourite, modelCode, modelOwned, note } = req.body;
 
     try {
+        // (2026-11-27) Ownership lives in the collection (routes/collection.js): ticking adds a
+        // console row there, unticking removes that console's rows; syncOwned() below rebuilds
+        // user_owned_consoles / _variants / _models from it.
         if (typeof owned === 'boolean') {
-            if (owned) {
-                await pool.query(
-                    'INSERT INTO user_owned_consoles (user_id, console_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
-                    [req.user.id, consoleId]
-                );
-            } else {
-                await pool.query('DELETE FROM user_owned_consoles WHERE user_id = $1 AND console_id = $2',
-                    [req.user.id, consoleId]);
-            }
+            if (owned) await addConsole(req.user.id, consoleId);
+            else await removeConsole(req.user.id, consoleId);
         }
         if (typeof favourite === 'boolean') {
             if (favourite) {
@@ -488,18 +454,19 @@ router.put('/my-space/:consoleId', authRequired, async (req, res) => {
                     'DELETE FROM user_owned_models WHERE user_id = $1 AND console_id = $2 AND model_code = $3',
                     [req.user.id, consoleId, code]
                 );
+                // The collection row naming that revision forgets it too, or the sync would bring it back.
+                await pool.query(
+                    "UPDATE user_collection_items SET model = NULL, updated_at = NOW() WHERE user_id = $1 AND category = 'consola' AND console_id = $2 AND model = $3",
+                    [req.user.id, consoleId, code]);
             } else if (code) {
                 await pool.query(
                     'INSERT INTO user_owned_models (user_id, console_id, model_code) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING',
                     [req.user.id, consoleId, code]
                 );
-                // Owning a revision means owning its line (SCPH-90004 -> PS2 Slim).
+                // Owning a revision means owning that console, of its line (SCPH-90004 -> PS2 Slim):
+                // the collection gets (or fills in) a console row for it.
                 const v = await variantOfModel(consoleId, code);
-                if (v) {
-                    await pool.query(
-                        'INSERT INTO user_owned_variants (user_id, console_id, variant) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING',
-                        [req.user.id, consoleId, v]);
-                }
+                await addConsole(req.user.id, consoleId, v, code);
             }
         }
         // Present-or-absent, like every other field here: omitting it leaves what is stored
@@ -529,8 +496,7 @@ router.put('/my-space/:consoleId', authRequired, async (req, res) => {
             await pool.query('DELETE FROM user_owned_variants WHERE user_id = $1 AND console_id = $2',
                 [req.user.id, consoleId]);
         }
-        if (owned === true) await ensureBaseVariants(req.user.id);
-        if (typeof owned === 'boolean') await syncOwnedCsv(req.user.id);
+        if (typeof owned === 'boolean' || modelCode) await syncOwned(req.user.id, req.app.get('io'));
         res.json({ success: true });
     } catch (err) {
         console.error('My space PUT error:', err);
@@ -539,11 +505,12 @@ router.put('/my-space/:consoleId', authRequired, async (req, res) => {
 });
 
 // PUT /api/owned-consoles — Replace the user’s entire owned-consoles list
+// (2026-11-27) Kept for older clients (the site's Settings picker and the app's "Owned consoles"
+// screen are gone; the collection replaced them). It edits the collection: consoles no longer in
+// the list lose their console rows, new ones get a row (of the line given in `variants`, else the
+// base line), and syncOwned() rebuilds the rest. Accessories and the ranking are untouched.
 router.put('/owned-consoles', authRequired, async (req, res) => {
     try {
-        // (2026-11-26) `variants` = the lines owned ("playstation-2|PS2 Slim"); the consoles follow
-        // from them. Older clients send only `consoles`: their lines are kept, new consoles get
-        // their base line.
         const variantList = Array.isArray(req.body.variants)
             ? req.body.variants.map(parseVariant).filter(Boolean) : null;
         let consoles = req.body.consoles;
@@ -553,74 +520,20 @@ router.put('/owned-consoles', authRequired, async (req, res) => {
         if (!Array.isArray(consoles)) {
             return res.status(400).json({ success: false, error: 'Format invalid.' });
         }
+        const wanted = [...new Set(consoles.map(c => String(c || '').trim()).filter(c => /^[a-z0-9-]{1,40}$/.test(c)))];
 
-        // This route had been broken since hardware revisions moved out of this table: it still
-        // selected and re-inserted `model_code`, a column the `owned_console_models_many` migration
-        // dropped when it created `user_owned_models`. Every call 500'd. Nothing noticed, because
-        // nothing called it - Settings was writing the `users.owned_consoles` text column instead.
-        //
-        // Revisions now live in their own table, which this route does not delete, so they survive
-        // the replace below on their own and need no carrying across.
-        const existingRes = await pool.query(
-            'SELECT console_id, position FROM user_owned_consoles WHERE user_id = $1',
-            [req.user.id]
-        );
-        const existingIds = new Set(existingRes.rows.map(r => r.console_id));
-        // The ranking the user dragged into place is theirs, and ticking one more box in Settings
-        // is not a request to throw it away. Anything new goes to the end, behind what is ranked.
-        const existingOrder = new Map(existingRes.rows.map(r => [r.console_id, r.position]));
-        let nextPosition = existingRes.rows.reduce(
-            (max, r) => Math.max(max, Number.isInteger(r.position) ? r.position + 1 : 0), 0);
-
-        await pool.query('DELETE FROM user_owned_consoles WHERE user_id = $1', [req.user.id]);
-
-        const keep = [];
-        const newlyAdded = [];
-        for (const consoleId of consoles) {
-            const id = String(consoleId || '').trim();
-            if (!id || keep.includes(id)) continue;
-            const position = Number.isInteger(existingOrder.get(id))
-                ? existingOrder.get(id)
-                : nextPosition++;
-            await pool.query(
-                'INSERT INTO user_owned_consoles (user_id, console_id, position) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING',
-                [req.user.id, id, position]
-            );
-            keep.push(id);
-            if (!existingIds.has(id)) newlyAdded.push(id);
+        const { rows } = await pool.query(
+            "SELECT DISTINCT console_id FROM user_collection_items WHERE user_id = $1 AND category = 'consola' AND console_id IS NOT NULL",
+            [req.user.id]);
+        const have = new Set(rows.map(r => r.console_id));
+        for (const c of have) if (!wanted.includes(c)) await removeConsole(req.user.id, c);
+        for (const c of wanted) {
+            if (have.has(c)) continue;
+            const v = variantList && variantList.find(x => x.consoleId === c);
+            await addConsole(req.user.id, c, v ? v.key : null);
         }
-
-        // Unticking a console drops its revisions with it - the same rule the My Space toggle
-        // applies. A revision of a console you no longer own is an orphan that reappears, looking
-        // like the app remembered something you deleted.
-        const dropped = [...existingIds].filter(id => !keep.includes(id));
-        if (dropped.length) {
-            await pool.query(
-                'DELETE FROM user_owned_models WHERE user_id = $1 AND console_id = ANY($2::text[])',
-                [req.user.id, dropped]
-            );
-        }
-        if (variantList) {
-            await pool.query('DELETE FROM user_owned_variants WHERE user_id = $1', [req.user.id]);
-            for (const v of variantList) {
-                await pool.query(
-                    'INSERT INTO user_owned_variants (user_id, console_id, variant) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING',
-                    [req.user.id, v.consoleId, v.key]);
-            }
-        } else {
-            await pool.query('DELETE FROM user_owned_variants WHERE user_id = $1 AND NOT (console_id = ANY($2::text[]))',
-                [req.user.id, keep]);
-        }
-        await ensureBaseVariants(req.user.id);
-
-        await syncOwnedCsv(req.user.id);
+        await syncOwned(req.user.id, req.app.get('io'));
         res.json({ success: true });
-
-        // Award XP for each newly added console (fire-and-forget)
-        const io = req.app.get('io');
-        for (const id of newlyAdded) {
-            awardXP(pool, io, req.user.id, 'console_owned', id).catch(() => {});
-        }
     } catch (err) {
         console.error('Owned consoles PUT error:', err);
         res.status(500).json({ success: false, error: 'Internal error.' });

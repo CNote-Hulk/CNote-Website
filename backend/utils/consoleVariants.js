@@ -23,7 +23,26 @@ try {
     console.error('consoleVariants: could not read MODEL_DIRECTORY_GROUPS:', err.message);
 }
 
+// (2026-11-27) Full picker names of the groups ("PS2 Slim" -> "PlayStation 2 Slim"), same file.
+let LABELS = {};
+try {
+    const src = fs.readFileSync(path.join(__dirname, '../../frontend/js/data/console-models.js'), 'utf8');
+    const m = src.match(/export const MODEL_GROUP_LABELS = (\{[\s\S]*?\});/);
+    // eslint-disable-next-line no-new-func
+    if (m) LABELS = new Function(`return ${m[1]};`)();
+} catch (err) {
+    console.error('consoleVariants: could not read MODEL_GROUP_LABELS:', err.message);
+}
+
 const groupsOf = consoleId => GROUPS[consoleId] || [];
+
+/** Full name of a variant key, or null when the console page's own name should be used
+ *  (a console with no lines, or a single line). */
+function variantLabel(key) {
+    const v = parseVariant(key);
+    if (!v || !v.group || groupsOf(v.consoleId).length < 2) return null;
+    return LABELS[v.group] || v.group;
+}
 
 /** The key of a console's base line (the first group; the console itself if it has none). */
 function baseVariant(consoleId) {
@@ -46,4 +65,4 @@ function variantOfGroup(consoleId, group) {
     return groupsOf(consoleId).includes(group) ? `${consoleId}|${group}` : null;
 }
 
-module.exports = { GROUPS, groupsOf, baseVariant, parseVariant, variantOfGroup };
+module.exports = { GROUPS, LABELS, groupsOf, baseVariant, parseVariant, variantOfGroup, variantLabel };

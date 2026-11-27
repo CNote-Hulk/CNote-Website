@@ -755,6 +755,27 @@ async function initializeSchema() {
 		`ALTER TABLE IF EXISTS personal_inventory_items ADD COLUMN IF NOT EXISTS storage TEXT`,
 		// (2026-11-27) The cables line of a shop order (routes/shop.js CABLES_PRICE); 0 on older orders = "included".
 		`ALTER TABLE shop_orders ADD COLUMN IF NOT EXISTS cables_price DECIMAL(10,2) NOT NULL DEFAULT 0`,
+		// (2026-11-27) A user's collection, one row per piece kind (routes/collection.js) — the
+		// source user_owned_consoles / _variants / _models and users.owned_consoles are rebuilt from.
+		`CREATE TABLE IF NOT EXISTS user_collection_items (
+			id         SERIAL PRIMARY KEY,
+			user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+			category   TEXT NOT NULL,
+			console_id TEXT,
+			variant    TEXT,
+			model      TEXT,
+			name       TEXT NOT NULL,
+			quantity   INTEGER NOT NULL DEFAULT 1,
+			storage    TEXT,
+			edition    TEXT,
+			color      TEXT,
+			notes      TEXT,
+			position   INTEGER,
+			created_at TIMESTAMP DEFAULT NOW(),
+			updated_at TIMESTAMP DEFAULT NOW()
+		)`,
+		`CREATE INDEX IF NOT EXISTS idx_user_collection_items_user ON user_collection_items(user_id)`,
+		`ALTER TABLE user_collection_items ENABLE ROW LEVEL SECURITY`,
 		`ALTER TABLE shop_units ADD COLUMN IF NOT EXISTS inventory_item_id UUID`,
 		`ALTER TABLE shop_extras ADD COLUMN IF NOT EXISTS inventory_item_id UUID`,
 		// Which hardware line of a console a user owns (2026-11-26): PS2 vs PS2 Slim, PS4 Pro...
