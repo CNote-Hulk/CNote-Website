@@ -135,7 +135,7 @@ test('community: live lists only sessions with something happening, hall groups 
                 { id: 2, user_id: 51, slug: 'bbbb2', title: 'Old', username: 'x', last_event: old, events: 1, game_serial: '' },
             ] };
         }
-        if (/FROM play_events e\s+WHERE e.game <> ''/.test(sql)) {
+        if (/FROM play_events e LEFT JOIN play_sessions s/.test(sql)) {
             return { rows: [
                 { game: 'MK', serial: 'SLUS21543', kind: 'fight', p1_name: 'A', p2_name: 'B', data: { winner: 1 } },
                 { game: 'MK', serial: 'SLUS21543', kind: 'arcade_run', p1_name: 'A', p2_name: '', data: { player: 1, reached: 6 } },
