@@ -30,35 +30,32 @@ const medal = (i) => (i < 3 ? ['🥇', '🥈', '🥉'][i] : '#' + (i + 1));
 let session = null;
 let lastStamp = '';
 
-function describe(e) {
-    const d = e.data || {};
-    const p1 = e.p1_name || 'P1';
-    const p2 = d.vs_cpu ? 'CPU' : (e.p2_name || 'P2');
-    if (e.kind === 'fight') {
-        const winner = d.winner === 1 ? p1 : p2;
-        const loser = d.winner === 1 ? p2 : p1;
-        const rounds = Array.isArray(d.rounds) ? ` <span class="pl-dim">${d.rounds[0]}–${d.rounds[1]}</span>` : '';
-        const chars = d.p1_char && d.p2_char ? ` <span class="pl-dim">(${esc(d.p1_char)} vs ${esc(d.p2_char)})</span>` : '';
-        return `<b>${esc(winner)}</b> beat ${esc(loser)}${rounds}${chars}`;
-    }
-    if (e.kind === 'race' && d.winner) {
-        const winner = d.winner === 1 ? p1 : (e.p2_name || 'P2');
-        const loser = d.winner === 1 ? (e.p2_name || 'P2') : p1;
-        return `🏁 <b>${esc(winner)}</b> beat ${esc(loser)} in a race`;
-    }
-    if (e.kind === 'race' && d.position) return `🏁 <b>${esc(p1)}</b> finished #${d.position}`;
-    if (e.kind === 'arcade_run') {
-        const who = (d.player === 2 ? e.p2_name : e.p1_name) || 'P' + (d.player || 1);
-        const ch = d.char ? ` <span class="pl-dim">(${esc(d.char)})</span>` : '';
-        return d.cleared
-            ? `<b>${esc(who)}</b>${ch} finished the arcade ladder 🏆`
-            : `<b>${esc(who)}</b>${ch} fell at fight ${d.reached}`;
-    }
-    return `${esc(e.kind)}`;
-}
-
 function rows(list, render) {
     return list.map((r, i) => `<li class="pl-row${i < 3 ? ' pl-row--top' : ''}"><span class="pl-row__rank">${medal(i)}</span>${render(r)}</li>`).join('');
+}
+
+/** One finished match in the list: who vs who and the score, the winner lit. */
+function matchRow(e) {
+    const d = e.data || {};
+    const n1 = e.p1_name || 'P1';
+    const n2 = d.vs_cpu ? 'CPU' : (e.p2_name || 'P2');
+    const time = `<span class="sb-time">${when(e.occurred_at)}</span>`;
+    if ((e.kind === 'fight' || e.kind === 'race') && d.winner) {
+        const sc = Array.isArray(d.rounds) ? `${d.rounds[0]}–${d.rounds[1]}` : (e.kind === 'race' ? '🏁' : '');
+        const c1 = d.p1_char ? `<small>${esc(d.p1_char)}</small>` : '';
+        const c2 = d.p2_char ? `<small>${esc(d.p2_char)}</small>` : '';
+        return `<li class="sb-m">${time}
+            <span class="sb-m__p ${d.winner === 1 ? 'win' : ''}">${esc(n1)}${c1}</span>
+            <span class="sb-m__s">${sc}</span>
+            <span class="sb-m__p sb-m__p--r ${d.winner === 2 ? 'win' : ''}">${esc(n2)}${c2}</span></li>`;
+    }
+    if (e.kind === 'arcade_run') {
+        const who = (d.player === 2 ? e.p2_name : e.p1_name) || 'P1';
+        return `<li class="sb-m sb-m--arcade">${time}<span class="sb-m__p win">${esc(who)}${d.char ? `<small>${esc(d.char)}</small>` : ''}</span>
+            <span class="sb-m__s">${d.cleared ? '🏆' : `${d.reached}/8`}</span><span class="sb-m__p sb-m__p--r">${d.cleared ? 'Arcade terminat' : 'Arcade'}</span></li>`;
+    }
+    if (e.kind === 'race' && d.position) return `<li class="sb-m">${time}<span class="sb-m__p">${esc(n1)}</span><span class="sb-m__s">#${d.position}</span><span class="sb-m__p sb-m__p--r">cursă</span></li>`;
+    return '';
 }
 
 function renderSession(res) {
@@ -67,46 +64,36 @@ function renderSession(res) {
     $('pl-title').textContent = session.title;
     $('pl-sub').textContent = `${session.host} · ${day(session.created_at)}`;
     $('pl-live').classList.toggle('pl-live--off', !session.open);
-    $('pl-live-text').textContent = session.open ? 'Live' : 'Ended';
-    $('pl-pads').innerHTML = `
-        <span class="pl-pad">🎮 1 <b>${esc(session.p1_name || '—')}</b></span>
-        <span class="pl-pad">🎮 2 <b>${esc(session.p2_name || '—')}</b></span>`;
+    $('pl-live-text').textContent = session.open ? 'Live' : 'Încheiată';
+    $('sb-n1').textContent = session.p1_name || 'P1';
+    $('sb-n2').textContent = session.p2_name || 'P2';
 
     const me = AuthModule.getCurrentUser();
     $('pl-owner').hidden = !(me && me.username === session.host && session.open);
 
-    const b = res.boards;
-    $('pl-board-arcade').hidden = !b.arcade.length;
-    $('pl-arcade').innerHTML = rows(b.arcade, (r) => `
-        <span class="pl-row__name">${esc(r.name)}${r.char ? ` <span class="pl-dim">${esc(r.char)}</span>` : ''}</span>
-        <span class="pl-row__score">${r.cleared ? '🏆 Cleared' : 'Fight ' + r.reached}</span>
-        <span class="pl-row__extra">${r.runs} run${r.runs === 1 ? '' : 's'}</span>`);
-    $('pl-board-versus').hidden = !b.versus.length;
-    $('pl-versus').innerHTML = rows(b.versus, (r) => `
-        <span class="pl-row__name">${esc(r.name)}</span>
-        <span class="pl-row__score">${r.wins} W</span>
-        <span class="pl-row__extra">${r.losses} L</span>`);
-    $('pl-board-cpu').hidden = !b.vs_cpu.length;
-    $('pl-cpu').innerHTML = rows(b.vs_cpu, (r) => `
-        <span class="pl-row__name">${esc(r.name)}</span>
-        <span class="pl-row__score">${r.wins} W</span>
-        <span class="pl-row__extra">${r.losses} L</span>`);
-    $('pl-board-races').hidden = !(b.races && b.races.length);
-    $('pl-races').innerHTML = rows(b.races || [], (r) => `
-        <span class="pl-row__name">${esc(r.name)}</span>
-        <span class="pl-row__score">${r.wins} W</span>
-        <span class="pl-row__extra">${r.losses} L</span>`);
+    $('sb-list').innerHTML = res.events.map(matchRow).join('');
     $('pl-empty').hidden = !!res.total_events;
-    $('pl-feed').innerHTML = res.events.map((e) => `<li><span class="pl-dim">${when(e.occurred_at)}</span> ${describe(e)}${e.game ? ` <span class="pl-dim">· ${esc(e.game)}</span>` : ''}</li>`).join('');
+
+    const b = res.boards;
+    const wl = (r) => `<span class="pl-row__name">${esc(r.name)}</span><span class="pl-row__score">${r.wins}V</span><span class="pl-row__extra">${r.losses}Î</span>`;
+    $('pl-board-versus').hidden = !b.versus.length;
+    $('pl-versus').innerHTML = rows(b.versus, wl);
+    $('pl-board-races').hidden = !(b.races && b.races.length);
+    $('pl-races').innerHTML = rows(b.races || [], wl);
+    $('pl-board-cpu').hidden = !b.vs_cpu.length;
+    $('pl-cpu').innerHTML = rows(b.vs_cpu, wl);
+    $('pl-board-arcade').hidden = !b.arcade.length;
+    $('pl-arcade').innerHTML = rows(b.arcade, (r) => `<span class="pl-row__name">${esc(r.name)}${r.char ? ` <small>${esc(r.char)}</small>` : ''}</span>
+        <span class="pl-row__score">${r.cleared ? '🏆' : r.reached + '/8'}</span><span class="pl-row__extra">${r.runs}×</span>`);
 }
 
-/* ── live, every game ────────────────────── */
+/* ── live: the game and the fight on screen ─ */
 
 let liveWired = false;
 let iconFor = '';
 let iconTimer = 0;
 let lastAch = null;
-let frameAt = 0;
+let fightSeen = 0;
 
 async function showIcon(serial) {
     if (!serial || serial === iconFor) return;
@@ -127,6 +114,7 @@ async function showIcon(serial) {
             iconTimer = setInterval(() => { i = (i + 1) % frames; el.style.backgroundPosition = `${(i / (frames - 1)) * 100}% 0`; }, 1000 / 12);
         }
     } catch {
+        iconFor = '';   // try again with the next update: the emulator may still be uploading it
         el.classList.add('none');
         el.style.backgroundImage = '';
     }
@@ -140,32 +128,45 @@ function toast(text) {
     toast.timer = setTimeout(() => { t.hidden = true; }, 4000);
 }
 
+function pips(el, n) {
+    el.innerHTML = Array.from({ length: Math.max(2, n || 0) }, (_, i) => `<span class="${i < (n || 0) ? 'on' : ''}"></span>`).join('');
+}
+
+function renderFight(f) {
+    const has = f && (f.h1 != null || f.h2 != null || f.place != null);
+    $('sb-fight').hidden = !has;
+    $('sb-idle').hidden = !!has;
+    if (!has) return;
+    fightSeen = Date.now();
+    for (const k of [1, 2]) {
+        const h = f['h' + k];
+        const bar = $('sb-h' + k);
+        bar.style.width = (h == null ? 100 : Math.round(h * 100)) + '%';
+        bar.classList.toggle('low', h != null && h < 0.25);
+        $('sb-c' + k).textContent = f['c' + k] || '';
+        pips($('sb-r' + k), f['r' + k]);
+    }
+    $('sb-phase').textContent = f.place != null ? `Locul ${f.place + 1}` : (f.phase || 'VS');
+    const lad = $('sb-ladder');
+    lad.hidden = !f.ladder;
+    if (f.ladder) {
+        lad.innerHTML = Array.from({ length: f.ladder }, (_, i) =>
+            `<span class="${i < f.fight ? 'done' : i === f.fight ? 'cur' : ''}">${i === f.ladder - 1 ? '👑' : i + 1}</span>`).join('');
+    }
+}
+
 function renderNow(n) {
-    $('pl-tv').hidden = false;
-    $('pl-now-title').textContent = n.title || 'Playing';
-    $('pl-now-serial').textContent = n.serial || '';
-    $('pl-tv-led').classList.toggle('on', !n.paused);
     showIcon(n.serial);
     const ach = $('pl-now-ach');
     if (n.ach && n.ach[1]) {
         ach.hidden = false;
         ach.textContent = `🏆 ${n.ach[0]}/${n.ach[1]}`;
-        if (lastAch !== null && n.ach[0] > lastAch) toast(n.unlocked ? `🏆 ${n.unlocked}` : '🏆 Achievement unlocked!');
+        if (lastAch !== null && n.ach[0] > lastAch) toast(n.unlocked ? `🏆 ${n.unlocked}` : '🏆 Realizare deblocată!');
         lastAch = n.ach[0];
     } else ach.hidden = true;
     $('pl-ticker').hidden = !n.presence;
     if (n.presence && $('pl-presence').textContent !== n.presence) $('pl-presence').textContent = n.presence;
-    for (const p of [1, 2]) {
-        const mask = (n.inputs && n.inputs[p - 1]) || 0;
-        for (const b of document.querySelectorAll(`#pl-pad${p} .b`)) b.classList.toggle('on', !!(mask & (1 << Number(b.dataset.bit))));
-    }
-}
-
-function showFrame(slug) {
-    const img = $('pl-tv-img');
-    const next = new Image();
-    next.onload = () => { img.src = next.src; $('pl-tv-nosig').hidden = true; frameAt = Date.now(); };
-    next.src = `/api/play/s/${encodeURIComponent(slug)}/frame?t=${Date.now()}`;
+    renderFight(n.fight);
 }
 
 function wireLive(slug) {
@@ -174,8 +175,8 @@ function wireLive(slug) {
     const socket = io({ transports: ['websocket', 'polling'] });
     socket.on('connect', () => socket.emit('live:watch', slug));
     socket.on('live:now', renderNow);
-    socket.on('live:frame', () => showFrame(slug));
-    setInterval(() => { if (frameAt && Date.now() - frameAt > 20000) $('pl-tv-nosig').hidden = false; }, 5000);
+    // No update for a while (game closed, between games): back to waiting.
+    setInterval(() => { if (fightSeen && Date.now() - fightSeen > 15000) { fightSeen = 0; renderFight(null); } }, 5000);
 }
 
 async function loadSession(slug) {
@@ -184,10 +185,8 @@ async function loadSession(slug) {
         if (!res.success) throw new Error(res.error);
         if (res.session.open) {
             wireLive(slug);
-            if (res.now && $('pl-tv').hidden) { renderNow(res.now); showFrame(slug); }
+            if (res.now && !iconFor) renderNow(res.now);
         }
-        $('pl-pad1-name').textContent = res.session.p1_name || '';
-        $('pl-pad2-name').textContent = res.session.p2_name || '';
         const stamp = JSON.stringify([res.total_events, res.session]);
         if (stamp !== lastStamp) {
             lastStamp = stamp;
@@ -197,7 +196,7 @@ async function loadSession(slug) {
     } catch {
         if (!session) {
             $('pl-view').hidden = false;
-            $('pl-title').textContent = 'Session not found';
+            $('pl-title').textContent = 'Sesiunea nu există';
         }
     }
 }

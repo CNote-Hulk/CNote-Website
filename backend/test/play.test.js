@@ -109,6 +109,8 @@ test('live: now state is cleaned, frames must be JPEG', async () => {
     assert.deepEqual(s.ach, [3, 118]);
     assert.deepEqual(s.inputs, [16, 0xffff]);
     assert.equal(s.evil, undefined);
+    const f = cleanNow({ fight: { h1: 1.7, h2: 0.3, r1: 1, c1: 'Scorpion', phase: 'FIGHT!', x: 1 } }).fight;
+    assert.deepEqual(f, { h1: 1, h2: 0.3, r1: 1, c1: 'Scorpion', phase: 'FIGHT!' });
 
     mockPool.query = async (sql, params = []) => {
         if (/UPDATE connected_consoles SET last_seen_at/.test(sql)) return { rows: [{ id: 3, user_id: 7 }] };

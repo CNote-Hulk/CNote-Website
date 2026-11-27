@@ -201,57 +201,16 @@
 .du-result__text { margin: 0; color: #ddd; font-size: 1.1rem; }
 @media (prefers-reduced-motion: reduce) { .du-bar i { transition: none; } }
 
-/* ── Live, every game (play.html): CRT set, spinning save icon, ticker, DualShocks ── */
-.pl-live-tv { display: grid; gap: 14px; margin-bottom: 1.4rem; position: relative; }
-.pl-live-tv[hidden] { display: none; }
-.pl-tv { background: linear-gradient(#3b3a37, #23221f); border-radius: 22px; padding: 18px 18px 10px; box-shadow: 0 10px 30px rgba(0,0,0,.45), inset 0 2px 0 rgba(255,255,255,.08); }
-.pl-tv__screen { position: relative; aspect-ratio: 4 / 3; background: #050505; border-radius: 18px / 14px; overflow: hidden; box-shadow: inset 0 0 40px rgba(0,0,0,.9); }
-.pl-tv__screen img { width: 100%; height: 100%; object-fit: contain; display: block; filter: saturate(1.15) contrast(1.05); }
-.pl-tv__screen img:not([src]) { visibility: hidden; }
-.pl-tv__scan { position: absolute; inset: 0; pointer-events: none;
-  background: repeating-linear-gradient(to bottom, rgba(0,0,0,.28) 0 1px, transparent 1px 3px),
-              radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,.55) 100%); }
-.pl-tv__nosig { position: absolute; inset: 0; display: grid; place-items: center; font-family: 'Press Start 2P', monospace; font-size: clamp(10px, 3vw, 16px); color: #ddd;
-  background: repeating-radial-gradient(circle at 30% 40%, #222 0 2px, #111 2px 4px); animation: pl-static .25s steps(3) infinite; }
-.pl-tv__nosig[hidden] { display: none; }
-@keyframes pl-static { 50% { background-position: 3px 2px; } }
-.pl-tv__chin { display: flex; justify-content: space-between; align-items: center; padding: 8px 6px 0; }
-.pl-tv__brand { font-family: 'Press Start 2P', monospace; font-size: 9px; color: #bdb7a8; letter-spacing: .15em; }
-.pl-tv__led { width: 8px; height: 8px; border-radius: 50%; background: #4a1010; }
-.pl-tv__led.on { background: #ff3b3b; box-shadow: 0 0 8px #ff3b3b; }
-
-.pl-now { display: grid; grid-template-columns: 72px 1fr auto; gap: 12px; align-items: center; background: #0f1a3c; border: 2px solid #2b3d78; border-radius: 12px; padding: 10px 12px;
-  box-shadow: inset 0 0 0 2px #0a1230; }
+/* ── Live bits shared by the scoreboard (play.html): spinning save icon, ticker, toast ── */
 .pl-icon { width: 72px; height: 72px; background-repeat: no-repeat; background-size: 100% 100%; image-rendering: auto; filter: drop-shadow(0 4px 6px rgba(0,0,0,.5)); }
 .pl-icon.none { background: radial-gradient(circle, #3456a8, #13204a); border-radius: 50%; }
-.pl-now__text { min-width: 0; }
-.pl-now__title { margin: 0; font-family: 'VT323', monospace; font-size: 1.6rem; line-height: 1; color: #e8eeff; overflow-wrap: anywhere; }
-.pl-now__serial { margin: 4px 0 0; font-family: 'Press Start 2P', monospace; font-size: 8px; color: #7f95d6; letter-spacing: .1em; }
 .pl-now__ach { margin: 0; font-family: 'Press Start 2P', monospace; font-size: 10px; color: #ffd166; white-space: nowrap; }
-
 .pl-ticker { overflow: hidden; background: #000; border: 2px solid #333; border-radius: 6px; padding: 6px 0; }
 .pl-ticker[hidden] { display: none; }
 .pl-ticker span { display: inline-block; padding-left: 100%; white-space: nowrap; font-family: 'VT323', monospace; font-size: 1.35rem; color: #39ff7a; text-shadow: 0 0 6px rgba(57,255,122,.6); animation: pl-tick 18s linear infinite; }
 @keyframes pl-tick { to { transform: translateX(-100%); } }
-@media (prefers-reduced-motion: reduce) { .pl-ticker span { animation: none; padding-left: 8px; white-space: normal; } .pl-tv__nosig { animation: none; } }
-
-.pl-pads2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.pl-pad2 { margin: 0; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 8px; }
-.pl-pad2 figcaption { font-family: 'Press Start 2P', monospace; font-size: 9px; color: #ffb547; margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.pl-pad2--p2 figcaption { color: #5ab8ff; }
-.pl-pad2 figcaption span { color: var(--text-light); }
-.pl-pad2 svg { width: 100%; height: auto; display: block; }
-.pl-pad2 .body { fill: #2a2c33; stroke: #444955; stroke-width: 2; }
-.pl-pad2 .b { fill: #3c404b; stroke: #555b68; stroke-width: 1; transition: fill .05s; }
-.pl-pad2 .b.on { fill: #ffd166; stroke: #fff; }
-.pl-pad2 .tri.on { fill: #3ddc97; } .pl-pad2 .cir.on { fill: #ff5a5f; } .pl-pad2 .crs.on { fill: #5aa9ff; } .pl-pad2 .sqr.on { fill: #ff7ad9; }
-.pl-pad2 .stick { fill: #1c1e24; stroke: #444955; stroke-width: 2; }
-.pl-pad2 .sym { font-size: 11px; fill: #c9ced8; text-anchor: middle; pointer-events: none; }
-
 .pl-toast { position: absolute; left: 50%; top: 12px; transform: translateX(-50%); background: #111; border: 2px solid #ffd166; color: #ffd166; padding: 10px 14px; border-radius: 10px;
-  font-family: 'Press Start 2P', monospace; font-size: 10px; z-index: 3; box-shadow: 0 6px 20px rgba(0,0,0,.5); }
 .pl-toast[hidden] { display: none; }
-@media (max-width: 480px) { .pl-pads2 { grid-template-columns: 1fr; } .pl-now { grid-template-columns: 56px 1fr; } .pl-icon { width: 56px; height: 56px; } .pl-now__ach { grid-column: 1 / -1; } }
 
 /* Duel buttons: fixed arcade colours. The site's accent is near-white on the dark theme, which
    left white text on a white button (2026-11-27, Andrei's screenshot). */
@@ -270,3 +229,58 @@
 .du-who { font-family: 'VT323', monospace; font-size: 1.6rem; }
 .du-who--me { font-size: 2rem; }
 .du-join input { font-family: 'VT323', monospace; font-size: 1.8rem; }
+
+/* ── Scoreboard (play.html?s=): one screen for the tablet — matches left, the fight now right ── */
+.sb { display: grid; gap: 14px; }
+.sb[hidden] { display: none; }
+.pl-page:has(.sb:not([hidden])) { max-width: 1200px; }
+.sb-top { display: grid; grid-template-columns: 64px 1fr auto; gap: 14px; align-items: center; }
+.sb-top .pl-icon { width: 64px; height: 64px; }
+.sb-title { margin: 0; font-family: 'VT323', monospace; font-size: 2.2rem; line-height: 1; color: var(--text-light); overflow-wrap: anywhere; }
+.sb-sub { margin: 4px 0 0; color: var(--text-gray); font-size: .85rem; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.sb-sub .pl-live { margin: 0; }
+.sb-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 14px; align-items: start; }
+.sb-col { background: #121318; border: 2px solid #262a35; border-radius: 14px; padding: 14px; }
+.sb-h { margin: 0 0 10px; font-family: 'Press Start 2P', monospace; font-size: 12px; color: #ffd166; letter-spacing: .08em; }
+.sb-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; max-height: 60vh; overflow-y: auto; }
+.sb-m { display: grid; grid-template-columns: 3.2em 1fr auto 1fr; gap: 8px; align-items: center; background: #1b1d25; border-radius: 8px; padding: 8px 10px; }
+.sb-time { color: #6f7685; font-size: .75rem; font-variant-numeric: tabular-nums; }
+.sb-m__p { font-family: 'VT323', monospace; font-size: 1.35rem; color: #9aa1b1; overflow-wrap: anywhere; line-height: 1.05; }
+.sb-m__p small { display: block; font-family: var(--font-sans, sans-serif); font-size: .7rem; color: #6f7685; }
+.sb-m__p--r { text-align: right; }
+.sb-m__p.win { color: #fff; }
+.sb-m__p.win::before { content: '★ '; color: #ffd166; }
+.sb-m__p--r.win::before { content: ''; }
+.sb-m__p--r.win::after { content: ' ★'; color: #ffd166; }
+.sb-m__s { font-family: 'Press Start 2P', monospace; font-size: 12px; color: #ffd166; text-align: center; }
+.sb-empty { color: var(--text-gray); margin: 6px 0; }
+.sb-boards { display: grid; gap: 10px; margin-top: 14px; }
+.sb-boards h3 { margin: 0 0 6px; font-size: .95rem; color: var(--text-light); }
+.sb-boards section[hidden] { display: none; }
+
+.sb-fight { display: grid; gap: 12px; }
+.sb-fight[hidden] { display: none; }
+.sb-fighter__head { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.sb-fighter__head b { font-family: 'VT323', monospace; font-size: 2rem; font-weight: 400; color: #fff; line-height: 1; }
+.sb-tag { font-family: 'Press Start 2P', monospace; font-size: 10px; color: #ffb547; }
+.sb-fighter--p2 .sb-tag { color: #5ab8ff; }
+.sb-char { color: #9aa1b1; font-size: .95rem; }
+.sb-bar { height: 34px; background: #3a1214; border: 2px solid #000; border-radius: 4px; overflow: hidden; margin-top: 6px; box-shadow: inset 0 0 0 2px #5b1d20; }
+.sb-bar i { display: block; height: 100%; width: 100%; background: linear-gradient(#fff3a6, #ffcc33 45%, #e59b00); transition: width .25s linear; }
+.sb-bar i.low { background: linear-gradient(#ffb0b0, #ff4d4d 45%, #b81d1d); }
+.sb-fighter--p2 .sb-bar { transform: scaleX(-1); }
+.sb-pips { display: flex; gap: 6px; margin-top: 6px; }
+.sb-fighter--p2 .sb-pips { justify-content: flex-end; }
+.sb-pips span { width: 16px; height: 16px; border-radius: 50%; border: 2px solid #555; }
+.sb-pips span.on { background: #ffd166; border-color: #ffd166; box-shadow: 0 0 8px #ffd166; }
+.sb-vs { text-align: center; font-family: 'Press Start 2P', monospace; font-size: 14px; color: #ff5a5a; letter-spacing: .1em; }
+.sb-ladder { display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px; }
+.sb-ladder[hidden] { display: none; }
+.sb-ladder span { text-align: center; padding: 6px 0; border-radius: 4px; background: #1b1d25; color: #6f7685; font-family: 'Press Start 2P', monospace; font-size: 10px; }
+.sb-ladder span.done { background: #2f4d2f; color: #9be59b; }
+.sb-ladder span.cur { background: #ffd166; color: #1a1200; }
+.sb-idle { color: #6f7685; font-family: 'VT323', monospace; font-size: 1.5rem; margin: 20px 0; text-align: center; }
+.sb-idle[hidden] { display: none; }
+.sb .pl-toast { position: fixed; top: 90px; }
+@media (max-width: 760px) { .sb-grid { grid-template-columns: 1fr; } .sb-now { order: -1; } }
+@media (prefers-reduced-motion: reduce) { .sb-bar i { transition: none; } }

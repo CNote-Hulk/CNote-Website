@@ -586,6 +586,15 @@ function cleanNow(b) {
         paused: !!b.paused,
     };
     if (b.unlocked && typeof b.unlocked === 'string') s.unlocked = cleanText(b.unlocked, 80);
+    // The fight on screen right now (fighting games the emulator knows): health 0..1, rounds,
+    // fighters, arcade fight / ladder, phase; a race: place.
+    if (b.fight && typeof b.fight === 'object') {
+        const f = {};
+        for (const k of ['h1', 'h2']) if (typeof b.fight[k] === 'number' && Number.isFinite(b.fight[k])) f[k] = Math.max(0, Math.min(1, b.fight[k]));
+        for (const k of ['r1', 'r2', 'fight', 'ladder', 'place']) { const v = int(b.fight[k], 0, 99); if (v !== null) f[k] = v; }
+        for (const k of ['c1', 'c2', 'phase']) if (typeof b.fight[k] === 'string') f[k] = cleanText(b.fight[k], 30);
+        s.fight = f;
+    }
     return s;
 }
 

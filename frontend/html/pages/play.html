@@ -23,108 +23,66 @@
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,700&family=DM+Sans:wght@300;400;500;600;700&family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
     <title>Play — Console Notebook</title>
     <link rel="stylesheet" href="../../css/main.css?v=20261126j">
-    <link rel="stylesheet" href="../../css/pages/play.css?v=20261127">
+    <link rel="stylesheet" href="../../css/pages/play.css?v=20261127b">
 </head>
 <body class="has-mbn">
     <div id="navbar-placeholder"></div>
 
     <main class="pl-page">
-        <!-- Public view of one session (?s=slug) -->
-        <section id="pl-view" hidden>
-            <header class="pl-header">
-                <p class="pl-live" id="pl-live"><span class="pl-live__dot"></span> <span id="pl-live-text">Live</span></p>
-                <h1 class="pl-header__title" id="pl-title">Game night</h1>
-                <p class="pl-header__subtitle" id="pl-sub"></p>
-                <div class="pl-pads" id="pl-pads"></div>
+        <!-- Public view of one session (?s=slug): one scoreboard screen for the tablet (2026-11-27,
+             Andrei: matches on one side, the current fight's health on the other; the game itself
+             is on the projector). Fed by polling (results) and socket.io 'live:now' (the fight). -->
+        <section id="pl-view" class="sb" hidden>
+            <header class="sb-top">
+                <div class="pl-icon none" id="pl-icon" aria-hidden="true"></div>
+                <div class="sb-top__text">
+                    <h1 class="sb-title" id="pl-title">Game night</h1>
+                    <p class="sb-sub"><span class="pl-live" id="pl-live"><span class="pl-live__dot"></span> <span id="pl-live-text">Live</span></span> <span id="pl-sub"></span></p>
+                </div>
+                <p class="pl-now__ach" id="pl-now-ach" hidden></p>
             </header>
-
-            <!-- Live, every game (2026-11-27): the emulator's picture, the game's own save icon,
-                 RetroAchievements rich presence and both controllers — fed over socket.io. -->
-            <section class="pl-live-tv" id="pl-tv" hidden>
-                <div class="pl-tv">
-                    <div class="pl-tv__screen">
-                        <img id="pl-tv-img" alt="Live picture from the emulator">
-                        <div class="pl-tv__nosig" id="pl-tv-nosig">NO SIGNAL</div>
-                        <div class="pl-tv__scan" aria-hidden="true"></div>
-                    </div>
-                    <div class="pl-tv__chin"><span class="pl-tv__brand">CNOTE&nbsp;LIVE</span><span class="pl-tv__led" id="pl-tv-led"></span></div>
-                </div>
-                <div class="pl-now">
-                    <div class="pl-icon" id="pl-icon" aria-hidden="true"></div>
-                    <div class="pl-now__text">
-                        <p class="pl-now__title" id="pl-now-title">—</p>
-                        <p class="pl-now__serial" id="pl-now-serial"></p>
-                    </div>
-                    <p class="pl-now__ach" id="pl-now-ach" hidden></p>
-                </div>
-                <div class="pl-ticker" id="pl-ticker" hidden><span id="pl-presence"></span></div>
-                <div class="pl-pads2">
-                    <figure class="pl-pad2 pl-pad2--p1" aria-label="Controller 1">
-                        <figcaption>P1 <span id="pl-pad1-name"></span></figcaption>
-                        <svg viewBox="0 0 240 150" id="pl-pad1">
-                            <rect class="b" data-bit="10" x="30" y="2" width="44" height="12" rx="5"/><rect class="b" data-bit="8" x="30" y="16" width="44" height="10" rx="4"/>
-                            <rect class="b" data-bit="11" x="166" y="2" width="44" height="12" rx="5"/><rect class="b" data-bit="9" x="166" y="16" width="44" height="10" rx="4"/>
-                            <path class="body" d="M40 30 H200 C232 30 240 70 236 110 C232 142 206 148 192 128 L172 100 H68 L48 128 C34 148 8 142 4 110 C0 70 8 30 40 30 Z"/>
-                            <rect class="b" data-bit="0" x="44" y="46" width="14" height="16" rx="2"/><rect class="b" data-bit="1" x="44" y="78" width="14" height="16" rx="2"/>
-                            <rect class="b" data-bit="2" x="26" y="63" width="16" height="14" rx="2"/><rect class="b" data-bit="3" x="60" y="63" width="16" height="14" rx="2"/>
-                            <rect class="b sm" data-bit="13" x="96" y="66" width="16" height="7" rx="3"/><rect class="b sm" data-bit="12" x="128" y="66" width="16" height="7" rx="3"/>
-                            <circle class="b tri" data-bit="7" cx="190" cy="50" r="10"/><circle class="b cir" data-bit="5" cx="210" cy="70" r="10"/>
-                            <circle class="b crs" data-bit="4" cx="190" cy="90" r="10"/><circle class="b sqr" data-bit="6" cx="170" cy="70" r="10"/>
-                            <text x="190" y="54" class="sym">△</text><text x="210" y="74" class="sym">○</text><text x="190" y="94" class="sym">✕</text><text x="170" y="74" class="sym">□</text>
-                            <circle class="stick" cx="88" cy="108" r="14"/><circle class="stick" cx="152" cy="108" r="14"/>
-                        </svg>
-                    </figure>
-                    <figure class="pl-pad2 pl-pad2--p2" aria-label="Controller 2">
-                        <figcaption>P2 <span id="pl-pad2-name"></span></figcaption>
-                        <svg viewBox="0 0 240 150" id="pl-pad2">
-                            <rect class="b" data-bit="10" x="30" y="2" width="44" height="12" rx="5"/><rect class="b" data-bit="8" x="30" y="16" width="44" height="10" rx="4"/>
-                            <rect class="b" data-bit="11" x="166" y="2" width="44" height="12" rx="5"/><rect class="b" data-bit="9" x="166" y="16" width="44" height="10" rx="4"/>
-                            <path class="body" d="M40 30 H200 C232 30 240 70 236 110 C232 142 206 148 192 128 L172 100 H68 L48 128 C34 148 8 142 4 110 C0 70 8 30 40 30 Z"/>
-                            <rect class="b" data-bit="0" x="44" y="46" width="14" height="16" rx="2"/><rect class="b" data-bit="1" x="44" y="78" width="14" height="16" rx="2"/>
-                            <rect class="b" data-bit="2" x="26" y="63" width="16" height="14" rx="2"/><rect class="b" data-bit="3" x="60" y="63" width="16" height="14" rx="2"/>
-                            <rect class="b sm" data-bit="13" x="96" y="66" width="16" height="7" rx="3"/><rect class="b sm" data-bit="12" x="128" y="66" width="16" height="7" rx="3"/>
-                            <circle class="b tri" data-bit="7" cx="190" cy="50" r="10"/><circle class="b cir" data-bit="5" cx="210" cy="70" r="10"/>
-                            <circle class="b crs" data-bit="4" cx="190" cy="90" r="10"/><circle class="b sqr" data-bit="6" cx="170" cy="70" r="10"/>
-                            <text x="190" y="54" class="sym">△</text><text x="210" y="74" class="sym">○</text><text x="190" y="94" class="sym">✕</text><text x="170" y="74" class="sym">□</text>
-                            <circle class="stick" cx="88" cy="108" r="14"/><circle class="stick" cx="152" cy="108" r="14"/>
-                        </svg>
-                    </figure>
-                </div>
-                <div class="pl-toast" id="pl-toast" hidden></div>
-            </section>
+            <div class="pl-ticker" id="pl-ticker" hidden><span id="pl-presence"></span></div>
 
             <div class="pl-owner" id="pl-owner" hidden>
-                <button type="button" class="pl-btn" id="pl-swap">⇄ Swap controllers</button>
-                <button type="button" class="pl-btn" id="pl-rename">✎ Players</button>
-                <button type="button" class="pl-btn" id="pl-share">🔗 Copy link</button>
-                <button type="button" class="pl-btn pl-btn--danger" id="pl-end">End session</button>
+                <button type="button" class="pl-btn" id="pl-swap">⇄ Schimbă controllerele</button>
+                <button type="button" class="pl-btn" id="pl-rename">✎ Jucători</button>
+                <button type="button" class="pl-btn" id="pl-share">🔗 Link</button>
+                <button type="button" class="pl-btn pl-btn--danger" id="pl-end">Închide sesiunea</button>
             </div>
 
-            <div class="pl-boards">
-                <section class="pl-board" id="pl-board-arcade" hidden>
-                    <h2>🏆 Arcade ladder</h2>
-                    <p class="pl-board__hint">Furthest fight reached — lose and the run starts over.</p>
-                    <ol class="pl-rows" id="pl-arcade"></ol>
+            <div class="sb-grid">
+                <section class="sb-col sb-matches">
+                    <h2 class="sb-h">Meciuri</h2>
+                    <ol class="sb-list" id="sb-list"></ol>
+                    <p class="sb-empty" id="pl-empty" hidden>Niciun meci încă. Rezultatele apar aici singure.</p>
+                    <div class="sb-boards">
+                        <section id="pl-board-versus" hidden><h3>⚔️ Versus</h3><ol class="pl-rows" id="pl-versus"></ol></section>
+                        <section id="pl-board-arcade" hidden><h3>🏆 Arcade</h3><ol class="pl-rows" id="pl-arcade"></ol></section>
+                        <section id="pl-board-races" hidden><h3>🏁 Curse</h3><ol class="pl-rows" id="pl-races"></ol></section>
+                        <section id="pl-board-cpu" hidden><h3>🤖 Contra CPU</h3><ol class="pl-rows" id="pl-cpu"></ol></section>
+                    </div>
                 </section>
-                <section class="pl-board" id="pl-board-versus" hidden>
-                    <h2>⚔️ Versus</h2>
-                    <ol class="pl-rows" id="pl-versus"></ol>
-                </section>
-                <section class="pl-board" id="pl-board-races" hidden>
-                    <h2>🏁 Races</h2>
-                    <ol class="pl-rows" id="pl-races"></ol>
-                </section>
-                <section class="pl-board" id="pl-board-cpu" hidden>
-                    <h2>🤖 Against the CPU</h2>
-                    <ol class="pl-rows" id="pl-cpu"></ol>
+
+                <section class="sb-col sb-now" aria-live="polite">
+                    <h2 class="sb-h">Acum</h2>
+                    <div class="sb-fight" id="sb-fight" hidden>
+                        <div class="sb-fighter sb-fighter--p1">
+                            <div class="sb-fighter__head"><span class="sb-tag">P1</span> <b id="sb-n1"></b> <span class="sb-char" id="sb-c1"></span></div>
+                            <div class="sb-bar"><i id="sb-h1"></i></div>
+                            <div class="sb-pips" id="sb-r1"></div>
+                        </div>
+                        <div class="sb-vs"><span id="sb-phase">VS</span></div>
+                        <div class="sb-fighter sb-fighter--p2">
+                            <div class="sb-fighter__head"><span class="sb-tag">P2</span> <b id="sb-n2"></b> <span class="sb-char" id="sb-c2"></span></div>
+                            <div class="sb-bar"><i id="sb-h2"></i></div>
+                            <div class="sb-pips" id="sb-r2"></div>
+                        </div>
+                        <div class="sb-ladder" id="sb-ladder" hidden></div>
+                    </div>
+                    <p class="sb-idle" id="sb-idle">Așteptăm următorul meci…</p>
                 </section>
             </div>
-            <p class="pl-empty" id="pl-empty" hidden>No fights yet. Start a game in the emulator — results show up here by themselves.</p>
-
-            <section class="pl-feed">
-                <h2>Latest</h2>
-                <ul id="pl-feed"></ul>
-            </section>
+            <div class="pl-toast" id="pl-toast" hidden></div>
         </section>
 
         <!-- Owner: my sessions + link a console -->
@@ -173,7 +131,7 @@
 
     <script src="../../js/data/consoles-data.js"></script>
     <script type="module" src="../../js/main.js?v=20261126j"></script>
-    <script type="module" src="../../js/pages/play.js?v=20261127"></script>
+    <script type="module" src="../../js/pages/play.js?v=20261127b"></script>
     <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
     <script src="../../js/fallback/search-profile.js"></script>
     <script src="/js/cookie-consent.js"></script>
