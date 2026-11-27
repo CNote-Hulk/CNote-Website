@@ -753,6 +753,8 @@ async function initializeSchema() {
 		`ALTER TABLE IF EXISTS personal_inventory_items ADD COLUMN IF NOT EXISTS console_id TEXT`,
 		// (2026-11-27) A console's storage ("120 GB", "Fără HDD"), see routes/personal.js.
 		`ALTER TABLE IF EXISTS personal_inventory_items ADD COLUMN IF NOT EXISTS storage TEXT`,
+		// (2026-11-27) The cables line of a shop order (routes/shop.js CABLES_PRICE); 0 on older orders = "included".
+		`ALTER TABLE shop_orders ADD COLUMN IF NOT EXISTS cables_price DECIMAL(10,2) NOT NULL DEFAULT 0`,
 		`ALTER TABLE shop_units ADD COLUMN IF NOT EXISTS inventory_item_id UUID`,
 		`ALTER TABLE shop_extras ADD COLUMN IF NOT EXISTS inventory_item_id UUID`,
 		// Which hardware line of a console a user owns (2026-11-26): PS2 vs PS2 Slim, PS4 Pro...

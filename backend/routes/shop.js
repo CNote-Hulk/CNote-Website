@@ -6,7 +6,8 @@
    The buyer builds a package on shop.html: one console unit (each physical
    console is its own row - model code, condition, price), optionally a mod
    and a storage upgrade (paid services, one of each at most), and
-   accessories with a quantity. Cables always come with the console. The
+   accessories with a quantity. Cables always come with the console, as a fixed
+   CABLES_PRICE line on every order (2026-11-27: 30 RON, Andrei). The
    order reserves the unit and takes the accessories off the stock in one
    transaction; cancelling it puts everything back. No payment on the site -
    it is arranged with CNote, as with marketplace orders (utils/shipping.js).
@@ -35,6 +36,8 @@ const { createNotification } = require('./notifications');
 
 const router = express.Router();
 
+// The cables that come with every console: one fixed line per order (shop_orders.cables_price).
+const CABLES_PRICE = 30;
 const EXTRA_KINDS = ['accessory', 'mod', 'storage'];
 const UNIT_STATUSES = ['available', 'reserved', 'sold', 'hidden'];
 // new → confirmed → shipped, or cancelled (from new/confirmed). A cancelled
@@ -140,16 +143,16 @@ router.post('/orders', authRequired, async (req, res) => {
 
         await client.query("UPDATE shop_units SET status = 'reserved', updated_at = NOW() WHERE id = $1", [unit.id]);
         const unitPrice = Number(unit.price);
-        const total = unitPrice + extrasPrice + d.shipping_price;
+        const total = unitPrice + extrasPrice + CABLES_PRICE + d.shipping_price;
         const { rows } = await client.query(`
             INSERT INTO shop_orders (
                 buyer_id, unit_id, console_id, model_code, items, unit_price, extras_price, shipping_price, total_price,
-                delivery_method, recipient_name, recipient_first_name, recipient_last_name, recipient_phone, recipient_email,
+                cables_price, delivery_method, recipient_name, recipient_first_name, recipient_last_name, recipient_phone, recipient_email,
                 county, city, address, address_line2, easybox_name, notes
-            ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21)
+            ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22)
             RETURNING *`, [
             req.user.id, unit.id, unit.console_id, unit.model_code, JSON.stringify(items), unitPrice, extrasPrice, d.shipping_price, total,
-            d.delivery_method, d.recipient_name, d.recipient_first_name, d.recipient_last_name, d.recipient_phone, d.recipient_email,
+            CABLES_PRICE, d.delivery_method, d.recipient_name, d.recipient_first_name, d.recipient_last_name, d.recipient_phone, d.recipient_email,
             d.county, d.city, d.address, d.address_line2, d.easybox_name, d.notes,
         ]);
         await client.query('COMMIT');
@@ -420,7 +423,7 @@ router.get('/:consoleId', authOptional, async (req, res) => {
             `SELECT * FROM (SELECT e.*, ${AVAILABLE_SQL} AS available FROM shop_extras e WHERE e.console_id = $1) x
              ${all ? '' : 'WHERE active AND (available IS NULL OR available > 0)'}
              ORDER BY kind, sort, price, id`, [consoleId]);
-        res.json({ success: true, units: units.map(publicUnit), extras: extras.map(publicExtra) });
+        res.json({ success: true, units: units.map(publicUnit), extras: extras.map(publicExtra), cables_price: CABLES_PRICE });
     } catch (err) {
         console.error('Shop GET error:', err);
         res.status(500).json({ success: false, error: 'Could not load the shop.' });

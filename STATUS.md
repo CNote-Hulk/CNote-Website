@@ -14,6 +14,7 @@ Andrei: in the app's "Send to sale" not every PS2 model was there, the lines rea
 - Inventory (app): a console picks line → model and the name fills itself; an accessory picks console → controller from `controller-models.json` (≈70 official controllers with model numbers, from Sony/Nintendo/Microsoft support pages, Sega Retro, iFixit), or "Other".
 - Listings: `listings.console_variant` (migration), site new/edit forms + app edit sheet pick a hardware line. The app has no "new listing" form (only edit) — creating listings stays on the site.
 - Same day: inventory items got a `storage` column (app picker per console: PS2 bay HDD sizes, Xbox 8/10 GB + upgrades, Xbox 360 none/256 MB/512 MB/4 GB/20–500 GB, PS4 500 GB/1 TB/2 TB...); the column was also added on the live DB right away. Inventory cleaned (full names, model codes, console ids; backup `/root/Projects/CNote-Website/dumps/inventory-before-20261127.json`); DualShock 2 series A/H/M added to `controller-models.json`.
+- Same day: CNote Shop cables are a fixed 30 RON line on every order (Andrei: "cablurile la bază au prețul de 30 lei"), `shop_orders.cables_price`, site + app summaries.
 - Next: Andrei checks the controller list (Xbox Duke/Controller S and the wired Xbox 360 pad have no model number on purpose; more accessories — memory cards, cables — can be added to the same file).
 
 ### README rewritten and INDEX.md/STATUS.md synced (2026-11-20 / 2026-11-21)

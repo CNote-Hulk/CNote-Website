@@ -111,7 +111,7 @@ async function renderBuild() {
     el.innerHTML = `<p class="shop-muted">${esc(t('shop_loading'))}</p>`;
     const [res, consola] = await Promise.all([api('GET', `/${state.consoleId}`), getConsoleById(state.consoleId)]);
     if (!res.success) { el.innerHTML = `<p class="shop-muted">${esc(res.error || t('shop_error'))}</p>`; return; }
-    renderBuilder(el, consola, res.units, res.extras);
+    renderBuilder(el, consola, res.units, res.extras, res.cables_price ?? 30);
 }
 
 async function renderConsoleList(el) {
@@ -136,7 +136,7 @@ async function renderConsoleList(el) {
 }
 
 // ── Build: the package builder ──────────────────────────────────────
-function renderBuilder(panel, consola, units, extras) {
+function renderBuilder(panel, consola, units, extras, cablesPrice = 30) {
     // A fresh root per render: its listeners go away with it.
     const el = document.createElement('div');
     panel.replaceChildren(el);
@@ -342,9 +342,9 @@ function renderBuilder(panel, consola, units, extras) {
         const ship = SHIPPING_PRICE[pick.method];
         document.getElementById('shop-lines').innerHTML = u ? `
             ${lines.map(([l, p]) => `<div class="order-summary__row"><span>${esc(l)}</span><span>${ron(p)}</span></div>`).join('')}
-            <div class="order-summary__row"><span>${esc(t('shop_cables'))}</span><span>${esc(t('shop_included'))}</span></div>
+            <div class="order-summary__row"><span>${esc(t('shop_cables'))}</span><span>${ron(cablesPrice)}</span></div>
             <div class="order-summary__row"><span>${esc(t('order_summary_shipping'))}</span><span>${ron(ship)}</span></div>
-            <div class="order-summary__row order-summary__row--total"><span>${esc(t('order_summary_total'))}</span><span>${ron(sub + ship)}</span></div>`
+            <div class="order-summary__row order-summary__row--total"><span>${esc(t('order_summary_total'))}</span><span>${ron(sub + cablesPrice + ship)}</span></div>`
             : `<p class="shop-muted">${esc(t('shop_pick_model_first'))}</p>`;
         document.getElementById('shop-continue').disabled = !u;
     }
@@ -442,7 +442,7 @@ async function orderCard(o, admin) {
             <ul class="shop-order__items">
                 <li><strong>${esc(name)} ${esc(o.model_code)}</strong> <span>${ron(o.unit_price)}</span></li>
                 ${items}
-                <li>${esc(t('shop_cables'))} <span>${esc(t('shop_included'))}</span></li>
+                <li>${esc(t('shop_cables'))} <span>${Number(o.cables_price) > 0 ? ron(o.cables_price) : esc(t('shop_included'))}</span></li>
                 <li>${esc(t('order_summary_shipping'))} <span>${ron(o.shipping_price)}</span></li>
                 <li class="shop-order__total">${esc(t('order_summary_total'))} <span>${ron(o.total_price)}</span></li>
             </ul>
