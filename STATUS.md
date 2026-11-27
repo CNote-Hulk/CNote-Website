@@ -7,6 +7,13 @@ own notes.
 
 ## Gata (Done)
 
+### Collection replaces "owned consoles" (2026-11-27, evening)
+Andrei: every user shows exactly what they own — consoles, controllers, memory cards, how many, special editions — edited only in the app (Personal → Collection), and the profile follows from it.
+- `user_collection_items` + `user_collection_photos` + `routes/collection.js` (`/api/collection`, public `/user/:username` and `/of/:userId`); `syncOwned()` rebuilds `user_owned_consoles` / `_variants` / `_models` / `users.owned_consoles` from the console rows; My Space toggles and the legacy `PUT /owned-consoles` go through it. Bundles: `attached_to`. Existing users migrated (13 console rows for 3 users, checked both ways).
+- Site: Settings picker removed (row says it is edited in the app), public profile lists the collection inside the consoles card. i18n + cache keys `?v=20261127u`.
+- App: Collection with Consoles/Games tabs, photos, bundles; My Space = pixel-art notebooks with page-curl turns.
+- Note: the old My Space photo row was deleted; its R2 file remains (R2 keys only on Railway).
+
 ### Console pickers: full names, every model, controllers (2026-11-27)
 Andrei: in the app's "Send to sale" not every PS2 model was there, the lines read "PS2" instead of "PlayStation 2", inventory items should be picked from the lists, controller models were missing, and the listing form needed the same console list.
 - Cause of the missing models: the app's pickers read the bundled `assets/console-models.json` (194 models, Sept.) instead of the live directory (227). Now they use the live list (`LiveConsoleModelRepository`) with the refreshed bundle as fallback, sorted numerically.
